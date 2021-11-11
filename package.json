@@ -1,0 +1,35 @@
+{
+  "name": "garlmap",
+  "productName": "Garlmap",
+  "version": "0.1.0-dev",
+  "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "electron app"
+  },
+  "repository": "https://github.com/Jelmerro/Garlmap",
+  "homepage": "https://github.com/Jelmerro/Garlmap",
+  "author": "Jelmer van Arnhem",
+  "keywords": [
+    "Music",
+    "Electron",
+    "Audio",
+    "Player"
+  ],
+  "email": "Jelmerro@users.noreply.github.com",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "electron": "15.3.1",
+    "electron-builder": "22.14.6",
+    "eslint": "8.2.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions"
+  ],
+  "dependencies": {
+    "glob": "7.2.0",
+    "music-metadata": "7.11.4",
+    "node-mpv": "2.0.0-beta.2",
+    "rimraf": "3.0.2"
+  }
+}

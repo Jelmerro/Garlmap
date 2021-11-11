@@ -1,0 +1,11 @@
+main:
+- folder selector on Ctrl-O instead of hardcoded
+- search songs and create rules
+- generate and display playlist
+- delete rules/songs from the playlist
+- tons of keyboard shortcuts and section selector
+- fetch and cache lyrics
+- fetch and cache song info
+
+fixes:
+- write cover art to disk to allow it to be loaded with the mediaSession API

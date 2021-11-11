@@ -1,0 +1,77 @@
+/*
+* Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
+* Copyright (C) 2021 Jelmer van Arnhem
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+:root {
+    --bg: #333;
+    --fg: #eee;
+    --accent: #555;
+    --primary: #f60;
+    --secondary: #f94;
+    --green: #afa;
+    --yellow: #ffa;
+    --red: #faa;
+    --blue: #aaf;
+}
+
+
+/* generic */
+* {margin: 0;padding: 0}
+body {color: var(--fg);font: 14px "DejaVu Sans Mono", "Courier", monospace;}
+body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
+img {filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
+::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
+::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
+
+
+/* general column alignment */
+#app, #info-container {display: flex;flex-direction: column;}
+#column-container {display: flex;flex: 1;margin: .5em 0;min-height: 0;}
+#column-container * {flex: 1;}
+#column-container > * {background: var(--accent);}
+#rules-container, #playlist-container {margin-right: .5em;}
+
+
+/* status bar */
+#player-status {display: flex;margin-bottom: .5em;}
+#player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
+#player-status .button img {height: 1.5em;width: 1.5em;margin: auto;}
+#current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
+#current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
+#current-song .title {margin-right: .5em;}
+#current-song .artist {margin-left: .5em;}
+#current-song .album {color: var(--secondary);}
+#current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
+
+
+/* progres bar */
+#progress-container {display: flex;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);box-sizing: border-box;}
+#progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
+#progress-string {position: absolute;width: calc(100vw - .85em);color: var(--primary);}
+#progress-played, #progress-string {font-size: 1.2em;font-weight: bold;overflow: hidden;white-space: nowrap;}
+
+
+/* info column */
+#song-cover {width: 100%;height: 33vh;object-fit: contain;/*background: var(--accent);*/}
+
+/* status line */
+#status-line {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
+#status-line * {margin: 0 .5em;}
+#status-line *:first-child {margin-left: 0;}
+#status-line *:last-child {margin-right: 0;}
+#status-current {color: var(--green);}
+#status-folder {color: var(--yellow);}
