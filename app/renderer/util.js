@@ -48,4 +48,41 @@ const formatTime = totalSeconds => {
     return `&nbsp;${hours}:${minutes}:${seconds}&nbsp;`
 }
 
-module.exports = {queryMatch, keyMatch, formatTime}
+const resetWelcome = () => {
+    document.getElementById("song-info").textContent = `Welcome to Garlmap
+
+You can jump focus between the search section and playlist with F2 and F3.
+No other sections are focusable in the traditional sense,
+but they can be controlled with other shortcuts.
+This section can be scrolled with F9 and F10, for example.
+You can also display song lyrics here, by pressing F4,
+which will happen automatically if they are available offline,
+or you can bring back this help at any time with F1.
+F5 and F6 are for play/pause and for stopping after the current track.
+F7 and F8 are for moving to the previous and next track.
+F11 will show the cover art in a large window.
+F12 will open the development tools where you can find any runtime errors.
+
+It's required to load a folder for Garlmap to play songs.
+It will index and cache the info of them, so you can search it easily.
+You can load a folder with Ctrl-O, by passing it on startup,
+or by setting it using ENV vars as "GARLMAP_MUSIC_DIR".
+You can also set "GARLMAP_AUTO_LYRICS=true" to automatically download lyrics,
+just as there are startup arguments for it (see --help) for details.
+
+You can search for songs using the search section on the left.
+These can be queued in the playlist individually, or as what is called a rule.
+Rules are filters with a specific order and/or count that can queue in bulk.
+For example, "album:Pinkerton artist:Weezer" can be added to the playlist,
+this rule which will play the entire Pinkerton album by Weezer.
+You can also open the rule and view the individual tracks.
+The rules can be added at the end or immediately after the current.
+The list of rules in the center can also consist of simple individual tracks,
+but rules are the core of what makes powers the playlist of Garlmap.
+There is one special rule at the bottom displayed in purple,
+which will automatically be used if the playlist is done.
+Songs will automatically be added to the playlist based on the fallback rule.
+All possible rule options are displayed at the bottom of the rules column.`
+}
+
+module.exports = {queryMatch, keyMatch, formatTime, resetWelcome}

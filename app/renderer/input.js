@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const {keyMatch, queryMatch} = require("./util")
+const {keyMatch, queryMatch, resetWelcome} = require("./util")
 
 const init = () => {
     window.addEventListener("keydown", handleKeyboard)
@@ -33,6 +33,7 @@ const init = () => {
     })
     window.addEventListener("click", e => e.preventDefault())
     window.addEventListener("mousedown", handleMouse)
+    resetWelcome()
 }
 
 const handleKeyboard = e => {
@@ -49,6 +50,51 @@ const handleKeyboard = e => {
     if (keyMatch(e, {"key": "o", "ctrl": true})) {
         const {scanner} = require("./songs")
         setTimeout(() => scanner("/mnt/HDD/Music/Weezer/"), 1)
+    }
+    if (keyMatch(e, {"key": "F1"})) {
+        const {resetWelcome} = require("./util")
+        resetWelcome()
+    }
+    if (keyMatch(e, {"key": "F2"})) {
+        // TODO search section
+    }
+    if (keyMatch(e, {"key": "F3"})) {
+        // TODO playlist section
+    }
+    if (keyMatch(e, {"key": "F4"})) {
+        const {currentAndNext} = require("./playlist")
+        const {fetchLyrics} = require("./songs")
+        const {current} = currentAndNext()
+        if (current) {
+            fetchLyrics(current)
+        }
+    }
+    if (keyMatch(e, {"key": "F5"})) {
+        const {pause} = require("./player")
+        pause()
+    }
+    if (keyMatch(e, {"key": "F6"})) {
+        // TODO stop after this track
+    }
+    if (keyMatch(e, {"key": "F7"})) {
+        const {prev} = require("./player")
+        prev()
+    }
+    if (keyMatch(e, {"key": "F8"})) {
+        const {next} = require("./player")
+        next()
+    }
+    if (keyMatch(e, {"key": "F9"})) {
+        document.getElementById("song-info").scrollBy(0, 100)
+    }
+    if (keyMatch(e, {"key": "F10"})) {
+        document.getElementById("song-info").scrollBy(0, -100)
+    }
+    if (keyMatch(e, {"key": "F11"})) {
+        // TODO fullscreen
+    }
+    if (keyMatch(e, {"key": "F12"})) {
+        // TODO toggle debugger and remove it from default startup
     }
 }
 

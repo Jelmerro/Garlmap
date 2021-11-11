@@ -20,11 +20,13 @@
 const glob = require("glob")
 const path = require("path")
 const nm = require("music-metadata")
+const {Client} = require("genius-lyrics")
+const genius = new Client()
 
 let songs = []
 let failures = []
 
-const processFile = async(file, total) => {
+const processFile = async (file, total) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     try {
         const details = await nm.parseFile(file, {"skipCovers": true})
@@ -53,7 +55,7 @@ const scanner = folder => {
     document.getElementById("status-folder").style.color = "var(--blue)"
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
-    glob(path.join(folder, "**/*.mp3"), async(_e, files) => {
+    glob(path.join(folder, "**/*.mp3"), async (_e, files) => {
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--blue)"
         for (const file of files) {
@@ -99,4 +101,34 @@ const coverArt = async p => {
     }
 }
 
-module.exports = {scanner, query, allSongs, randomSong, songForPath, coverArt}
+const fetchLyrics = async (current, remember = false) => {
+    if (remember) {
+        // TODO settings.set etc.
+    }
+    if (current.lyrics) {
+        document.getElementById("song-info").textContent = current.lyrics
+        return
+    }
+    const results = await genius.songs.search(`${current.title} ${current.artist}`)
+    const song = results.find(
+        s => (s.title.toLowerCase().includes(current.title.toLowerCase())
+            || current.title.toLowerCase().includes(s.title.toLowerCase()))
+            && s.artist.name.toLowerCase().includes(current.artist.toLowerCase()))
+    if (song) {
+        const lyrics = await song.lyrics()
+        current.lyrics = lyrics
+        document.getElementById("song-info").textContent = lyrics
+    } else {
+        console.warn("No matched song found, this might be a bug", results)
+    }
+}
+
+module.exports = {
+    scanner,
+    query,
+    allSongs,
+    randomSong,
+    songForPath,
+    coverArt,
+    fetchLyrics
+}

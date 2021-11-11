@@ -151,4 +151,4 @@ const queue = async file => {
     await mpv.append(file)
 }
 
-module.exports = {init, seek, pause, load, queue, updatePlayButton}
+module.exports = {isAlive, init, seek, pause, load, queue, updatePlayButton}

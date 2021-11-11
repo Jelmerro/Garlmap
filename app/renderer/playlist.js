@@ -125,6 +125,17 @@ const displaySong = async song => {
     navigator.mediaSession.metadata = new MediaMetadata({
         ...song, "artwork": [{"src": URL.createObjectURL(blob)}]
     })
+    // Display lyrics if cached or configured to always show
+    if (song.lyrics) {
+        document.getElementById("song-info").textContent = song.lyrics
+    } else if ("feature" === "disabled") {
+        //TODO settings.get("alwaysFetchLyrics") === true
+        const {fetchLyrics} = require("./songs")
+        fetchLyrics(song)
+    } else {
+        const {resetWelcome} = require("./util")
+        resetWelcome()
+    }
 }
 
 const playFromPlaylist = async(switchNow = true) => {

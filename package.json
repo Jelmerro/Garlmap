@@ -23,13 +23,14 @@
     "electron-builder": "22.14.6",
     "eslint": "8.2.0"
   },
-  "browserslist": [
-    "last 2 Chrome versions"
-  ],
   "dependencies": {
+    "genius-lyrics": "4.3.4",
     "glob": "7.2.0",
     "music-metadata": "7.11.4",
     "node-mpv": "2.0.0-beta.2",
     "rimraf": "3.0.2"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions"
+  ]
 }

@@ -26,6 +26,8 @@
     --yellow: #ffa;
     --red: #faa;
     --blue: #aaf;
+    --scrollbar-bg: #444;
+    --scrollbar-thumb: #666;
 }
 
 
@@ -66,7 +68,8 @@ img {filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
 
 
 /* info column */
-#song-cover {width: 100%;height: 33vh;object-fit: contain;/*background: var(--accent);*/}
+#song-cover {width: 100%;height: 33vh;object-fit: contain;flex: none;/*background: var(--accent);*/}
+#song-info {white-space: pre-line;overflow: auto;}
 
 /* status line */
 #status-line {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
