@@ -84,7 +84,7 @@ which will automatically be used if the playlist is done.
 Songs will automatically be added to the playlist based on the fallback rule.
 
 TODO explain how rules work`
-    .split("\n").map(l => l || "\n\n").join(" ")
+        .split("\n").map(l => l || "\n\n").join(" ")
 }
 
 module.exports = {queryMatch, keyMatch, formatTime, resetWelcome}

@@ -26,7 +26,7 @@ const genius = new Client()
 let songs = []
 let failures = []
 
-const processFile = async (file, total) => {
+const processFile = async(file, total) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     try {
         const details = await nm.parseFile(file, {"skipCovers": true})
@@ -55,7 +55,7 @@ const scanner = folder => {
     document.getElementById("status-folder").style.color = "var(--blue)"
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
-    glob(path.join(folder, "**/*.mp3"), async (_e, files) => {
+    glob(path.join(folder, "**/*.mp3"), async(_e, files) => {
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--blue)"
         for (const file of files) {
@@ -77,8 +77,51 @@ const query = search => {
     if (!search.trim()) {
         return []
     }
-    // TODO query logic
-    return songs.filter(song => true)
+    const filters = search.split(/(?= \w+:)/g).map(p => ({
+        "name": p.trim().split(":")[0], "value": p.trim().split(":")[1]
+    }))
+    const skipSong = ["order", "count"]
+    let filtered = songs.filter(s => {
+        for (const filter of filters.filter(f => !skipSong.includes(f.name))) {
+            if (filter.name in s && !s[filter.name]?.match(filter.value)) {
+                return false
+            }
+        }
+        return true
+    })
+    const order = filters.find(f => f.name === "order")?.value
+    filtered.sort((a, b) => {
+        if (order === "disk") {
+            return 0
+        } if (order === "alpha") {
+            // TODO
+            return 0
+        } if (order === "albumshuffle") {
+            if (b.album && a.album && b.album === a.album) {
+                if (b.disc && a.disc) {
+                    if (b.disc === a.disc) {
+                        return a.track - b.track
+                    }
+                    return a.disc - b.disc
+                }
+                return a.track - b.track
+            }
+            // TODO figure out a way to sort albums randomly,
+            // without spreading out songs over the playlist
+            return 0
+        }
+        // Do default shuffle as default
+        return Math.random() - 0.5
+    })
+    const requiresNewRule = ["disk", "alpha", "albumshuffle"].includes(order)
+    const limitStr = filters.find(f => f.name === "limit")?.value
+    if (limitStr) {
+        const limit = Number(limitStr)
+        if (!isNaN(limit)) {
+            filtered = filtered.slice(0, limit)
+        }
+    }
+    return {"songs": filtered, requiresNewRule, "paths": filtered.map(s => s.path)}
 }
 
 const allSongs = () => songs

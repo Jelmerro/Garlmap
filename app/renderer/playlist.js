@@ -20,25 +20,30 @@
 const playlist = []
 let playlistIndex = 0
 let pathIndex = 0
-const fallbackRule = null // TODO
+const fallbackRule = "order:shuffle"
 let fallbackSong = null
 
 const currentAndNext = () => {
-    const {randomSong, songForPath} = require("./songs")
+    const {query, songForPath} = require("./songs")
     let current = songForPath(playlist[playlistIndex]?.paths[pathIndex])
     if (!current) {
-        current = fallbackSong || randomSong()
+        const {paths} = query(fallbackRule)
+        current = fallbackSong || songForPath(paths[0])
         if (!current) {
             return {}
         }
-        playlist.push({"paths": [current.path], "source": "auto"})
+        playlist.push({paths, "source": "auto"})
         playlistIndex = playlist.length - 1
         pathIndex = 0
     }
     let next = songForPath(playlist[playlistIndex]?.paths[pathIndex + 1]
         || playlist[playlistIndex + 1]?.paths[0])
     if (!next) {
-        next = randomSong()
+        const {paths, requiresNewRule} = query(fallbackRule)
+        next = songForPath(paths[0])
+        if (requiresNewRule) {
+            playlist.push({paths, "source": "auto"})
+        }
         fallbackSong = next
     }
     return {current, next}
@@ -53,7 +58,7 @@ const decrement = async() => {
     } else {
         return
     }
-    playFromPlaylist()
+    await playFromPlaylist()
 }
 
 const increment = async(user = true) => {
@@ -65,7 +70,7 @@ const increment = async(user = true) => {
     } else {
         return
     }
-    playFromPlaylist(user)
+    await playFromPlaylist(user)
 }
 
 const displaySong = async song => {
@@ -129,7 +134,7 @@ const displaySong = async song => {
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
     } else if ("feature" === "disabled") {
-        //TODO settings.get("alwaysFetchLyrics") === true
+        // TODO settings.get("alwaysFetchLyrics") === true
         const {fetchLyrics} = require("./songs")
         fetchLyrics(song)
     } else {

@@ -42,8 +42,10 @@ const handleKeyboard = e => {
         e.preventDefault()
     }
     if (queryMatch(e, "#rule-search")) {
+        const {query} = require("./songs")
         const search = document.getElementById("rule-search").value
         console.log(search)
+        console.log(query(search))
     }
     if (document.getElementById("status-current").textContent !== "Ready") {
         return
@@ -58,7 +60,6 @@ const handleKeyboard = e => {
         }
     }
     if (keyMatch(e, {"key": "F1"})) {
-        const {resetWelcome} = require("./util")
         resetWelcome()
     }
     if (keyMatch(e, {"key": "F2"})) {
