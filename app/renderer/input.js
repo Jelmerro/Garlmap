@@ -17,6 +17,7 @@
 */
 "use strict"
 
+const {ipcRenderer} = require("electron")
 const {keyMatch, queryMatch, resetWelcome} = require("./util")
 
 const init = () => {
@@ -49,7 +50,12 @@ const handleKeyboard = e => {
     }
     if (keyMatch(e, {"key": "o", "ctrl": true})) {
         const {scanner} = require("./songs")
-        setTimeout(() => scanner("/mnt/HDD/Music/Weezer/"), 1)
+        const folder = ipcRenderer.sendSync("dialog-dir", {
+            "title": "Open a folder", "properties": ["openDirectory"]
+        })?.[0]
+        if (folder) {
+            setTimeout(() => scanner(folder), 1)
+        }
     }
     if (keyMatch(e, {"key": "F1"})) {
         const {resetWelcome} = require("./util")
@@ -77,12 +83,12 @@ const handleKeyboard = e => {
         // TODO stop after this track
     }
     if (keyMatch(e, {"key": "F7"})) {
-        const {prev} = require("./player")
-        prev()
+        const {decrement} = require("./playlist")
+        decrement()
     }
     if (keyMatch(e, {"key": "F8"})) {
-        const {next} = require("./player")
-        next()
+        const {increment} = require("./playlist")
+        increment()
     }
     if (keyMatch(e, {"key": "F9"})) {
         document.getElementById("song-info").scrollBy(0, 100)
@@ -94,7 +100,7 @@ const handleKeyboard = e => {
         // TODO fullscreen
     }
     if (keyMatch(e, {"key": "F12"})) {
-        // TODO toggle debugger and remove it from default startup
+        ipcRenderer.invoke("toggle-devtools")
     }
 }
 
@@ -109,7 +115,7 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#next")) {
         const {increment} = require("./playlist")
-        increment(true)
+        increment()
     }
     if (queryMatch(e, "#progress-container")) {
         const {seek} = require("./player")

@@ -101,10 +101,7 @@ const coverArt = async p => {
     }
 }
 
-const fetchLyrics = async (current, remember = false) => {
-    if (remember) {
-        // TODO settings.set etc.
-    }
+const fetchLyrics = async current => {
     if (current.lyrics) {
         document.getElementById("song-info").textContent = current.lyrics
         return

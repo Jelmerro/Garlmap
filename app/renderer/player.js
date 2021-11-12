@@ -30,7 +30,7 @@ const init = () => {
             console.log(`${info.property}: ${info.value}`)
             if (info.property === "playlist-pos" && info.value === 1) {
                 const {increment} = require("./playlist")
-                await increment()
+                await increment(false)
             }
         })
         mpv.on("started", updatePlayButton)
@@ -74,7 +74,7 @@ const init = () => {
     })
     ipcRenderer.on("media-next", () => {
         const {increment} = require("./playlist")
-        increment(true)
+        increment()
     })
     ipcRenderer.on("media-stop", () => {
         // TODO Toggle stop after this track
@@ -98,7 +98,7 @@ const init = () => {
     })
     navigator.mediaSession.setActionHandler("nexttrack", () => {
         const {increment} = require("./playlist")
-        increment(true)
+        increment()
     })
 }
 

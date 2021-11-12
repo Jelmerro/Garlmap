@@ -16,7 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 const {
-    app, BrowserWindow, systemPreferences, globalShortcut
+    app, BrowserWindow, systemPreferences, globalShortcut, ipcMain, dialog
 } = require("electron")
 const path = require("path")
 
@@ -48,9 +48,11 @@ app.on("ready", () => {
         mainWindow.webContents.on("will-redirect", e => e.preventDefault())
         registerMediaKeys()
     })
-    // TODO future init
     mainWindow.show()
-    mainWindow.webContents.openDevTools()
+    // TODO handle CLI args:
+    // --cache <ALL,song,lyrics,none>
+    // --folder <folder>
+    // maybe more?
 })
 
 const registerMediaKeys = () => {
@@ -68,3 +70,8 @@ const registerMediaKeys = () => {
         mainWindow.webContents.send("media-stop")
     })
 }
+
+ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
+ipcMain.on("dialog-dir", (e, options) => {
+    e.returnValue = dialog.showOpenDialogSync(mainWindow, options)
+})

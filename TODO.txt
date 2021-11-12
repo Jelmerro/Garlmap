@@ -1,5 +1,4 @@
 main:
-- folder selector on Ctrl-O instead of hardcoded
 - search songs and create rules
 - generate and display playlist
 - delete rules/songs from the playlist

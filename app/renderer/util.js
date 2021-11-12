@@ -82,7 +82,9 @@ but rules are the core of what makes powers the playlist of Garlmap.
 There is one special rule at the bottom displayed in purple,
 which will automatically be used if the playlist is done.
 Songs will automatically be added to the playlist based on the fallback rule.
-All possible rule options are displayed at the bottom of the rules column.`
+
+TODO explain how rules work`
+    .split("\n").map(l => l || "\n\n").join(" ")
 }
 
 module.exports = {queryMatch, keyMatch, formatTime, resetWelcome}

@@ -56,7 +56,7 @@ const decrement = async() => {
     playFromPlaylist()
 }
 
-const increment = async(user = false) => {
+const increment = async(user = true) => {
     if (playlist[playlistIndex]?.paths.length > pathIndex + 1) {
         pathIndex += 1
     } else if (playlist.length > playlistIndex + 1 || fallbackSong) {
