@@ -35,7 +35,6 @@
 * {margin: 0;padding: 0}
 body {color: var(--fg);font: 14px "DejaVu Sans Mono", "Courier", monospace;}
 body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
-img {filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
 
@@ -51,7 +50,7 @@ img {filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
 /* status bar */
 #player-status {display: flex;margin-bottom: .5em;}
 #player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
-#player-status .button img {height: 1.5em;width: 1.5em;margin: auto;}
+#player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
 #current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
 #current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
 #current-song .title {margin-right: .5em;}
@@ -68,8 +67,8 @@ img {filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
 
 
 /* info column */
-#song-cover {width: 100%;height: 33vh;object-fit: contain;flex: none;/*background: var(--accent);*/}
-#song-info {white-space: pre-line;overflow: auto;overflow-wrap: anywhere;}
+#song-cover {display: none;width: 100%;height: 33vh;object-fit: contain;flex: none;}
+#song-info {white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;}
 
 /* status line */
 #status-line {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}

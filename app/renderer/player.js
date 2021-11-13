@@ -56,13 +56,9 @@ const init = () => {
             }
         }, 100)
         // TODO
-        // ACTIONS:
         // mute(set) - if not set, toggle
         // volume(vol)
-        // INFO:
         // isMuted()
-        // FINALLY:
-        // mpv.quit()
     }).catch(e => {
         console.log(e)
     })
@@ -78,6 +74,14 @@ const init = () => {
     })
     ipcRenderer.on("media-stop", () => {
         // TODO Toggle stop after this track
+    })
+    ipcRenderer.on("window-close", async() => {
+        if (isAlive()) {
+            await mpv.quit()
+        } else {
+            await mpv.command("quit")
+        }
+        ipcRenderer.send("destroy-window")
     })
     navigator.mediaSession.setActionHandler("play", pause)
     navigator.mediaSession.setActionHandler("pause", pause)

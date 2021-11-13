@@ -18,6 +18,7 @@
 "use strict"
 
 window.addEventListener("DOMContentLoaded", () => {
+    require("./settings").init()
     require("./player").init()
     require("./input").init()
 })

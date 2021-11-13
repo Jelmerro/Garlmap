@@ -55,7 +55,8 @@ const scanner = folder => {
     document.getElementById("status-folder").style.color = "var(--blue)"
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
-    glob(path.join(folder, "**/*.mp3"), async(_e, files) => {
+    const escapedFolder = folder.replace(/\[/g, "\\[")
+    glob(path.join(escapedFolder, "**/*.mp3"), async(_e, files) => {
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--blue)"
         for (const file of files) {
@@ -75,7 +76,7 @@ const scanner = folder => {
 
 const query = search => {
     if (!search.trim()) {
-        return []
+        return {"songs": [], "paths": []}
     }
     const filters = search.split(/(?= \w+:)/g).map(p => ({
         "name": p.trim().split(":")[0], "value": p.trim().split(":")[1]
@@ -90,13 +91,22 @@ const query = search => {
         return true
     })
     const order = filters.find(f => f.name === "order")?.value
+    if (order.endsWith("shuffle")) {
+        filtered.sort(() => Math.random() - 0.5)
+    }
+    const albums = Array.from(new Set(filtered.map(s => s.album))).sort(
+        () => Math.random() - 0.5)
     filtered.sort((a, b) => {
-        if (order === "disk") {
+        if (order === "alpha") {
+            if (a.title > b.title) {
+                return 1
+            }
+            if (a.title < b.title) {
+                return -1
+            }
             return 0
-        } if (order === "alpha") {
-            // TODO
-            return 0
-        } if (order === "albumshuffle") {
+        }
+        if (order === "albumshuffle") {
             if (b.album && a.album && b.album === a.album) {
                 if (b.disc && a.disc) {
                     if (b.disc === a.disc) {
@@ -106,12 +116,9 @@ const query = search => {
                 }
                 return a.track - b.track
             }
-            // TODO figure out a way to sort albums randomly,
-            // without spreading out songs over the playlist
-            return 0
+            return albums.indexOf(a.album) - albums.indexOf(b.album)
         }
-        // Do default shuffle as default
-        return Math.random() - 0.5
+        return 0
     })
     const requiresNewRule = ["disk", "alpha", "albumshuffle"].includes(order)
     const limitStr = filters.find(f => f.name === "limit")?.value
@@ -144,22 +151,34 @@ const coverArt = async p => {
     }
 }
 
-const fetchLyrics = async current => {
-    if (current.lyrics) {
-        document.getElementById("song-info").textContent = current.lyrics
+const fetchLyrics = async req => {
+    if (req.lyrics) {
+        document.getElementById("song-info").textContent = req.lyrics
         return
     }
-    const results = await genius.songs.search(`${current.title} ${current.artist}`)
-    const song = results.find(
-        s => (s.title.toLowerCase().includes(current.title.toLowerCase())
-            || current.title.toLowerCase().includes(s.title.toLowerCase()))
-            && s.artist.name.toLowerCase().includes(current.artist.toLowerCase()))
-    if (song) {
-        const lyrics = await song.lyrics()
-        current.lyrics = lyrics
-        document.getElementById("song-info").textContent = lyrics
-    } else {
-        console.warn("No matched song found, this might be a bug", results)
+    const low = s => s.toLowerCase()
+    try {
+        const [mainArtist] = low(req.artist)
+            .split(/ ?\(?feat. /g)[0].split(/ ?\(?ft. /g)[0].split(" & ")
+        const results = await genius.songs.search(`${req.title} ${mainArtist}`)
+        const song = results.find(
+            s => (low(s.title).includes(low(req.title))
+                || low(req.title).includes(low(s.title)))
+                && low(s.artist.name).includes(mainArtist))
+        if (song) {
+            const lyrics = await song.lyrics()
+            req.lyrics = lyrics
+            document.getElementById("song-info").textContent = lyrics
+        } else {
+            console.warn("No matched song found, this might be a bug", results)
+            document.getElementById("status-scan").textContent
+                = `Failed to find matching song lyrics in results of Genius`
+        }
+    } catch (e) {
+        console.warn(e)
+        document.getElementById("status-scan").textContent
+            = `Failed to fetch lyrics from Genius`
+        document.getElementById("status-scan").style.color = "var(--red)"
     }
 }
 

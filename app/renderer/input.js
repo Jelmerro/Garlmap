@@ -44,8 +44,9 @@ const handleKeyboard = e => {
     if (queryMatch(e, "#rule-search")) {
         const {query} = require("./songs")
         const search = document.getElementById("rule-search").value
-        console.log(search)
-        console.log(query(search))
+        const results = query(search)
+        console.log(results)
+        document.getElementById("rule-results").textContent = JSON.stringify(results, null, 3)
     }
     if (document.getElementById("status-current").textContent !== "Ready") {
         return

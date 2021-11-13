@@ -66,7 +66,8 @@ F12 will open the development tools where you can find any runtime errors.
 It's required to load a folder for Garlmap to play songs.
 It will index and cache the info of them, so you can search it easily.
 You can load a folder with Ctrl-O, by passing it on startup,
-or by setting it using ENV vars as "GARLMAP_MUSIC_DIR".
+or by setting it using ENV vars as "GARLMAP_FOLDER".
+If you just have a single music folder, I would recommend a GARLMAP_FOLDER env.
 You can also set "GARLMAP_AUTO_LYRICS=true" to automatically download lyrics,
 just as there are startup arguments for it (see --help) for details.
 
@@ -78,13 +79,21 @@ this rule which will play the entire Pinkerton album by Weezer.
 You can also open the rule and view the individual tracks.
 The rules can be added at the end or immediately after the current.
 The list of rules in the center can also consist of simple individual tracks,
-but rules are the core of what makes powers the playlist of Garlmap.
+but rules are the core of what gives Garlmap superpowers in the playlist.
 There is one special rule at the bottom displayed in purple,
 which will automatically be used if the playlist is done.
 Songs will automatically be added to the playlist based on the fallback rule.
 
-TODO explain how rules work`
-        .split("\n").map(l => l || "\n\n").join(" ")
+TODO explain how rules work
+
+All song data and lyrics are cached for the next startup in a "cache" file,
+either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.
+You can control if the cached should be read with --cache on startup,
+or the GARLMAP_CACHE ENV var to one of: all, songs, lyrics, none.
+Obviously you are free to delete the cache at any time if you want to,
+just know that cache greatly speeds up parsing of large folders,
+and greatly reduces the amount of requests to Genius if you want auto lyrics.
+`.split("\n").map(l => l || "\n\n").join(" ")
 }
 
 module.exports = {queryMatch, keyMatch, formatTime, resetWelcome}

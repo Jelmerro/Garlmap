@@ -115,26 +115,25 @@ const displaySong = async song => {
     const {updatePlayButton} = require("./player")
     updatePlayButton()
     // MediaSession details
+    navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     const {coverArt} = require("./songs")
     const cover = await coverArt(song.path)
     if (cover) {
         document.getElementById("song-cover").src = cover
-        document.getElementById("song-cover").style.filter = "none"
+        document.getElementById("song-cover").style.display = "initial"
+        // #bug Cover does not work due to Electron bug
+        const resp = await fetch(cover)
+        const blob = await resp.blob()
+        navigator.mediaSession.metadata.artwork = [{"src": URL.createObjectURL(blob)}]
     } else {
-        document.getElementById("song-cover").src = "../img/disc.png"
-        document.getElementById("song-cover").style.filter = null
+        document.getElementById("song-cover").src = null
+        document.getElementById("song-cover").style.display = "none"
     }
-    // #bug Cover does not work due to Electron bug
-    const resp = await fetch(cover)
-    const blob = await resp.blob()
-    navigator.mediaSession.metadata = new MediaMetadata({
-        ...song, "artwork": [{"src": URL.createObjectURL(blob)}]
-    })
     // Display lyrics if cached or configured to always show
+    const {shouldAutoFetchLyrics} = require("./settings")
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
-    } else if ("feature" === "disabled") {
-        // TODO settings.get("alwaysFetchLyrics") === true
+    } else if (shouldAutoFetchLyrics()) {
         const {fetchLyrics} = require("./songs")
         fetchLyrics(song)
     } else {
@@ -149,6 +148,7 @@ const playFromPlaylist = async(switchNow = true) => {
     if (current) {
         if (switchNow) {
             await load(current.path)
+            document.getElementById("status-scan").textContent = ""
         }
         await queue(next.path)
         await displaySong(current)

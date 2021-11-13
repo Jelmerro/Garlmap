@@ -16,3 +16,22 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 "use strict"
+
+const {ipcRenderer} = require("electron")
+
+let autoLyrics = false
+
+const init = () => {
+    ipcRenderer.on("config", (_, config) => {
+        console.log(config)
+        if (config.folder) {
+            const {scanner} = require("./songs")
+            setTimeout(() => scanner(config.folder), 1)
+        }
+        autoLyrics = !!config.autoLyrics
+    })
+}
+
+const shouldAutoFetchLyrics = () => autoLyrics
+
+module.exports = {init, shouldAutoFetchLyrics}
