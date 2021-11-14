@@ -45,6 +45,7 @@ const handleKeyboard = e => {
         const {query} = require("./songs")
         const search = document.getElementById("rule-search").value
         const results = query(search)
+        // TODO display results and allow appending
         console.log(results)
         document.getElementById("rule-results").textContent = JSON.stringify(results, null, 3)
     }
@@ -122,7 +123,8 @@ const handleMouse = e => {
     if (queryMatch(e, "#progress-container")) {
         const {seek} = require("./player")
         const clickPercent = (event, element) => {
-            const x = event.pageX - element.offsetLeft - element.offsetParent.offsetLeft
+            const x = event.pageX - element.offsetLeft
+                - element.offsetParent.offsetLeft
             const percentage = x / element.getBoundingClientRect().width
             if (percentage < 0.01) {
                 return 0

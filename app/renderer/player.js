@@ -116,7 +116,9 @@ const updatePlayButton = async() => {
         // #bug Workaround for (you guessed it) another Electron bug
         try {
             document.querySelector("audio").pause()
-        } catch {}
+        } catch {
+            // There is no fallback for workarounds
+        }
     } else {
         document.getElementById("pause").querySelector("img").src
             = "../img/pause.png"
@@ -124,7 +126,9 @@ const updatePlayButton = async() => {
         // #bug Workaround for (you guessed it) another Electron bug
         try {
             document.querySelector("audio").play()
-        } catch {}
+        } catch {
+            // There is no fallback for workarounds
+        }
     }
 }
 

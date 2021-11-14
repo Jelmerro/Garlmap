@@ -23,6 +23,12 @@ let pathIndex = 0
 const fallbackRule = "order:shuffle"
 let fallbackSong = null
 
+const generatePlaylistView = () => {
+    // TODO make a playlist view that shows titles, rules, current and rule type
+    document.getElementById("main-playlist").textContent = JSON.stringify(playlist, null, 3)
+    document.getElementById("fallback-rule").textContent = fallbackRule
+}
+
 const currentAndNext = () => {
     const {query, songForPath} = require("./songs")
     let current = songForPath(playlist[playlistIndex]?.paths[pathIndex])
@@ -106,7 +112,9 @@ const displaySong = async song => {
     // #bug Workaround to allow mediaSession to work with Electron, sigh
     try {
         document.body.removeChild(document.querySelector("audio"))
-    } catch {}
+    } catch {
+        // There is no fallback for workarounds
+    }
     const audio = document.createElement("audio")
     audio.src = "../static/empty.mp3"
     document.body.appendChild(audio)
@@ -124,7 +132,9 @@ const displaySong = async song => {
         // #bug Cover does not work due to Electron bug
         const resp = await fetch(cover)
         const blob = await resp.blob()
-        navigator.mediaSession.metadata.artwork = [{"src": URL.createObjectURL(blob)}]
+        navigator.mediaSession.metadata.artwork = [
+            {"src": URL.createObjectURL(blob)}
+        ]
     } else {
         document.getElementById("song-cover").src = null
         document.getElementById("song-cover").style.display = "none"
@@ -152,11 +162,13 @@ const playFromPlaylist = async(switchNow = true) => {
         }
         await queue(next.path)
         await displaySong(current)
+        generatePlaylistView()
     }
 }
 
 const append = rule => {
     playlist.push(rule)
+    // TODO add list of paths to the rule upon appending
     playFromPlaylist(false)
 }
 

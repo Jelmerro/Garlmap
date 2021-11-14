@@ -48,10 +48,11 @@ const processFile = async(file, total) => {
     } catch {
         failures.push(file)
     }
-    document.getElementById("status-files").textContent = `${songs.length}/${total} songs`
+    document.getElementById("status-files").textContent
+        = `${songs.length}/${total} songs`
 }
 
-const scanner = async folder => {
+const scanner = folder => {
     songs = []
     let cachedSongs = []
     if (cache !== "none") {
@@ -82,9 +83,11 @@ const scanner = async folder => {
         }
         document.getElementById("status-current").textContent = `Ready`
         document.getElementById("status-current").style.color = "var(--green)"
-        document.getElementById("status-files").textContent = `${songs.length} songs`
+        document.getElementById("status-files").textContent
+            = `${songs.length} songs`
         if (failures.length) {
-            document.getElementById("status-scan").textContent = `${failures.length} failures`
+            document.getElementById("status-scan").textContent
+                = `${failures.length} failures`
             document.getElementById("status-scan").style.color = "var(--red)"
         } else {
             document.getElementById("status-scan").textContent = ""
@@ -162,7 +165,9 @@ const query = search => {
             filtered = filtered.slice(0, limit)
         }
     }
-    return {"songs": filtered, requiresNewRule, "paths": filtered.map(s => s.path)}
+    return {
+        "songs": filtered, requiresNewRule, "paths": filtered.map(s => s.path)
+    }
 }
 
 const allSongs = () => songs
