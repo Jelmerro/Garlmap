@@ -137,7 +137,7 @@ const displaySong = async song => {
         const {fetchLyrics} = require("./songs")
         fetchLyrics(song)
     } else {
-        const {resetWelcome} = require("./util")
+        const {resetWelcome} = require("../util")
         resetWelcome()
     }
 }

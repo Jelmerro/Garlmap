@@ -20,19 +20,10 @@
 const {
     app, BrowserWindow, systemPreferences, globalShortcut, ipcMain, dialog
 } = require("electron")
-const {join, basename} = require("path")
-const {statSync} = require("fs")
-
-const isDirectory = loc => {
-    try {
-        return statSync(loc).isDirectory()
-    } catch {
-        return false
-    }
-}
+const {joinPath, basePath, isDirectory} = require("./util")
 
 const version = process.env.npm_package_version || app.getVersion()
-const configDir = join(app.getPath("appData"), "Garlmap")
+const configDir = joinPath(app.getPath("appData"), "Garlmap")
 app.setPath("appData", configDir)
 app.setPath("userData", configDir)
 let mainWindow = null
@@ -46,7 +37,7 @@ app.on("ready", () => {
         "webPreferences": {
             "contextIsolation": false,
             "disableBlinkFeatures": "Auxclick",
-            "preload": join(__dirname, "renderer/index.js"),
+            "preload": joinPath(__dirname, "renderer/index.js"),
             "sandbox": false
         },
         "width": 600
@@ -54,7 +45,7 @@ app.on("ready", () => {
     mainWindow = new BrowserWindow(windowData)
     mainWindow.removeMenu()
     mainWindow.setMinimumSize(500, 500)
-    mainWindow.loadURL(`file://${join(__dirname, "renderer/index.html")}`)
+    mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
     mainWindow.on("close", e => {
         e.preventDefault()
         mainWindow.webContents.send("window-close")
@@ -88,7 +79,7 @@ const registerMediaKeys = () => {
 
 const processStartupArgs = () => {
     let args = process.argv.slice(1)
-    const exec = basename(process.argv[0])
+    const exec = basePath(process.argv[0])
     if (exec === "electron" || process.defaultApp && exec !== "garlmap") {
         args = args.slice(1)
     }
@@ -131,7 +122,9 @@ const processStartupArgs = () => {
         console.warn(`Music dir '${folder}' could not be found`)
         app.exit(1)
     }
-    mainWindow.webContents.send("config", {version, folder, autoLyrics, cache})
+    mainWindow.webContents.send("config", {
+        version, folder, autoLyrics, cache, configDir
+    })
 }
 
 const outputHelp = () => {

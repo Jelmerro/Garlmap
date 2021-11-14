@@ -2,4 +2,3 @@
 - generate and display playlist
 - delete rules/songs from the playlist
 - tons of keyboard shortcuts and section selector
-- caching for lyrics and parsed song info

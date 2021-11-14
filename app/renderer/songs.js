@@ -22,7 +22,10 @@ const path = require("path")
 const nm = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
+const {readJSON, writeJSON, joinPath} = require("../util")
 
+let configDir = null
+let cache = "all"
 let songs = []
 let failures = []
 
@@ -48,8 +51,18 @@ const processFile = async(file, total) => {
     document.getElementById("status-files").textContent = `${songs.length}/${total} songs`
 }
 
-const scanner = folder => {
+const scanner = async folder => {
     songs = []
+    let cachedSongs = []
+    if (cache !== "none") {
+        cachedSongs = readJSON(joinPath(configDir, "cache")) || []
+        if (cache === "songs") {
+            cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
+        }
+        if (cache === "lyrics") {
+            cachedSongs = cachedSongs.map(s => ({"lyrics": s.lyrics}))
+        }
+    }
     failures = []
     document.getElementById("status-folder").textContent = folder
     document.getElementById("status-folder").style.color = "var(--blue)"
@@ -57,9 +70,14 @@ const scanner = folder => {
     document.getElementById("status-scan").style.color = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     glob(path.join(escapedFolder, "**/*.mp3"), async(_e, files) => {
+        songs = cachedSongs.filter(s => files.includes(s.path))
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--blue)"
+        const useCache = ["all", "songs"].includes(cache)
         for (const file of files) {
+            if (useCache && songs.find(s => s.path === file)) {
+                continue
+            }
             await processFile(file, files.length)
         }
         document.getElementById("status-current").textContent = `Ready`
@@ -71,7 +89,23 @@ const scanner = folder => {
         } else {
             document.getElementById("status-scan").textContent = ""
         }
+        updateCache()
     })
+}
+
+const updateCache = () => {
+    setTimeout(() => {
+        const cachedSongs = readJSON(joinPath(configDir, "cache")) || []
+        songs.forEach(song => {
+            const existing = cachedSongs.find(s => s.path === song.path)
+            if (existing) {
+                cachedSongs[cachedSongs.indexOf(existing)] = song
+            } else {
+                cachedSongs.push(song)
+            }
+        })
+        writeJSON(joinPath(configDir, "cache"), cachedSongs)
+    }, 1)
 }
 
 const query = search => {
@@ -167,8 +201,9 @@ const fetchLyrics = async req => {
                 && low(s.artist.name).includes(mainArtist))
         if (song) {
             const lyrics = await song.lyrics()
-            req.lyrics = lyrics
+            songs.find(s => s.path === req.path).lyrics = lyrics
             document.getElementById("song-info").textContent = lyrics
+            updateCache()
         } else {
             console.warn("No matched song found, this might be a bug", results)
             document.getElementById("status-scan").textContent
@@ -182,6 +217,11 @@ const fetchLyrics = async req => {
     }
 }
 
+const setCachePolicy = (dir, policy) => {
+    configDir = dir
+    cache = policy
+}
+
 module.exports = {
     scanner,
     query,
@@ -189,5 +229,6 @@ module.exports = {
     randomSong,
     songForPath,
     coverArt,
-    fetchLyrics
+    fetchLyrics,
+    setCachePolicy
 }

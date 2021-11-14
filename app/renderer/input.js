@@ -18,7 +18,7 @@
 "use strict"
 
 const {ipcRenderer} = require("electron")
-const {keyMatch, queryMatch, resetWelcome} = require("./util")
+const {keyMatch, queryMatch, resetWelcome} = require("../util")
 
 const init = () => {
     window.addEventListener("keydown", handleKeyboard)

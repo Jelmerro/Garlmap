@@ -96,4 +96,52 @@ and greatly reduces the amount of requests to Genius if you want auto lyrics.
 `.split("\n").map(l => l || "\n\n").join(" ")
 }
 
-module.exports = {queryMatch, keyMatch, formatTime, resetWelcome}
+const isDirectory = loc => {
+    const {statSync} = require("fs")
+    try {
+        return statSync(loc).isDirectory()
+    } catch {
+        return false
+    }
+}
+
+const joinPath = (...args) => {
+    const {join, resolve} = require("path")
+    return resolve(join(...args))
+}
+
+const basePath = (...args) => {
+    const {basename} = require("path")
+    return basename(...args)
+}
+
+const readJSON = loc => {
+    const {readFileSync} = require("fs")
+    try {
+        return JSON.parse(readFileSync(loc).toString())
+    } catch {
+        return null
+    }
+}
+
+const writeJSON = (loc, data) => {
+    const {writeFileSync} = require("fs")
+    try {
+        writeFileSync(loc, JSON.stringify(data))
+        return true
+    } catch {
+        return false
+    }
+}
+
+module.exports = {
+    queryMatch,
+    keyMatch,
+    formatTime,
+    resetWelcome,
+    isDirectory,
+    joinPath,
+    basePath,
+    readJSON,
+    writeJSON
+}

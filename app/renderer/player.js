@@ -18,7 +18,7 @@
 "use strict"
 
 const mpvAPI = require("node-mpv")
-const {formatTime} = require("./util")
+const {formatTime} = require("../util")
 const {ipcRenderer} = require("electron")
 
 const mpv = new mpvAPI({"audio_only": true})

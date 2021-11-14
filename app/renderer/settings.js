@@ -23,7 +23,8 @@ let autoLyrics = false
 
 const init = () => {
     ipcRenderer.on("config", (_, config) => {
-        console.log(config)
+        const {setCachePolicy} = require("./songs")
+        setCachePolicy(config.configDir, config.cache)
         if (config.folder) {
             const {scanner} = require("./songs")
             setTimeout(() => scanner(config.folder), 1)
