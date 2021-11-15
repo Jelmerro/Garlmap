@@ -4,6 +4,3 @@
 - tons of keyboard shortcuts and section selector
 - only queue what's needed for shuffle and albumshuffle, and queue per song for others
     - now it will queue all matching songs (and paths), but that's too much
-- make app single instance
-    - multi instances won't work due to node-mpv selecting the same instance for all windows
-    - this will make it possible to only load the cache ONCE, which will greatly improve speed

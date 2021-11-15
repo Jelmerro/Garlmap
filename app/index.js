@@ -28,6 +28,10 @@ app.setPath("appData", configDir)
 app.setPath("userData", configDir)
 let mainWindow = null
 app.on("ready", () => {
+    if (!app.requestSingleInstanceLock()) {
+        console.info(`Garlmap is a single instance app for performance reasons`)
+        app.exit(0)
+    }
     const windowData = {
         "closable": false,
         "frame": true,

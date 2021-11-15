@@ -26,6 +26,7 @@ const {readJSON, writeJSON, joinPath} = require("../util")
 
 let configDir = null
 let cache = "all"
+let cachedSongs = []
 let songs = []
 let failures = []
 
@@ -54,16 +55,6 @@ const processFile = async(file, total) => {
 
 const scanner = folder => {
     songs = []
-    let cachedSongs = []
-    if (cache !== "none") {
-        cachedSongs = readJSON(joinPath(configDir, "cache")) || []
-        if (cache === "songs") {
-            cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
-        }
-        if (cache === "lyrics") {
-            cachedSongs = cachedSongs.map(s => ({"lyrics": s.lyrics}))
-        }
-    }
     failures = []
     document.getElementById("status-folder").textContent = folder
     document.getElementById("status-folder").style.color = "var(--blue)"
@@ -98,7 +89,6 @@ const scanner = folder => {
 
 const updateCache = () => {
     setTimeout(() => {
-        const cachedSongs = readJSON(joinPath(configDir, "cache")) || []
         songs.forEach(song => {
             const existing = cachedSongs.find(s => s.path === song.path)
             if (existing) {
@@ -197,22 +187,30 @@ const fetchLyrics = async req => {
     }
     const low = s => s.toLowerCase()
     try {
+        document.getElementById("status-scan").textContent
+            = `Connecting to Genius to search for the right song lyrics`
+        document.getElementById("status-scan").style.color = "var(--blue)"
         const [mainArtist] = low(req.artist)
             .split(/ ?\(?feat. /g)[0].split(/ ?\(?ft. /g)[0].split(" & ")
         const results = await genius.songs.search(`${req.title} ${mainArtist}`)
-        const song = results.find(
+        let song = results.find(
             s => (low(s.title).includes(low(req.title))
                 || low(req.title).includes(low(s.title)))
                 && low(s.artist.name).includes(mainArtist))
+        if (!song && results.length === 1) {
+            [song] = results
+        }
         if (song) {
             const lyrics = await song.lyrics()
             songs.find(s => s.path === req.path).lyrics = lyrics
             document.getElementById("song-info").textContent = lyrics
+            document.getElementById("status-scan").textContent = ""
             updateCache()
         } else {
             console.warn("No matched song found, this might be a bug", results)
             document.getElementById("status-scan").textContent
                 = `Failed to find matching song lyrics in results of Genius`
+            document.getElementById("status-scan").style.color = "var(--red)"
         }
     } catch (e) {
         console.warn(e)
@@ -225,6 +223,15 @@ const fetchLyrics = async req => {
 const setCachePolicy = (dir, policy) => {
     configDir = dir
     cache = policy
+    if (cache !== "none") {
+        cachedSongs = readJSON(joinPath(configDir, "cache")) || []
+        if (cache === "songs") {
+            cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
+        }
+        if (cache === "lyrics") {
+            cachedSongs = cachedSongs.map(s => ({"lyrics": s.lyrics}))
+        }
+    }
 }
 
 module.exports = {
