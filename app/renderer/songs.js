@@ -108,12 +108,27 @@ const query = search => {
     const filters = search.split(/(?= \w+:)/g).map(p => ({
         "name": p.trim().split(":")[0], "value": p.trim().split(":")[1]
     }))
-    const skipSong = ["order", "count"]
+    let globalSearch = false
+    if (filters[0]?.value === undefined) {
+        globalSearch = filters.shift()?.name
+    }
+    const skipSong = ["order", "limit"]
     let filtered = songs.filter(s => {
         for (const filter of filters.filter(f => !skipSong.includes(f.name))) {
-            if (filter.name in s && !s[filter.name]?.match(filter.value)) {
+            if (!s[filter.name]) {
                 return false
             }
+            if (typeof s[filter.name] === "number" && filter.value.match(/\d+-\d/g)) {
+                if (s[filter.name] < Number(filter.value.split("-")[0])
+                || s[filter.name] > Number(filter.value.split("-")[1])) {
+                    return false
+                }
+            } else if (!String(s[filter.name]).match(filter.value)) {
+                return false
+            }
+        }
+        if (globalSearch) {
+            return Object.values(s).find(val => String(val).match(globalSearch))
         }
         return true
     })

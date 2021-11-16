@@ -74,25 +74,37 @@ just as there are startup arguments for it (see --help) for details.
 You can search for songs using the search section on the left.
 These can be queued in the playlist individually, or as what is called a rule.
 Rules are filters with a specific order and/or count that can queue in bulk.
-For example, "album:Pinkerton artist:Weezer" can be added to the playlist,
+For example, "album:pinkerton artist:weezer" can be added to the playlist,
 this rule which will play the entire Pinkerton album by Weezer.
-You can also open the rule and view the individual tracks.
-The rules can be added at the end or immediately after the current.
-The list of rules in the center can also consist of simple individual tracks,
-but rules are the core of what gives Garlmap superpowers in the playlist.
-There is one special rule at the bottom displayed in purple,
-which will automatically be used if the playlist is done.
-Songs will automatically be added to the playlist based on the fallback rule.
+You could also just search for "weezer pinker" or something and find it,
+but the above is much more accurate if you have a large library.
 
-TODO explain how rules work
+There are many fields that can be used to search for songs based on their tags.
+The full list is: "title", "artist", "album", "disc", "disc_total", "track",
+"track_total", "duration" and "date", but the list might be expanded later.
+You can search for anything inside a field based on regex, separated with ":".
+Even spaces are allowed: "album:dark side of the moon" is an album name search.
+Any text that is listed before any of these fields, will search in all fields.
+For the number fields, such as "date", "duration" or "track" and such,
+it's also possible to specify a range like so: "date:1960-1975".
+
+In the playlist view, you can see what is playing and based on which rule.
+You can also open the rule in the playlist and view the individual tracks.
+The rules can be added at the end or immediately after the current track.
+The playlist can also include simple individual tracks with no specific rule,
+but rules are the core of what gives Garlmap superpowers in the playlist.
+There is one special rule at the bottom displayed in purple: the fallback rule.
+Songs will automatically be added to the playlist based on this fallback rule.
 
 All song data and lyrics are cached for the next startup in a "cache" file,
 either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.
-You can control if the cached should be read with --cache on startup,
-or the GARLMAP_CACHE ENV var to one of: all, songs, lyrics, none.
+You can control if the cache should be read on startup using --cache,
+or with the GARLMAP_CACHE ENV var set to one of: all, songs, lyrics, none.
 Obviously you are free to delete the cache at any time if you want to,
 just know that cache greatly speeds up parsing of large folders,
 and greatly reduces the amount of requests to Genius if you want auto lyrics.
+Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
+but after startup there shouldn't be too many moments that freeze the app.
 `.split("\n").map(l => l || "\n\n").join(" ")
 }
 
