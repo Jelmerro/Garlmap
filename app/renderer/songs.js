@@ -103,7 +103,7 @@ const updateCache = () => {
 
 const query = search => {
     if (!search.trim()) {
-        return {"songs": [], "paths": []}
+        return []
     }
     const filters = search.split(/(?= \w+:)/g).map(p => ({
         "name": p.trim().split(":")[0], "value": p.trim().split(":")[1]
@@ -117,7 +117,7 @@ const query = search => {
         }
         return true
     })
-    const order = filters.find(f => f.name === "order")?.value
+    const order = filters.find(f => f.name === "order")?.value || "disk"
     if (order.endsWith("shuffle")) {
         filtered.sort(() => Math.random() - 0.5)
     }
@@ -147,7 +147,6 @@ const query = search => {
         }
         return 0
     })
-    const requiresNewRule = ["disk", "alpha", "albumshuffle"].includes(order)
     const limitStr = filters.find(f => f.name === "limit")?.value
     if (limitStr) {
         const limit = Number(limitStr)
@@ -155,9 +154,7 @@ const query = search => {
             filtered = filtered.slice(0, limit)
         }
     }
-    return {
-        "songs": filtered, requiresNewRule, "paths": filtered.map(s => s.path)
-    }
+    return filtered
 }
 
 const allSongs = () => songs

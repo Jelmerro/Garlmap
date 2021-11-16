@@ -1,6 +1,3 @@
 - search songs and create rules
-- generate and display playlist
 - delete rules/songs from the playlist
 - tons of keyboard shortcuts and section selector
-- only queue what's needed for shuffle and albumshuffle, and queue per song for others
-    - now it will queue all matching songs (and paths), but that's too much

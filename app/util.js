@@ -43,9 +43,9 @@ const formatTime = totalSeconds => {
         seconds = `0${seconds}`
     }
     if (hours === "00") {
-        return `&nbsp;${minutes}:${seconds}&nbsp;`
+        return `${minutes}:${seconds}`
     }
-    return `&nbsp;${hours}:${minutes}:${seconds}&nbsp;`
+    return `${hours}:${minutes}:${seconds}`
 }
 
 const resetWelcome = () => {

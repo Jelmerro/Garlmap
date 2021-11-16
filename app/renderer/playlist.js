@@ -23,32 +23,106 @@ let pathIndex = 0
 const fallbackRule = "order:shuffle"
 let fallbackSong = null
 
+const {resetWelcome, formatTime} = require("../util")
+
+const generateSongElement = (song, current) => {
+    const songContainer = document.createElement("div")
+    songContainer.className = "song"
+    if (current) {
+        songContainer.className = "current song"
+        const currentImg = document.createElement("img")
+        currentImg.src = "../img/play.png"
+        songContainer.appendChild(currentImg)
+    }
+    const mainInfo = document.createElement("span")
+    mainInfo.className = "main-info"
+    const titleEl = document.createElement("span")
+    titleEl.textContent = song.title
+    mainInfo.appendChild(titleEl)
+    const artistEl = document.createElement("span")
+    artistEl.textContent = song.artist
+    artistEl.className = "artist"
+    mainInfo.appendChild(artistEl)
+    songContainer.appendChild(mainInfo)
+    const otherInfo = document.createElement("span")
+    otherInfo.className = "other-info"
+    const albumEl = document.createElement("span")
+    albumEl.textContent = song.album
+    otherInfo.appendChild(albumEl)
+    const bundledInfo = document.createElement("span")
+    bundledInfo.className = "bundled-info"
+    if (song.track || song.disc) {
+        bundledInfo.textContent = `${song.track || "?"}/${song.track_total
+            || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
+        if (song.date) {
+            bundledInfo.textContent += ` from ${song.date}`
+        }
+    } else if (song.date) {
+        bundledInfo.textContent = song.date
+    }
+    otherInfo.appendChild(bundledInfo)
+    songContainer.appendChild(otherInfo)
+    return songContainer
+}
+
 const generatePlaylistView = () => {
-    // TODO make a playlist view that shows titles, rules, current and rule type
-    document.getElementById("main-playlist").textContent = JSON.stringify(playlist, null, 3)
+    document.getElementById("main-playlist").textContent = ""
+    playlist.forEach((item, index) => {
+        // Main playlist row
+        const mainContainer = document.createElement("div")
+        mainContainer.className = "rule"
+        if (index === playlistIndex) {
+            mainContainer.className = "rule current"
+        }
+        const title = document.createElement("span")
+        title.textContent = item.rule || "Automatic based on fallback"
+        mainContainer.appendChild(title)
+        const info = document.createElement("span")
+        info.textContent = `${item.songs.length} songs - ${
+            formatTime(item.duration)}`
+        mainContainer.appendChild(info)
+        document.getElementById("main-playlist").appendChild(mainContainer)
+        // Song dropdown
+        const songContainer = document.createElement("div")
+        item.songs.forEach((song, songIdx) => {
+            const songInfo = generateSongElement(song, songIdx === pathIndex)
+            songContainer.appendChild(songInfo)
+        })
+        document.getElementById("main-playlist").appendChild(songContainer)
+    })
     document.getElementById("fallback-rule").textContent = fallbackRule
 }
 
 const currentAndNext = () => {
-    const {query, songForPath} = require("./songs")
-    let current = songForPath(playlist[playlistIndex]?.paths[pathIndex])
+    const {query} = require("./songs")
+    let current = playlist[playlistIndex]?.songs[pathIndex]
     if (!current) {
-        const {paths} = query(fallbackRule)
-        current = fallbackSong || songForPath(paths[0])
+        const songs = query(fallbackRule)
+        current = fallbackSong || songs.find(s => s.path === fallbackSong?.path)
+            || songs[0]
         if (!current) {
             return {}
         }
-        playlist.push({paths, "source": "auto"})
+        append({
+            "songs": songs.slice(songs.indexOf(current),
+                songs.indexOf(current) + 2),
+            "rule": fallbackRule
+        })
         playlistIndex = playlist.length - 1
         pathIndex = 0
     }
-    let next = songForPath(playlist[playlistIndex]?.paths[pathIndex + 1]
-        || playlist[playlistIndex + 1]?.paths[0])
+    let next = playlist[playlistIndex]?.songs[pathIndex + 1]
+        || playlist[playlistIndex + 1]?.songs[0]
     if (!next) {
-        const {paths, requiresNewRule} = query(fallbackRule)
-        next = songForPath(paths[0])
-        if (requiresNewRule) {
-            playlist.push({paths, "source": "auto"})
+        const songs = query(fallbackRule)
+        next = songs[songs.indexOf(current) + 1] || songs[0]
+        if (playlist[playlistIndex]?.rule === fallbackRule) {
+            playlist[playlistIndex].duration = playlist[playlistIndex].songs
+                .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
+            playlist[playlistIndex].songs.push(next)
+            playFromPlaylist(false)
+        } else {
+            append({"songs": songs.slice(0, 2), "rule": fallbackRule})
         }
         fallbackSong = next
     }
@@ -60,7 +134,7 @@ const decrement = async() => {
         pathIndex -= 1
     } else if (playlistIndex > 0) {
         playlistIndex -= 1
-        pathIndex = Math.max(playlist[playlistIndex]?.paths.length - 1, 0)
+        pathIndex = Math.max(playlist[playlistIndex]?.songs.length - 1, 0)
     } else {
         return
     }
@@ -68,7 +142,7 @@ const decrement = async() => {
 }
 
 const increment = async(user = true) => {
-    if (playlist[playlistIndex]?.paths.length > pathIndex + 1) {
+    if (playlist[playlistIndex]?.songs.length > pathIndex + 1) {
         pathIndex += 1
     } else if (playlist.length > playlistIndex + 1 || fallbackSong) {
         playlistIndex += 1
@@ -79,7 +153,7 @@ const increment = async(user = true) => {
     await playFromPlaylist(user)
 }
 
-const displaySong = async song => {
+const displayCurrentSong = async song => {
     document.getElementById("current-song").textContent = ""
     const songContainer = document.getElementById("current-song")
     const titleEl = document.createElement("span")
@@ -147,7 +221,6 @@ const displaySong = async song => {
         const {fetchLyrics} = require("./songs")
         fetchLyrics(song)
     } else {
-        const {resetWelcome} = require("../util")
         resetWelcome()
     }
 }
@@ -161,17 +234,28 @@ const playFromPlaylist = async(switchNow = true) => {
             document.getElementById("status-scan").textContent = ""
         }
         await queue(next.path)
-        await displaySong(current)
+        await displayCurrentSong(current)
         generatePlaylistView()
     }
 }
 
-const append = rule => {
-    playlist.push(rule)
-    // TODO add list of paths to the rule upon appending
+const append = item => {
+    if (!item.songs) {
+        const {query} = require("./songs")
+        item.songs = query(item.rule)
+    }
+    item.duration = item.songs.map(s => s.duration)
+        .reduce((p, n) => (p || 0) + (n || 0))
+    playlist.push(item)
     playFromPlaylist(false)
 }
 
 module.exports = {
-    playFromPlaylist, increment, decrement, displaySong, currentAndNext, append
+    playFromPlaylist,
+    increment,
+    decrement,
+    displayCurrentSong,
+    currentAndNext,
+    append,
+    generateSongElement
 }

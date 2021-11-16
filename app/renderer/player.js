@@ -45,12 +45,12 @@ const init = () => {
                     // #bug Position not recognized by Electron
                     duration, "position": seconds, "playbackRate": 1
                 })
-                document.getElementById("progress-played").innerHTML
-                    = `${formatTime(seconds)}/${formatTime(duration)}`
+                document.getElementById("progress-played").innerHTML = `&nbsp;${
+                    formatTime(seconds)}/${formatTime(duration)}&nbsp;`
                 document.getElementById("progress-played").style.width
                     = `${seconds / duration * 100}%`
-                document.getElementById("progress-string").innerHTML
-                    = `${formatTime(seconds)}/${formatTime(duration)}`
+                document.getElementById("progress-string").innerHTML = `&nbsp;${
+                    formatTime(seconds)}/${formatTime(duration)}&nbsp;`
             } catch {
                 // No duration yet
             }
@@ -87,9 +87,9 @@ const init = () => {
     navigator.mediaSession.setActionHandler("pause", pause)
     navigator.mediaSession.setActionHandler("stop", () => {
         // #bug Workaround for Electron stopping audio element playback
-        const {displaySong, currentAndNext} = require("./playlist")
+        const {displayCurrentSong, currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
-        displaySong(current)
+        displayCurrentSong(current)
         // TODO Toggle stop after this track
     })
     navigator.mediaSession.setActionHandler("seekbackward", () => null)

@@ -21,15 +21,25 @@ const {ipcRenderer} = require("electron")
 const {keyMatch, queryMatch, resetWelcome} = require("../util")
 
 const init = () => {
-    window.addEventListener("keydown", handleKeyboard)
+    window.addEventListener("keydown", e => {
+        if (e.key === "Tab" || !queryMatch(e, "textarea")) {
+            e.preventDefault()
+        }
+        if (!queryMatch(e, "textarea")) {
+            handleKeyboard(e)
+        }
+    })
     window.addEventListener("keypress", e => {
-        if (e.key === "Tab" || !queryMatch(e, "input")) {
+        if (e.key === "Tab" || !queryMatch(e, "textarea")) {
             e.preventDefault()
         }
     })
     window.addEventListener("keyup", e => {
-        if (e.key === "Tab" || !queryMatch(e, "input")) {
+        if (e.key === "Tab" || !queryMatch(e, "textarea")) {
             e.preventDefault()
+        }
+        if (queryMatch(e, "textarea")) {
+            handleKeyboard(e)
         }
     })
     window.addEventListener("click", e => e.preventDefault())
@@ -38,16 +48,18 @@ const init = () => {
 }
 
 const handleKeyboard = e => {
-    if (e.key === "Tab" || !queryMatch(e, "input")) {
+    if (e.key === "Tab" || !queryMatch(e, "textarea")) {
         e.preventDefault()
     }
     if (queryMatch(e, "#rule-search")) {
         const {query} = require("./songs")
         const search = document.getElementById("rule-search").value
-        const results = query(search)
-        // TODO display results and allow appending
-        console.log(results)
-        document.getElementById("rule-results").textContent = JSON.stringify(results, null, 3)
+        document.getElementById("rule-results").textContent = ""
+        const {generateSongElement} = require("./playlist")
+        query(search).forEach(song => {
+            document.getElementById("rule-results")
+                .appendChild(generateSongElement(song))
+        })
     }
     if (document.getElementById("status-current").textContent !== "Ready") {
         return
@@ -65,7 +77,10 @@ const handleKeyboard = e => {
         resetWelcome()
     }
     if (keyMatch(e, {"key": "F2"})) {
-        // TODO search section
+        document.getElementById("rule-search").scrollIntoView({
+            "behavior": "smooth", "block": "center"
+        })
+        document.getElementById("rule-search").focus()
     }
     if (keyMatch(e, {"key": "F3"})) {
         // TODO playlist section

@@ -20,12 +20,14 @@
     --bg: #333;
     --fg: #eee;
     --accent: #555;
+    --border: #777;
     --primary: #f60;
     --secondary: #f94;
     --green: #afa;
     --yellow: #ffa;
     --red: #faa;
     --blue: #aaf;
+    --purple: #c5f;
     --scrollbar-bg: #444;
     --scrollbar-thumb: #666;
 }
@@ -44,10 +46,10 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #column-container {display: flex;flex: 1;margin: .5em 0;min-height: 0;}
 #column-container * {flex: 1;}
 #column-container > * {background: var(--accent);}
-#rules-container, #playlist-container {margin-right: .5em;}
+#search-container, #playlist-container {margin-right: .5em;}
 
 
-/* status bar */
+/* current song info bar */
 #player-status {display: flex;margin-bottom: .5em;}
 #player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
 #player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
@@ -57,18 +59,36 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #current-song .artist {margin-left: .5em;}
 #current-song .album {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
-
-
-/* progres bar */
 #progress-container {display: flex;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);box-sizing: border-box;}
 #progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
 #progress-string {position: absolute;width: calc(100vw - .85em);color: var(--primary);}
 #progress-played, #progress-string {font-size: 1.2em;font-weight: bold;overflow: hidden;white-space: nowrap;}
 
 
-/* info column */
+/* search & playlist column with song info */
+#search-container {overflow-y: auto;}
+#rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--bg);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: vertical;}
+#rule-search:focus {color: var(--primary);font-weight:bold;border-color: var(--primary);}
+#playlist-container img {height: 2em;max-width: 2em;float: left;filter: invert(1);margin: auto;}
+#main-playlist {height: calc(100% - 2.3em);overflow: auto;}
+.rule {display: flex;}
+.rule, .rule > *, .song {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 33vw;}
+.rule > * {margin: .5em;}
+.rule.current, .song.current {background: var(--secondary);font-weight: bold;}
+.song {flex: 1;display: flex;}
+.song:not(.current) {color: var(--primary);border: solid .1em var(--border);}
+.song:not(.current) .artist, .song:not(.current) .bundled-info {color: var(--secondary);}
+.song * {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
+.song:not(.current) .main-info {margin-left: 2em;}
+.song .main-info {display: flex;flex-direction: column;}
+.other-info {display: flex;flex-direction: column;margin-left: auto;text-align: right;}
+#fallback-rule {background: var(--purple);padding: .5em;}
+
+
+/* info column with help & lyrics */
 #song-cover {display: none;width: 100%;height: 33vh;object-fit: contain;flex: none;}
 #song-info {white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;}
+
 
 /* status line */
 #status-line {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
