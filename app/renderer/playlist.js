@@ -23,7 +23,6 @@ let selectedRuleIdx = null
 let selectedPathIdx = null
 let pathIdx = 0
 const fallbackRule = "order:shuffle"
-let fallbackSong = null
 
 const {formatTime, queryMatch} = require("../util")
 
@@ -99,6 +98,11 @@ const generatePlaylistView = () => {
                     selectedPathIdx = songIdx
                     generatePlaylistView()
                 })
+                if (song.stopAfter) {
+                    const stopImg = document.createElement("img")
+                    stopImg.src = "../img/eject.png"
+                    songInfo.appendChild(stopImg)
+                }
                 songContainer.appendChild(songInfo)
             })
             document.getElementById("main-playlist").appendChild(songContainer)
@@ -151,6 +155,9 @@ const currentAndNext = () => {
             append({"songs": [{...next, "upcoming": true}],
                 "rule": fallbackRule})
         }
+    }
+    if (current.stopAfter) {
+        next = null
     }
     return {current, next}
 }
@@ -246,7 +253,7 @@ const playFromPlaylist = async(switchNow = true) => {
             await load(current.path)
             document.getElementById("status-scan").textContent = ""
         }
-        await queue(next.path)
+        await queue(next?.path)
         const {displayCurrentSong} = require("./dom")
         await displayCurrentSong(current)
         generatePlaylistView()
@@ -274,6 +281,19 @@ const append = item => {
     playFromPlaylist(false)
 }
 
+const stopAfterTrack = (track = null) => {
+    if (!track && rulelist.length > 0) {
+        rulelist[ruleIdx].songs[pathIdx].stopAfter
+            = !rulelist[ruleIdx].songs[pathIdx].stopAfter
+    } else if (track === "selected" && rulelist.length > 0) {
+        rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
+            = !rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
+    } else {
+        return
+    }
+    playFromPlaylist(false)
+}
+
 module.exports = {
     playFromPlaylist,
     increment,
@@ -284,5 +304,6 @@ module.exports = {
     openSelectedRule,
     currentAndNext,
     append,
-    playSelectedSong
+    playSelectedSong,
+    stopAfterTrack
 }

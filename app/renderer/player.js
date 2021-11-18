@@ -23,15 +23,25 @@ const {ipcRenderer} = require("electron")
 
 const mpv = new mpvAPI({"audio_only": true})
 let hasAnySong = false
+let stoppedAfterTrack = false
 
 const init = () => {
     mpv.start().then(() => {
         mpv.on("status", async info => {
-            console.log(`${info.property}: ${info.value}`)
+            console.info(`${info.property}: ${info.value}`)
             if (info.property === "playlist-pos" && info.value === 1) {
                 const {increment} = require("./playlist")
                 await increment(false)
                 document.getElementById("status-scan").textContent = ""
+            }
+            if (info.property === "playlist-pos" && info.value === -1) {
+                const {currentAndNext, playFromPlaylist} = require("./playlist")
+                const {current} = currentAndNext()
+                current.stopAfter = false
+                stoppedAfterTrack = true
+                playFromPlaylist(false)
+                await mpv.pause()
+                updatePlayButton()
             }
         })
         mpv.on("started", updatePlayButton)
@@ -56,12 +66,9 @@ const init = () => {
                 // No duration yet
             }
         }, 100)
-        // TODO
-        // mute(set) - if not set, toggle
-        // volume(vol)
-        // isMuted()
     }).catch(e => {
-        console.log(e)
+        // TODO proper error handling
+        console.warn(e)
     })
     // Listen for media and such
     ipcRenderer.on("media-pause", pause)
@@ -74,7 +81,8 @@ const init = () => {
         increment()
     })
     ipcRenderer.on("media-stop", () => {
-        // TODO Toggle stop after this track
+        const {stopAfterTrack} = require("./playlist")
+        stopAfterTrack()
     })
     ipcRenderer.on("window-close", async() => {
         if (isAlive()) {
@@ -88,10 +96,12 @@ const init = () => {
     navigator.mediaSession.setActionHandler("pause", pause)
     navigator.mediaSession.setActionHandler("stop", () => {
         // #bug Workaround for Electron stopping audio element playback
-        const {displayCurrentSong, currentAndNext} = require("./playlist")
+        const {
+            displayCurrentSong, currentAndNext, stopAfterTrack
+        } = require("./playlist")
         const {current} = currentAndNext()
         displayCurrentSong(current)
-        // TODO Toggle stop after this track
+        stopAfterTrack()
     })
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
     navigator.mediaSession.setActionHandler("seekforward", () => null)
@@ -134,16 +144,17 @@ const updatePlayButton = async() => {
 }
 
 const pause = async() => {
-    if (isAlive()) {
+    if (isAlive() && !stoppedAfterTrack) {
         await mpv.togglePause()
     } else {
         const {playFromPlaylist} = require("./playlist")
         playFromPlaylist()
+        stoppedAfterTrack = false
     }
 }
 
 const seek = async percent => {
-    if (isAlive()) {
+    if (isAlive() && !stoppedAfterTrack) {
         const duration = await mpv.getDuration()
         await mpv.seek(percent * duration, "absolute")
     }
@@ -151,6 +162,7 @@ const seek = async percent => {
 
 const load = async file => {
     hasAnySong = true
+    stoppedAfterTrack = false
     await mpv.load(file)
     await mpv.play()
 }
@@ -162,4 +174,33 @@ const queue = async file => {
     }
 }
 
-module.exports = {isAlive, init, seek, pause, load, queue, updatePlayButton}
+const volumeUp = async() => {
+    if (isAlive()) {
+        await mpv.adjustVolume(10)
+    }
+}
+
+const volumeDown = async() => {
+    if (isAlive()) {
+        await mpv.adjustVolume(-10)
+    }
+}
+
+const toggleMute = async() => {
+    if (isAlive()) {
+        await mpv.mute()
+    }
+}
+
+module.exports = {
+    isAlive,
+    init,
+    seek,
+    pause,
+    load,
+    queue,
+    updatePlayButton,
+    volumeUp,
+    volumeDown,
+    toggleMute
+}

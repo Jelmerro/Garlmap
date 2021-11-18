@@ -64,6 +64,8 @@ F7 and F8 are for moving to the previous and next track.
 F11 will show the cover art in a large window.
 F12 will open the development tools where you can find any runtime errors.
 
+Startup options
+
 It's required to load a folder for Garlmap to play songs.
 It will index and cache the info of them, so you can search it easily.
 You can load a folder with Ctrl-o, by passing it on startup,
@@ -72,6 +74,8 @@ If you just have a single music folder, I would recommend a GARLMAP_FOLDER env.
 You can also set "GARLMAP_AUTO_LYRICS=true" to automatically download lyrics,
 just as there are startup arguments for it (see --help) for details.
 
+Syntax for queueing and searching
+
 You can search for songs using the search section on the left.
 These can be queued in the playlist individually, or as what is called a rule.
 Rules are filters with a specific order and/or count that can queue in bulk.
@@ -79,7 +83,6 @@ For example, "album:pinkerton artist:weezer" can be added to the playlist,
 this rule which will play the entire Pinkerton album by Weezer.
 You could also just search for "weezer pinker" or something and find it,
 but the above is much more accurate if you have a large library.
-
 There are many fields that can be used to search for songs based on their tags.
 The full list is: "title", "artist", "album", "disc", "disc_total", "track",
 "track_total", "lyrics", "duration" and "date". Feel free to add some with a PR.
@@ -94,6 +97,12 @@ You can also use upercase letters in a field name to make it case sensitive,
 as all searches are by default case insensitive: "Album:Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
 
+Search usage
+
+TODO, selection of individual tracks and keyboard shortcuts for it
+
+Playlist usage
+
 In the playlist view, you can see what is playing and based on which rule.
 You can also open the rule in the playlist and view the individual tracks.
 The rules can be added at the end or immediately after the current track.
@@ -104,6 +113,11 @@ Songs will automatically be added to the playlist based on this fallback rule.
 An upcoming song will have a temporary place in the playlist in a shade of gray,
 and this upcoming song will be removed when a new rule or song is added.
 If nothing is added, it will automatically become part of the playlist on play.
+You can navigate the playlist view with the Arrow keys or hjkl.
+Stop after selected song can be toggled with "s", for which an icon will appear.
+You can also play the selected track right away with "Enter".
+
+Caching
 
 All song data and lyrics are cached for the next startup in a "cache" file,
 either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.

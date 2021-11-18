@@ -66,9 +66,9 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #search-container {overflow-y: auto;}
 #rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--bg);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: vertical;}
 #rule-search:focus {color: var(--primary);font-weight:bold;border-color: var(--primary);}
-#playlist-container img {height: 2em;max-width: 2em;float: left;margin: auto;cursor: pointer;}
+#playlist-container img {height: 2em;max-width: 2em;float: left;margin: auto;}
 #playlist-container .rule:not(.current):not(.selected) img {filter: invert(.8);}
-#playlist-container .song img {opacity: 0;}
+#playlist-container .song img:first-child {opacity: 0;cursor: pointer;}
 #playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected img {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #playlist-container .song:hover img, #playlist-container .song.current img {opacity: 1;}
 #main-playlist {height: calc(100% - 2.3em);overflow: auto;}

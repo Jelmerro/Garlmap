@@ -1,4 +1,5 @@
 - various TODOs in the code
+- add volume controls to the GUI
 - delete rules/songs from the playlist
 - allow selecting of lyrics and help
 - page up and down should work in both search and playlist sections

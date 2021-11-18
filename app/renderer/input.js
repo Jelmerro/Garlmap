@@ -51,10 +51,10 @@ const handleKeyboard = async e => {
     if (e.key === "Tab" || !queryMatch(e, "textarea")) {
         e.preventDefault()
     }
-    if (document.getElementById("status-current").textContent !== "Ready") {
-        return
-    }
     if (keyMatch(e, {"key": "o", "ctrl": true})) {
+        if (document.getElementById("status-current").textContent !== "Ready") {
+            return
+        }
         const {scanner} = require("./songs")
         const folder = ipcRenderer.sendSync("dialog-dir", {
             "title": "Open a folder", "properties": ["openDirectory"]
@@ -62,6 +62,21 @@ const handleKeyboard = async e => {
         if (folder) {
             setTimeout(() => scanner(folder), 1)
         }
+        return
+    }
+    if (keyMatch(e, {"key": "m", "ctrl": true})) {
+        const {toggleMute} = require("./player")
+        toggleMute()
+        return
+    }
+    if (keyMatch(e, {"key": "=", "ctrl": true})) {
+        const {volumeUp} = require("./player")
+        volumeUp()
+        return
+    }
+    if (keyMatch(e, {"key": "-", "ctrl": true})) {
+        const {volumeDown} = require("./player")
+        volumeDown()
         return
     }
     if (keyMatch(e, {"key": "F1"})) {
@@ -79,14 +94,17 @@ const handleKeyboard = async e => {
         return
     }
     if (keyMatch(e, {"key": "F4"})) {
-        const {currentAndNext} = require("./playlist")
-        const {fetchLyrics} = require("./songs")
-        const {current} = currentAndNext()
-        if (current) {
-            await fetchLyrics(current)
-            document.getElementById("song-info").scrollTo(0, 0)
+        const {isAlive} = require("./player")
+        if (isAlive()) {
+            const {currentAndNext} = require("./playlist")
+            const {fetchLyrics} = require("./songs")
+            const {current} = currentAndNext()
+            if (current) {
+                await fetchLyrics(current)
+                document.getElementById("song-info").scrollTo(0, 0)
+            }
+            return
         }
-        return
     }
     if (keyMatch(e, {"key": "F5"})) {
         const {pause} = require("./player")
@@ -94,7 +112,8 @@ const handleKeyboard = async e => {
         return
     }
     if (keyMatch(e, {"key": "F6"})) {
-        // TODO stop after this track
+        const {stopAfterTrack} = require("./playlist")
+        stopAfterTrack()
         return
     }
     if (keyMatch(e, {"key": "F7"})) {
@@ -163,6 +182,10 @@ const handleKeyboard = async e => {
                 const {incrementSelected} = require("./playlist")
                 incrementSelected()
             }, 1)
+        }
+        if (keyMatch(e, {"key": "s"})) {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack("selected")
         }
         if (keyMatch(e, {"key": "Enter"})) {
             const {playSelectedSong} = require("./playlist")
