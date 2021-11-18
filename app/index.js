@@ -36,6 +36,7 @@ app.on("ready", () => {
         "closable": false,
         "frame": true,
         "height": 600,
+        "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
         "show": true,
         "title": app.getName(),
         "webPreferences": {

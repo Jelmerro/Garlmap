@@ -56,10 +56,10 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #current-song .artist {margin-left: .5em;}
 #current-song .album {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
-#progress-container {display: flex;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);box-sizing: border-box;}
+#progress-container {display: flex;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
 #progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
-#progress-string {position: absolute;width: calc(100vw - .85em);color: var(--primary);}
-#progress-played, #progress-string {font-size: 1.2em;font-weight: bold;overflow: hidden;white-space: nowrap;}
+#progress-string {position: absolute;color: var(--primary);}
+#progress-played, #progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
 
 
 /* search & playlist column with song info */
