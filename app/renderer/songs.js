@@ -39,7 +39,7 @@ const processFile = async(file, total, lyrics = null) => {
             details = await nm.parseFile(
                 file, {"skipCovers": true, "duration": true})
         }
-        songs.push({
+        const song = {
             "path": file,
             "title": details.common.title,
             "artist": details.common.artist,
@@ -51,7 +51,14 @@ const processFile = async(file, total, lyrics = null) => {
             "duration": details.format.duration,
             "date": details.common.year,
             lyrics
-        })
+        }
+        songs.push(song)
+        const existing = cachedSongs.find(s => s.path === song.path)
+        if (existing) {
+            cachedSongs[cachedSongs.indexOf(existing)] = song
+        } else {
+            cachedSongs.push(song)
+        }
     } catch {
         failures.push(file)
     }
@@ -94,21 +101,10 @@ const scanner = folder => {
         } else {
             document.getElementById("status-scan").textContent = ""
         }
-        setTimeout(() => updateCache(), 1)
     })
 }
 
-const updateCache = () => {
-    songs.forEach(song => {
-        const existing = cachedSongs.find(s => s.path === song.path)
-        if (existing) {
-            cachedSongs[cachedSongs.indexOf(existing)] = song
-        } else {
-            cachedSongs.push(song)
-        }
-    })
-    writeJSON(joinPath(configDir, "cache"), cachedSongs)
-}
+const updateCache = () => writeJSON(joinPath(configDir, "cache"), cachedSongs)
 
 const query = search => {
     if (!search.trim()) {
@@ -182,6 +178,12 @@ const query = search => {
     const albums = Array.from(new Set(filtered.map(s => s.album))).sort(
         () => Math.random() - 0.5)
     filtered.sort((a, b) => {
+        if (order === "disk") {
+            if (a.path > b.path) {
+                return 1
+            }
+            return -1
+        }
         if (order === "alpha") {
             if (a.title > b.title) {
                 return 1
@@ -257,9 +259,10 @@ const fetchLyrics = async req => {
         }
         if (song) {
             const lyrics = await song.lyrics()
-            songs.find(s => s.path === req.path).lyrics = lyrics
             document.getElementById("song-info").textContent = lyrics
             document.getElementById("status-scan").textContent = ""
+            songs.find(s => s.path === req.path).lyrics = lyrics
+            cachedSongs.find(s => s.path === req.path).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
         } else {
             console.warn("No matched song found, this might be a bug", results)
