@@ -3,6 +3,5 @@
 - allow selecting of lyrics and help
 - page up and down should work in both search and playlist sections
 - selection and queueing of individual tracks in search section
-- searching for multiple unlabeled words should search for each word in all fields
 - add a way to change the fallback rule
     - including check for always being order shuffle or albumshuffle (so it's infinite)
