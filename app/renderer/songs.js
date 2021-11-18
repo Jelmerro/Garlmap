@@ -29,11 +29,16 @@ let cache = "all"
 let cachedSongs = []
 let songs = []
 let failures = []
+let processedFiles = 0
 
-const processFile = async(file, total) => {
+const processFile = async(file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     try {
-        const details = await nm.parseFile(file, {"skipCovers": true})
+        let details = await nm.parseFile(file, {"skipCovers": true})
+        if (!details.format.duration) {
+            details = await nm.parseFile(
+                file, {"skipCovers": true, "duration": true})
+        }
         songs.push({
             "path": file,
             "title": details.common.title,
@@ -44,16 +49,19 @@ const processFile = async(file, total) => {
             "track": details.common.track.no,
             "track_total": details.common.track.of,
             "duration": details.format.duration,
-            "date": details.common.year
+            "date": details.common.year,
+            lyrics
         })
     } catch {
         failures.push(file)
     }
+    processedFiles += 1
     document.getElementById("status-files").textContent
-        = `${songs.length}/${total} songs`
+        = `${processedFiles}/${total} songs`
 }
 
 const scanner = folder => {
+    processedFiles = 0
     songs = []
     failures = []
     document.getElementById("status-folder").textContent = folder
@@ -67,10 +75,11 @@ const scanner = folder => {
         document.getElementById("status-current").style.color = "var(--primary)"
         const useCache = ["all", "songs"].includes(cache)
         for (const file of files) {
-            if (useCache && songs.find(s => s.path === file)) {
+            const match = songs.find(s => s.path === file)
+            if (useCache && match) {
                 continue
             }
-            await processFile(file, files.length)
+            await processFile(file, files.length, match?.lyrics)
         }
         document.getElementById("status-current").textContent = `Ready`
         document.getElementById("status-current").style.color
@@ -85,22 +94,20 @@ const scanner = folder => {
         } else {
             document.getElementById("status-scan").textContent = ""
         }
-        updateCache()
+        setTimeout(() => updateCache(), 1)
     })
 }
 
 const updateCache = () => {
-    setTimeout(() => {
-        songs.forEach(song => {
-            const existing = cachedSongs.find(s => s.path === song.path)
-            if (existing) {
-                cachedSongs[cachedSongs.indexOf(existing)] = song
-            } else {
-                cachedSongs.push(song)
-            }
-        })
-        writeJSON(joinPath(configDir, "cache"), cachedSongs)
-    }, 1)
+    songs.forEach(song => {
+        const existing = cachedSongs.find(s => s.path === song.path)
+        if (existing) {
+            cachedSongs[cachedSongs.indexOf(existing)] = song
+        } else {
+            cachedSongs.push(song)
+        }
+    })
+    writeJSON(joinPath(configDir, "cache"), cachedSongs)
 }
 
 const query = search => {
@@ -253,7 +260,7 @@ const fetchLyrics = async req => {
             songs.find(s => s.path === req.path).lyrics = lyrics
             document.getElementById("song-info").textContent = lyrics
             document.getElementById("status-scan").textContent = ""
-            updateCache()
+            setTimeout(() => updateCache(), 1)
         } else {
             console.warn("No matched song found, this might be a bug", results)
             document.getElementById("status-scan").textContent
@@ -278,7 +285,8 @@ const setCachePolicy = (dir, policy) => {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
         }
         if (cache === "lyrics") {
-            cachedSongs = cachedSongs.map(s => ({"lyrics": s.lyrics}))
+            cachedSongs = cachedSongs.filter(s => s.lyrics).map(
+                s => ({"path": s.path, "lyrics": s.lyrics}))
         }
     }
 }
