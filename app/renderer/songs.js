@@ -57,14 +57,14 @@ const scanner = folder => {
     songs = []
     failures = []
     document.getElementById("status-folder").textContent = folder
-    document.getElementById("status-folder").style.color = "var(--blue)"
+    document.getElementById("status-folder").style.color = "var(--primary)"
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     glob(path.join(escapedFolder, "**/*.mp3"), async(_e, files) => {
         songs = cachedSongs.filter(s => files.includes(s.path))
         document.getElementById("status-current").textContent = `Scanning`
-        document.getElementById("status-current").style.color = "var(--blue)"
+        document.getElementById("status-current").style.color = "var(--primary)"
         const useCache = ["all", "songs"].includes(cache)
         for (const file of files) {
             if (useCache && songs.find(s => s.path === file)) {
@@ -73,13 +73,15 @@ const scanner = folder => {
             await processFile(file, files.length)
         }
         document.getElementById("status-current").textContent = `Ready`
-        document.getElementById("status-current").style.color = "var(--green)"
+        document.getElementById("status-current").style.color
+            = "var(--secondary)"
         document.getElementById("status-files").textContent
             = `${songs.length} songs`
         if (failures.length) {
             document.getElementById("status-scan").textContent
                 = `${failures.length} failures`
-            document.getElementById("status-scan").style.color = "var(--red)"
+            document.getElementById("status-scan").style.color
+                = "var(--tertiary)"
         } else {
             document.getElementById("status-scan").textContent = ""
         }
@@ -201,7 +203,7 @@ const fetchLyrics = async req => {
     try {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
-        document.getElementById("status-scan").style.color = "var(--blue)"
+        document.getElementById("status-scan").style.color = "var(--primary)"
         const [mainArtist] = low(req.artist)
             .split(/ ?\(?feat. /g)[0].split(/ ?\(?ft. /g)[0].split(" & ")
         const results = await genius.songs.search(`${req.title} ${mainArtist}`)
@@ -222,13 +224,14 @@ const fetchLyrics = async req => {
             console.warn("No matched song found, this might be a bug", results)
             document.getElementById("status-scan").textContent
                 = `Failed to find matching song lyrics in results of Genius`
-            document.getElementById("status-scan").style.color = "var(--red)"
+            document.getElementById("status-scan").style.color
+                = "var(--tertiary)"
         }
     } catch (e) {
         console.warn(e)
         document.getElementById("status-scan").textContent
             = `Failed to fetch lyrics from Genius`
-        document.getElementById("status-scan").style.color = "var(--red)"
+        document.getElementById("status-scan").style.color = "var(--tertiary)"
     }
 }
 

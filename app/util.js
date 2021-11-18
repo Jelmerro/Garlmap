@@ -93,7 +93,7 @@ You can also open the rule in the playlist and view the individual tracks.
 The rules can be added at the end or immediately after the current track.
 The playlist can also include simple individual tracks with no specific rule,
 but rules are the core of what gives Garlmap superpowers in the playlist.
-There is one special rule at the bottom displayed in purple: the fallback rule.
+There is one special rule at the bottom displayed in green: the fallback rule.
 Songs will automatically be added to the playlist based on this fallback rule.
 
 All song data and lyrics are cached for the next startup in a "cache" file,

@@ -156,7 +156,9 @@ const load = async file => {
 
 const queue = async file => {
     await mpv.clearPlaylist()
-    await mpv.append(file)
+    if (file) {
+        await mpv.append(file)
+    }
 }
 
 module.exports = {isAlive, init, seek, pause, load, queue, updatePlayButton}

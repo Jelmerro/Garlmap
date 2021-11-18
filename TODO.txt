@@ -1,3 +1,2 @@
-- search songs and create rules
 - delete rules/songs from the playlist
 - tons of keyboard shortcuts and section selector

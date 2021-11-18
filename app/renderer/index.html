@@ -22,7 +22,7 @@
     <meta http-equiv="Content-Security-Policy" content="img-src file://* data: blob:; style-src 'unsafe-inline' file://*; media-src file://*; script-src 'none'; connect-src data:; default-src 'none'">
     <title>Garlmap</title>
 </head>
-<body id="app">
+<body id="app" focus-el="search">
     <div id="player-container">
         <div id="player-status">
             <div class="button" id="prev"><img src="../img/prev.png" /></div>
@@ -37,7 +37,7 @@
     </div>
     <div id="column-container">
         <div id="search-container">
-            <textarea id="rule-search"></textarea>
+            <textarea id="rule-search" autofocus="autofocus"></textarea>
             <div id="rule-results"></div>
         </div>
         <div id="playlist-container">

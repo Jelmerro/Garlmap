@@ -21,13 +21,10 @@
     --fg: #eee;
     --accent: #555;
     --border: #777;
-    --primary: #f60;
-    --secondary: #f94;
-    --green: #afa;
-    --yellow: #ffa;
-    --red: #faa;
-    --blue: #aaf;
-    --purple: #c5f;
+    --primary: #5ee;
+    --secondary: #af0;
+    --tertiary: #d37;
+    --black: #000;
     --scrollbar-bg: #444;
     --scrollbar-thumb: #666;
 }
@@ -52,7 +49,7 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 /* current song info bar */
 #player-status {display: flex;margin-bottom: .5em;}
 #player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
-#player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(-25deg) contrast(3.5);}
+#player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
 #current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
 #current-song .title {margin-right: .5em;}
@@ -69,20 +66,24 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #search-container {overflow-y: auto;}
 #rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--bg);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: vertical;}
 #rule-search:focus {color: var(--primary);font-weight:bold;border-color: var(--primary);}
-#playlist-container img {height: 2em;max-width: 2em;float: left;filter: invert(1);margin: auto;}
+#playlist-container img {height: 2em;max-width: 2em;float: left;margin: auto;cursor: pointer;}
+#playlist-container .song img {opacity: 0;}
+#playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
+#playlist-container .song:hover img, #playlist-container .song.current img {opacity: 1;}
 #main-playlist {height: calc(100% - 2.3em);overflow: auto;}
-.rule {display: flex;}
+.rule {display: flex;border: .2em solid var(--fg);}
 .rule, .rule > *, .song {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 33vw;}
 .rule > * {margin: .5em;}
-.rule.current, .song.current {background: var(--secondary);font-weight: bold;}
+.rule.current, .song.current {color: var(--black);background: var(--secondary);font-weight: bold;}
+body[focus-el="playlist"] #search-container .selected, body[focus-el="search"] #playlist-container .selected {border-color: var(--primary);}
+body[focus-el="playlist"] #playlist-container .selected, body[focus-el="search"] #search-container .selected, body[focus-el="playlist"] #playlist-container .selected * , body[focus-el="search"] #search-container .selected * {color: var(--black);background: var(--primary);}
 .song {flex: 1;display: flex;}
-.song:not(.current) {color: var(--primary);border: solid .1em var(--border);}
+.song {color: var(--primary);border: .1em solid var(--border);}
 .song:not(.current) .artist, .song:not(.current) .bundled-info {color: var(--secondary);}
 .song * {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
-.song:not(.current) .main-info {margin-left: 2em;}
 .song .main-info {display: flex;flex-direction: column;}
 .other-info {display: flex;flex-direction: column;margin-left: auto;text-align: right;}
-#fallback-rule {background: var(--purple);padding: .5em;}
+#fallback-rule {color: var(--black);background: var(--secondary);padding: .5em;}
 
 
 /* info column with help & lyrics */
@@ -95,5 +96,5 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #status-line * {margin: 0 .5em;}
 #status-line *:first-child {margin-left: 0;}
 #status-line *:last-child {margin-right: 0;}
-#status-current {color: var(--green);}
-#status-folder {color: var(--yellow);}
+#status-current {color: var(--secondary);}
+#status-folder {color: var(--primary);}
