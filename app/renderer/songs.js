@@ -108,11 +108,13 @@ const query = search => {
         return []
     }
     const filters = search.split(/(?= \w+:)/g).map(p => ({
-        "name": p.trim().split(":")[0], "value": p.trim().split(":")[1]
+        "name": p.trim().split(":")[0].toLowerCase(),
+        "value": p.trim().split(":")[1],
+        "cased": p.trim().split(":")[0].toLowerCase() !== p.trim().split(":")[0]
     }))
     let globalSearch = false
     if (filters[0]?.value === undefined) {
-        globalSearch = filters.shift()?.name
+        globalSearch = filters.shift()
     }
     const skipSong = ["order", "limit"]
     let filtered = songs.filter(s => {
@@ -125,12 +127,44 @@ const query = search => {
                 || s[filter.name] > Number(filter.value.split("-")[1])) {
                     return false
                 }
-            } else if (!String(s[filter.name]).match(filter.value)) {
-                return false
+            } else {
+                let flags = "gi"
+                if (filter.cased) {
+                    flags = "g"
+                }
+                try {
+                    const regex = RegExp(filter.value, flags)
+                    if (!String(s[filter.name]).match(regex)) {
+                        return false
+                    }
+                } catch {
+                    if (filter.cased
+                        && !String(s[filter.name]).includes(filter.value)) {
+                        return false
+                    }
+                    if (!filter.cased && !String(s[filter.name].toLowerCase())
+                        .includes(filter.value.toLowerCase())) {
+                        return false
+                    }
+                }
             }
         }
         if (globalSearch) {
-            return Object.values(s).find(val => String(val).match(globalSearch))
+            let flags = "gi"
+            if (globalSearch.cased) {
+                flags = "g"
+            }
+            try {
+                const regex = RegExp(globalSearch.name, flags)
+                return Object.values(s).find(val => String(val).match(regex))
+            } catch {
+                if (globalSearch.cased) {
+                    return Object.values(s).find(val => String(val)
+                        .includes(globalSearch.name))
+                }
+                return Object.values(s).find(val => String(val).toLowerCase()
+                    .includes(globalSearch.name.toLowerCase()))
+            }
         }
         return true
     })

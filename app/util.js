@@ -87,6 +87,9 @@ Even spaces are allowed: "album:dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields.
 For the number fields, such as "date", "duration" or "track" and such,
 it's also possible to specify a range like so: "date:1960-1975".
+You can also use upercase letters in a field to make it case sensitive,
+as all search are by default case insensitive: "Album:Dark Side" for example.
+For the general search, if there are capital letters in it, it's case sensitive.
 
 In the playlist view, you can see what is playing and based on which rule.
 You can also open the rule in the playlist and view the individual tracks.
@@ -106,6 +109,7 @@ and greatly reduces the amount of requests to Genius if you want auto lyrics.
 Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
 but after startup there shouldn't be too many moments that freeze the app.
 `.split("\n").map(l => l || "\n\n").join(" ")
+    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const isDirectory = loc => {

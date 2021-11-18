@@ -66,7 +66,6 @@ const handleKeyboard = async e => {
     }
     if (keyMatch(e, {"key": "F1"})) {
         resetWelcome()
-        document.getElementById("song-info").scrollTo(0, 0)
         return
     }
     if (keyMatch(e, {"key": "F2"}) || keyMatch(e, {"key": "f", "ctrl": true})) {
