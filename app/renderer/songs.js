@@ -226,12 +226,6 @@ const query = search => {
     return filtered
 }
 
-const allSongs = () => songs
-
-const randomSong = () => songs.at(Math.random() * songs.length)
-
-const songForPath = p => songs.find(song => song.path === p)
-
 const coverArt = async p => {
     try {
         const details = await nm.parseFile(p, {"skipCovers": false})
@@ -303,13 +297,4 @@ const setCachePolicy = (dir, policy) => {
     }
 }
 
-module.exports = {
-    scanner,
-    query,
-    allSongs,
-    randomSong,
-    songForPath,
-    coverArt,
-    fetchLyrics,
-    setCachePolicy
-}
+module.exports = {scanner, query, coverArt, fetchLyrics, setCachePolicy}

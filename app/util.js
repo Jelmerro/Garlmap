@@ -101,6 +101,9 @@ The playlist can also include simple individual tracks with no specific rule,
 but rules are the core of what gives Garlmap superpowers in the playlist.
 There is one special rule at the bottom displayed in green: the fallback rule.
 Songs will automatically be added to the playlist based on this fallback rule.
+An upcoming song will have a temporary place in the playlist in a shade of gray,
+and this upcoming song will be removed when a new rule or song is added.
+If nothing is added, it will automatically become part of the playlist on play.
 
 All song data and lyrics are cached for the next startup in a "cache" file,
 either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.

@@ -90,6 +90,9 @@ const generatePlaylistView = () => {
                 && songIdx === selectedPathIdx) {
                     songInfo.classList.add("selected")
                 }
+                if (song.upcoming) {
+                    songInfo.classList.add("upcoming")
+                }
                 songInfo.addEventListener("mousedown", () => {
                     switchFocus("playlist")
                     selectedRuleIdx = index
@@ -116,34 +119,38 @@ const currentAndNext = () => {
     const {query} = require("./songs")
     let current = rulelist[ruleIdx]?.songs[pathIdx]
     if (!current) {
-        const songs = query(fallbackRule)
-        current = fallbackSong || songs.find(s => s.path === fallbackSong?.path)
-            || songs[0]
+        const songs = JSON.parse(JSON.stringify(
+            query(fallbackRule).slice(0, 2)))
+        ;[current] = songs
         if (!current) {
             return {}
         }
         append({
-            "songs": songs.slice(songs.indexOf(current),
-                songs.indexOf(current) + 2),
+            "songs": [current,
+                {...songs[songs.indexOf(current) + 1], "upcoming": true}],
             "rule": fallbackRule
         })
         ruleIdx = rulelist.length - 1
         pathIdx = 0
     }
+    rulelist[ruleIdx].upcoming = false
+    current.upcoming = false
     let next = rulelist[ruleIdx]?.songs[pathIdx + 1]
         || rulelist[ruleIdx + 1]?.songs[0]
     if (!next) {
         const songs = query(fallbackRule)
-        next = songs[songs.indexOf(current) + 1] || songs[0]
+        next = JSON.parse(JSON.stringify(songs[songs.indexOf(songs.find(
+            s => s.path === current.path) + 1)] || songs[0]))
+        next.upcoming = true
         if (rulelist[ruleIdx]?.rule === fallbackRule) {
             rulelist[ruleIdx].duration = rulelist[ruleIdx].songs
                 .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
             rulelist[ruleIdx].songs.push(next)
             playFromPlaylist(false)
         } else {
-            append({"songs": songs.slice(0, 1), "rule": fallbackRule})
+            append({"songs": [{...next, "upcoming": true}],
+                "rule": fallbackRule})
         }
-        fallbackSong = next
     }
     return {current, next}
 }
@@ -163,7 +170,7 @@ const decrement = async() => {
 const increment = async(user = true) => {
     if (rulelist[ruleIdx]?.songs.length > pathIdx + 1) {
         pathIdx += 1
-    } else if (rulelist.length > ruleIdx + 1 || fallbackSong) {
+    } else if (rulelist.length > ruleIdx + 1) {
         ruleIdx += 1
         pathIdx = 0
     } else {
@@ -249,7 +256,14 @@ const playFromPlaylist = async(switchNow = true) => {
 const append = item => {
     if (!item.songs) {
         const {query} = require("./songs")
-        item.songs = query(item.rule)
+        item.songs = JSON.parse(JSON.stringify(query(item.rule)))
+    }
+    if (rulelist.length > 0) {
+        rulelist[rulelist.length - 1].songs = rulelist[rulelist.length - 1]
+            .songs.filter(s => !s.upcoming)
+        if (rulelist[rulelist.length - 1].songs.length === 0) {
+            rulelist.pop()
+        }
     }
     if (!item.rule) {
         item.open = true

@@ -69,15 +69,23 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #playlist-container img {height: 2em;max-width: 2em;float: left;margin: auto;cursor: pointer;}
 #playlist-container .rule:not(.current):not(.selected) img {filter: invert(.8);}
 #playlist-container .song img {opacity: 0;}
-#playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
+#playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected img {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #playlist-container .song:hover img, #playlist-container .song.current img {opacity: 1;}
 #main-playlist {height: calc(100% - 2.3em);overflow: auto;}
 .rule {display: flex;border: .2em solid var(--fg);}
 .rule, .rule > *, .song {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 33vw;}
 .rule > * {margin: .5em;}
 .rule.current, .song.current {color: var(--black);background: var(--secondary);font-weight: bold;}
-body[focus-el="playlist"] #search-container .selected, body[focus-el="search"] #playlist-container .selected {border-color: var(--primary);}
-body[focus-el="playlist"] #playlist-container .selected, body[focus-el="search"] #search-container .selected, body[focus-el="playlist"] #playlist-container .selected * , body[focus-el="search"] #search-container .selected * {color: var(--black);background: var(--primary);}
+body[focus-el="playlist"] #search-container .selected,
+body[focus-el="search"] #playlist-container .selected {border-color: var(--primary);}
+body[focus-el="playlist"] #playlist-container .selected,
+body[focus-el="search"] #search-container .selected,
+body[focus-el="playlist"] #playlist-container .selected *,
+body[focus-el="search"] #search-container .selected * {color: var(--black);background: var(--primary);}
+body[focus-el="playlist"] #playlist-container .song.selected.upcoming * {color: var(--border);}
+body[focus-el="search"] #playlist-container .song.selected.upcoming * {color: var(--fg);}
+body[focus-el="search"] #playlist-container .song.upcoming,
+#playlist-container .song.upcoming:not(.selected) {background: var(--bg);}
 .song {flex: 1;display: flex;}
 .song {color: var(--primary);border: .1em solid var(--border);}
 .song:not(.current) .artist, .song:not(.current) .bundled-info {color: var(--secondary);}
