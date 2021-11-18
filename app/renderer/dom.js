@@ -75,11 +75,8 @@ const displayCurrentSong = async song => {
     albumEl.textContent = song.album
     otherInfo.appendChild(albumEl)
     const bundledInfo = document.createElement("span")
-    if (song.duration) {
-        bundledInfo.textContent = formatTime(song.duration)
-    }
     if (song.track || song.disc) {
-        bundledInfo.textContent += ` ${song.track || "?"}/${song.track_total
+        bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
             || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
     }
     if (song.date) {
@@ -123,10 +120,11 @@ const displayCurrentSong = async song => {
         document.getElementById("song-info").textContent = song.lyrics
     } else if (shouldAutoFetchLyrics()) {
         const {fetchLyrics} = require("./songs")
-        fetchLyrics(song)
+        await fetchLyrics(song)
     } else {
         resetWelcome()
     }
+    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const switchFocus = newFocus => {

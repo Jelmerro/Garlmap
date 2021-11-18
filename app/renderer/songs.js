@@ -30,6 +30,7 @@ let cachedSongs = []
 let songs = []
 let failures = []
 let processedFiles = 0
+const low = s => s.toLowerCase()
 
 const processFile = async(file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
@@ -111,17 +112,18 @@ const query = search => {
         return []
     }
     const filters = search.split(/(?= \w+:)/g).map(p => ({
-        "name": p.trim().split(":")[0].toLowerCase(),
+        "name": p.trim().split(":")[0],
         "value": p.trim().split(":")[1],
-        "cased": p.trim().split(":")[0].toLowerCase() !== p.trim().split(":")[0]
+        "cased": low(p.trim().split(":")[0]) !== p.trim().split(":")[0]
     }))
-    let globalSearch = false
+    let globalSearch = {"name": null, "cased": false}
     if (filters[0]?.value === undefined) {
         globalSearch = filters.shift()
     }
-    const skipSong = ["order", "limit"]
+    const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
+        .filter(f => !["order", "limit"].includes(f.name))
     let filtered = songs.filter(s => {
-        for (const filter of filters.filter(f => !skipSong.includes(f.name))) {
+        for (const filter of searchableFilters) {
             if (!s[filter.name]) {
                 return false
             }
@@ -145,33 +147,40 @@ const query = search => {
                         && !String(s[filter.name]).includes(filter.value)) {
                         return false
                     }
-                    if (!filter.cased && !String(s[filter.name].toLowerCase())
-                        .includes(filter.value.toLowerCase())) {
+                    if (!filter.cased && !String(low(s[filter.name]))
+                        .includes(low(filter.value))) {
                         return false
                     }
                 }
             }
         }
-        if (globalSearch) {
+        if (globalSearch?.name) {
             let flags = "gi"
             if (globalSearch.cased) {
                 flags = "g"
             }
-            try {
-                const regex = RegExp(globalSearch.name, flags)
-                return Object.values(s).find(val => String(val).match(regex))
-            } catch {
-                if (globalSearch.cased) {
-                    return Object.values(s).find(val => String(val)
-                        .includes(globalSearch.name))
+            for (const word of globalSearch.name.split(/\s/g).filter(w => w)) {
+                try {
+                    const regex = RegExp(word, flags)
+                    if (!Object.values(s).find(
+                        val => String(val).match(regex))) {
+                        return false
+                    }
+                } catch {
+                    if (globalSearch.cased && !Object.values(s).find(
+                        val => String(val).includes(word))) {
+                        return false
+                    }
+                    if (!Object.values(s).find(val => low(String(val))
+                        .includes(low(word)))) {
+                        return false
+                    }
                 }
-                return Object.values(s).find(val => String(val).toLowerCase()
-                    .includes(globalSearch.name.toLowerCase()))
             }
         }
         return true
     })
-    const order = filters.find(f => f.name === "order")?.value || "disk"
+    const order = filters.find(f => low(f.name) === "order")?.value || "disk"
     if (order.endsWith("shuffle")) {
         filtered.sort(() => Math.random() - 0.5)
     }
@@ -207,7 +216,7 @@ const query = search => {
         }
         return 0
     })
-    const limitStr = filters.find(f => f.name === "limit")?.value
+    const limitStr = filters.find(f => low(f.name) === "limit")?.value
     if (limitStr) {
         const limit = Number(limitStr)
         if (!isNaN(limit)) {

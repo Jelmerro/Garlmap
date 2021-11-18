@@ -52,20 +52,21 @@ const resetWelcome = () => {
     document.getElementById("song-info").textContent = `Welcome to Garlmap
 
 You can jump focus between the search section and playlist with F2 and F3.
+Alternatively you can use Ctrl-f or Ctrl-l for the search and playlist sections.
 No other sections are focusable in the traditional sense,
 but they can be controlled with other shortcuts.
 This section can be scrolled with F9 and F10, for example.
 You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
 or you can bring back this help at any time with F1.
-F5 and F6 are for play/pause and for stopping after the current track.
+F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 F11 will show the cover art in a large window.
 F12 will open the development tools where you can find any runtime errors.
 
 It's required to load a folder for Garlmap to play songs.
 It will index and cache the info of them, so you can search it easily.
-You can load a folder with Ctrl-O, by passing it on startup,
+You can load a folder with Ctrl-o, by passing it on startup,
 or by setting it using ENV vars as "GARLMAP_FOLDER".
 If you just have a single music folder, I would recommend a GARLMAP_FOLDER env.
 You can also set "GARLMAP_AUTO_LYRICS=true" to automatically download lyrics,
@@ -81,14 +82,16 @@ but the above is much more accurate if you have a large library.
 
 There are many fields that can be used to search for songs based on their tags.
 The full list is: "title", "artist", "album", "disc", "disc_total", "track",
-"track_total", "duration" and "date", but the list might be expanded later.
+"track_total", "lyrics", "duration" and "date". Feel free to add some with a PR.
 You can search for anything inside a field based on regex, separated with ":".
 Even spaces are allowed: "album:dark side of the moon" is an album name search.
-Any text that is listed before any of these fields, will search in all fields.
+Any text that is listed before any of these fields, will search in all fields:
+"dark side" will match any song that has any field with "dark" and "side" in it,
+even the lyrics are searched, if they are cached for a specific song.
 For the number fields, such as "date", "duration" or "track" and such,
 it's also possible to specify a range like so: "date:1960-1975".
-You can also use upercase letters in a field to make it case sensitive,
-as all search are by default case insensitive: "Album:Dark Side" for example.
+You can also use upercase letters in a field name to make it case sensitive,
+as all searches are by default case insensitive: "Album:Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
 
 In the playlist view, you can see what is playing and based on which rule.

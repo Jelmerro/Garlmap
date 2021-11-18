@@ -31,6 +31,7 @@ const init = () => {
             if (info.property === "playlist-pos" && info.value === 1) {
                 const {increment} = require("./playlist")
                 await increment(false)
+                document.getElementById("status-scan").textContent = ""
             }
         })
         mpv.on("started", updatePlayButton)
