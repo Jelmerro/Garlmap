@@ -71,6 +71,9 @@ const generatePlaylistView = () => {
         if (item.open) {
             // Song dropdown
             const songContainer = document.createElement("div")
+            if (item.rule) {
+                songContainer.className = "songs-of-rule"
+            }
             item.songs.forEach((song, songIdx) => {
                 const songInfo = generateSongElement(song)
                 const currentImg = document.createElement("img")
@@ -189,7 +192,7 @@ const increment = async(user = true) => {
 const decrementSelected = () => {
     if (selectedPathIdx > 0) {
         selectedPathIdx -= 1
-    } else if (selectedPathIdx === 0) {
+    } else if (selectedPathIdx === 0 && rulelist[selectedRuleIdx]?.rule) {
         selectedPathIdx = null
     } else if (selectedRuleIdx > 0) {
         selectedRuleIdx -= 1
@@ -202,6 +205,9 @@ const decrementSelected = () => {
         selectedRuleIdx = 0
     } else {
         return
+    }
+    if (!rulelist[selectedRuleIdx]?.rule) {
+        selectedPathIdx = 0
     }
     generatePlaylistView()
     document.querySelector("#playlist-container .selected")?.scrollIntoView({
@@ -223,6 +229,9 @@ const incrementSelected = () => {
         selectedPathIdx = null
     } else {
         return
+    }
+    if (!rulelist[selectedRuleIdx]?.rule) {
+        selectedPathIdx = 0
     }
     generatePlaylistView()
     document.querySelector("#playlist-container .selected")?.scrollIntoView({

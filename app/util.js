@@ -78,14 +78,16 @@ Syntax for queueing and searching
 
 You can search for songs using the search section on the left.
 These can be queued in the playlist individually, or as what is called a rule.
-Rules are filters with a specific order and/or count that can queue in bulk.
+Rules are filters with a specific order and/or limit that can queue in bulk.
 For example, "album:pinkerton artist:weezer" can be added to the playlist,
 this rule which will play the entire Pinkerton album by Weezer.
 You could also just search for "weezer pinker" or something and find it,
 but the above is much more accurate if you have a large library.
-There are many fields that can be used to search for songs based on their tags.
+There are many fields that can be used to search for songs based on their tags,
+while others are specific to Garlmap for ordering or counting the query.
 The full list is: "title", "artist", "album", "disc", "disc_total", "track",
-"track_total", "lyrics", "duration" and "date". Feel free to add some with a PR.
+"track_total", "lyrics", "duration", "date", "order" and "limit".
+Feel free to add a lot more to Garlmap with a PR or make an issue for it.
 You can search for anything inside a field based on regex, separated with ":".
 Even spaces are allowed: "album:dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields:
@@ -96,10 +98,27 @@ it's also possible to specify a range like so: "date:1960-1975".
 You can also use upercase letters in a field name to make it case sensitive,
 as all searches are by default case insensitive: "Album:Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
+The default sort order "disk", which means it's sorted on path alphabetically,
+is used for all queries, unless a custom "order" field is provided.
+For example, you can change to order to "shuffle", to play the tracks randomly.
+Another valid order is "alpha" which will sort by song title alphabetically.
+Finally there is "albumshuffle", which will play albums shuffled,
+while keeping the disc and track order intact for each album.
+The "limit" field can be set to any number and will limit the amount of songs.
 
 Search usage
 
-TODO, selection of individual tracks and keyboard shortcuts for it
+You can focus the search section with either F3 or Ctrl-f,
+and then type in any query as described in the paragraph above.
+The entire query can be added as a rule to the playlist,
+which will automatically queue all matching tracks.
+Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
+or simply with the Arrow up and down keys.
+While in the list, you can also use PageUp, PageDown, Home and End to navigate.
+Once you have found the right track, you can add this single song with "Enter".
+You can always jump to the search box with "Tab", regardless of current focus.
+F3/Ctrl-f merely switch to this section, which might still have a song selected,
+instead of immediately bringing the focus to the search box.
 
 Playlist usage
 
@@ -115,7 +134,11 @@ and this upcoming song will be removed when a new rule or song is added.
 If nothing is added, it will automatically become part of the playlist on play.
 You can navigate the playlist view with the Arrow keys or hjkl.
 Stop after selected song can be toggled with "s", for which an icon will appear.
+While in the playlist, you can also use PageUp, PageDown, Home and End.
 You can also play the selected track right away with "Enter".
+Using "c" you can move the selection to the song that is currently playing.
+Finally, with "p" you can switch the position of the list between two places,
+one for the current song, and the other for the currently selected song.
 
 Caching
 

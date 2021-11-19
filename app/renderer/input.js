@@ -51,6 +51,11 @@ const handleKeyboard = async e => {
     if (e.key === "Tab" || !queryMatch(e, "textarea")) {
         e.preventDefault()
     }
+    if (keyMatch(e, {"key": "Tab"})) {
+        const {switchFocus} = require("./dom")
+        switchFocus("searchbox")
+        return
+    }
     if (keyMatch(e, {"key": "o", "ctrl": true})) {
         if (document.getElementById("status-current").textContent !== "Ready") {
             return
@@ -143,21 +148,49 @@ const handleKeyboard = async e => {
         return
     }
     if (document.body.getAttribute("focus-el") === "search") {
+        if (keyMatch(e, {"key": "ArrowUp"})
+        || keyMatch(e, {"key": "p", "ctrl": true})) {
+            const {decrementSelected} = require("./dom")
+            decrementSelected()
+            return
+        }
+        if (keyMatch(e, {"key": "ArrowDown"})
+        || keyMatch(e, {"key": "n", "ctrl": true})) {
+            const {incrementSelected} = require("./dom")
+            incrementSelected()
+            return
+        }
         if (queryMatch(e, "#rule-search")) {
             const search = document.getElementById("rule-search").value
             if (keyMatch(e, {"key": "Enter"})) {
                 const {append} = require("./playlist")
                 append({"rule": search})
                 e.preventDefault()
-                return
+            } else if (!["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
+                const {query} = require("./songs")
+                document.getElementById("search-results").textContent = ""
+                const {generateSongElement} = require("./dom")
+                query(search).slice(0, 100).forEach(song => {
+                    const el = generateSongElement(song)
+                    document.getElementById("search-results").appendChild(el)
+                    el.addEventListener("dblclick", () => {
+                        const {append} = require("./playlist")
+                        append({"songs": [JSON.parse(JSON.stringify(song))]})
+                    })
+                    el.addEventListener("mousedown", () => {
+                        document.querySelector("#search-results .selected")
+                            ?.classList.remove("selected")
+                        el.classList.add("selected")
+                        el?.scrollIntoView({"block": "nearest"})
+                    })
+                })
             }
-            const {query} = require("./songs")
-            document.getElementById("rule-results").textContent = ""
-            const {generateSongElement} = require("./dom")
-            query(search).slice(0, 100).forEach(song => {
-                document.getElementById("rule-results")
-                    .appendChild(generateSongElement(song))
-            })
+            return
+        }
+        if (keyMatch(e, {"key": "Enter"})) {
+            const {appendSelectedSong} = require("./dom")
+            appendSelectedSong()
+            return
         }
     }
     if (document.body.getAttribute("focus-el") === "playlist") {
@@ -211,6 +244,11 @@ const handleMouse = e => {
     if (queryMatch(e, "#next")) {
         const {increment} = require("./playlist")
         increment()
+        return
+    }
+    if (queryMatch(e, "#rule-search")) {
+        const {switchFocus} = require("./dom")
+        switchFocus("searchbox")
         return
     }
     if (queryMatch(e, "#search-container")) {

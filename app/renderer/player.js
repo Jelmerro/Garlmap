@@ -29,6 +29,9 @@ const init = () => {
     mpv.start().then(() => {
         mpv.on("status", async info => {
             console.info(`${info.property}: ${info.value}`)
+            if (!hasAnySong) {
+                return
+            }
             if (info.property === "playlist-pos" && info.value === 1) {
                 const {increment} = require("./playlist")
                 await increment(false)

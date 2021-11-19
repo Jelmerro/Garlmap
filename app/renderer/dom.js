@@ -19,10 +19,9 @@
 
 const {formatTime, resetWelcome} = require("../util")
 
-let selectedSearchIdx = null
-
 const generateSongElement = song => {
     const songContainer = document.createElement("div")
+    songContainer.setAttribute("song-path", song.path)
     songContainer.className = "song"
     const mainInfo = document.createElement("span")
     mainInfo.className = "main-info"
@@ -128,21 +127,72 @@ const displayCurrentSong = async song => {
 }
 
 const switchFocus = newFocus => {
-    document.body.setAttribute("focus-el", newFocus)
+    // Focus can be: playlist, search or searchbox
+    document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {
         document.getElementById("rule-search").blur()
         document.getElementById("playlist-container").focus()
     } else {
-        if (selectedSearchIdx === null) {
+        const selected = document.querySelector("#search-results .selected")
+        if (!selected || newFocus.endsWith("box")) {
+            selected?.classList.remove("selected")
             const search = document.getElementById("rule-search")
             search.scrollIntoView({"block": "center"})
             search.focus({"preventScroll": true})
             document.body.setAttribute("focus-el", "search")
+            document.getElementById("rule-search").focus()
         } else {
-            // TODO scroll to current song idx
+            selected.scrollIntoView({"block": "nearest"})
         }
-        document.getElementById("rule-search").focus()
     }
 }
 
-module.exports = {generateSongElement, displayCurrentSong, switchFocus}
+const decrementSelected = () => {
+    const selected = document.querySelector("#search-results .selected.song")
+    if (selected) {
+        if (selected.previousSibling) {
+            selected.previousSibling.classList.add("selected")
+        } else {
+            document.getElementById("rule-search").focus()
+        }
+        selected.classList.remove("selected")
+    }
+    document.querySelector("#search-results .selected")
+        ?.scrollIntoView({"block": "nearest"})
+}
+
+const incrementSelected = () => {
+    const selected = document.querySelector("#search-results .selected.song")
+    if (selected) {
+        if (selected.nextSibling) {
+            selected.nextSibling.classList.add("selected")
+            selected.classList.remove("selected")
+        }
+    } else {
+        const song = document.querySelector("#search-results .song")
+        if (song) {
+            song.classList.add("selected")
+            document.getElementById("rule-search").blur()
+        }
+    }
+    document.querySelector("#search-results .selected")
+        ?.scrollIntoView({"block": "nearest"})
+}
+
+const appendSelectedSong = () => {
+    const song = document.querySelector("#search-results .selected.song")
+    if (song) {
+        const {append} = require("./playlist")
+        const {songForPath} = require("./songs")
+        append({"songs": [songForPath(song.getAttribute("song-path"))]})
+    }
+}
+
+module.exports = {
+    generateSongElement,
+    displayCurrentSong,
+    switchFocus,
+    decrementSelected,
+    incrementSelected,
+    appendSelectedSong
+}

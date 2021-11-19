@@ -1,8 +1,13 @@
-- various TODOs in the code
 - add volume controls to the GUI
 - delete rules/songs from the playlist
 - allow selecting of lyrics and help
-- page up and down should work in both search and playlist sections
-- selection and queueing of individual tracks in search section
 - add a way to change the fallback rule
     - including check for always being order shuffle or albumshuffle (so it's infinite)
+- keyboard
+    - page jumping: page up/down
+    - top and bottom of sections: home, end
+    - scrolling: ctrl-e, ctrl-y
+    - playlist p: toggle between current and selection
+    - playlist c: move selection to current
+    - F11 for fullscreen/album art view, see TODO in input
+- mpv should quit decently at all times, see TODO in player

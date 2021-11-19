@@ -297,4 +297,9 @@ const setCachePolicy = (dir, policy) => {
     }
 }
 
-module.exports = {scanner, query, coverArt, fetchLyrics, setCachePolicy}
+const songForPath = p => JSON.parse(JSON.stringify(
+    songs.find(s => s.path === p)))
+
+module.exports = {
+    scanner, query, coverArt, fetchLyrics, setCachePolicy, songForPath
+}

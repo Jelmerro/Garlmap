@@ -76,6 +76,9 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 .rule, .rule > *, .song {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;max-width: 33vw;}
 .rule > * {margin: .5em;}
 .rule.current, .song.current {color: var(--black);background: var(--secondary);font-weight: bold;}
+.songs-of-rule {border: .2em solid var(--fg);}
+.songs-of-rule .song:first-child {border-top: none;}
+.songs-of-rule .song:last-child {border-bottom: none;}
 body[focus-el="playlist"] #search-container .selected,
 body[focus-el="search"] #playlist-container .selected {border-color: var(--primary);}
 body[focus-el="playlist"] #playlist-container .selected,
@@ -87,7 +90,7 @@ body[focus-el="search"] #playlist-container .song.selected.upcoming * {color: va
 body[focus-el="search"] #playlist-container .song.upcoming,
 #playlist-container .song.upcoming:not(.selected) {background: var(--bg);}
 .song {flex: 1;display: flex;}
-.song {color: var(--primary);border: .1em solid var(--border);}
+.song {color: var(--primary);border: .1em solid var(--border);border-left: none;border-right: none;}
 .song:not(.current) .artist, .song:not(.current) .bundled-info {color: var(--secondary);}
 .song * {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
 .song .main-info {display: flex;flex-direction: column;}
