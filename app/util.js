@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const queryMatch = (e, query) => e.composedPath().find(el => {
+const queryMatch = (e, query) => e?.composedPath?.().find(el => {
     try {
         return el.matches(query)
     } catch {
@@ -30,6 +30,9 @@ const keyMatch = (e, opts) => e.key === opts.key && e.ctrlKey === !!opts.ctrl
     && e.metaKey === !!opts.meta
 
 const formatTime = totalSeconds => {
+    if (!totalSeconds || isNaN(Number(totalSeconds))) {
+        return ""
+    }
     let hours = Math.floor(totalSeconds / 3600)
     let minutes = Math.floor((totalSeconds - hours * 3600) / 60)
     let seconds = Math.floor(totalSeconds - hours * 3600 - minutes * 60)

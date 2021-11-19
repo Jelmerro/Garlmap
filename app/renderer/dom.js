@@ -40,9 +40,7 @@ const generateSongElement = song => {
     otherInfo.appendChild(albumEl)
     const bundledInfo = document.createElement("span")
     bundledInfo.className = "bundled-info"
-    if (song.duration) {
-        bundledInfo.textContent = formatTime(song.duration)
-    }
+    bundledInfo.textContent = formatTime(song.duration)
     if (song.track || song.disc) {
         bundledInfo.textContent += ` ${song.track || "?"}/${song.track_total
             || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`

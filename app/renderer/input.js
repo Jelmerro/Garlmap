@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const {ipcRenderer} = require("electron")
+const {ipcRenderer, clipboard} = require("electron")
 const {keyMatch, queryMatch, resetWelcome} = require("../util")
 
 const init = () => {
@@ -66,6 +66,13 @@ const handleKeyboard = async e => {
         })?.[0]
         if (folder) {
             setTimeout(() => scanner(folder), 1)
+        }
+        return
+    }
+    if (keyMatch(e, {"key": "c", "ctrl": true})) {
+        const text = window.getSelection().toString()
+        if (text) {
+            clipboard.writeText(text)
         }
         return
     }
@@ -228,7 +235,7 @@ const handleKeyboard = async e => {
 }
 
 const handleMouse = e => {
-    if (!queryMatch(e, ".song")) {
+    if (!queryMatch(e, ".song") && !queryMatch(e, "#song-info")) {
         e.preventDefault()
     }
     if (queryMatch(e, "#prev")) {

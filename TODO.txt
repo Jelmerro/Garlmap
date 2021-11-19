@@ -1,6 +1,6 @@
+- use fuzzy matching to genius api result
 - add volume controls to the GUI
 - delete rules/songs from the playlist
-- allow selecting of lyrics and help
 - add a way to change the fallback rule
     - including check for always being order shuffle or albumshuffle (so it's infinite)
 - keyboard
