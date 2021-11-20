@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const {formatTime, resetWelcome} = require("../util")
+const {formatTime} = require("../util")
 
 const generateSongElement = song => {
     const songContainer = document.createElement("div")
@@ -54,8 +54,8 @@ const generateSongElement = song => {
 }
 
 const displayCurrentSong = async song => {
-    document.getElementById("current-song").textContent = ""
     const songContainer = document.getElementById("current-song")
+    songContainer.textContent = ""
     const titleEl = document.createElement("span")
     titleEl.className = "title"
     titleEl.textContent = song.title
@@ -94,6 +94,8 @@ const displayCurrentSong = async song => {
     await audio.play()
     const {updatePlayButton} = require("./player")
     updatePlayButton()
+    const {showLyrics} = require("./songs")
+    showLyrics(song.path)
     // MediaSession details
     navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     const {coverArt} = require("./songs")
@@ -111,17 +113,6 @@ const displayCurrentSong = async song => {
         document.getElementById("song-cover").src = null
         document.getElementById("song-cover").style.display = "none"
     }
-    // Display lyrics if cached or configured to always show
-    const {shouldAutoFetchLyrics} = require("./settings")
-    if (song.lyrics) {
-        document.getElementById("song-info").textContent = song.lyrics
-    } else if (shouldAutoFetchLyrics()) {
-        const {fetchLyrics} = require("./songs")
-        await fetchLyrics(song)
-    } else {
-        resetWelcome()
-    }
-    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const switchFocus = newFocus => {
@@ -177,12 +168,12 @@ const incrementSelected = () => {
         ?.scrollIntoView({"block": "nearest"})
 }
 
-const appendSelectedSong = () => {
+const appendSelectedSong = (upNext = false) => {
     const song = document.querySelector("#search-results .selected.song")
     if (song) {
         const {append} = require("./playlist")
         const {songForPath} = require("./songs")
-        append({"songs": [songForPath(song.getAttribute("song-path"))]})
+        append({"songs": [songForPath(song.getAttribute("song-path"))]}, upNext)
     }
 }
 

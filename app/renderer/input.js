@@ -173,6 +173,14 @@ const handleKeyboard = async e => {
                 const {append} = require("./playlist")
                 append({"rule": search})
                 e.preventDefault()
+            } else if (keyMatch(e, {"key": "Enter", "shift": true})) {
+                const {append} = require("./playlist")
+                append({"rule": search}, true)
+                e.preventDefault()
+            } else if (keyMatch(e, {"key": "Enter", "ctrl": true})) {
+                const {setFallbackRule} = require("./playlist")
+                setFallbackRule(search)
+                e.preventDefault()
             } else if (!["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
                 const {query} = require("./songs")
                 document.getElementById("search-results").textContent = ""
@@ -199,6 +207,11 @@ const handleKeyboard = async e => {
             appendSelectedSong()
             return
         }
+        if (keyMatch(e, {"key": "Enter", "shift": true})) {
+            const {appendSelectedSong} = require("./dom")
+            appendSelectedSong(true)
+            return
+        }
     }
     if (document.body.getAttribute("focus-el") === "playlist") {
         if (keyMatch(e, {"key": "ArrowLeft"}) || keyMatch(e, {"key": "h"})) {
@@ -222,6 +235,10 @@ const handleKeyboard = async e => {
                 const {incrementSelected} = require("./playlist")
                 incrementSelected()
             }, 1)
+        }
+        if (keyMatch(e, {"key": "d"}) || keyMatch(e, {"key": "Delete"})) {
+            const {deleteSelected} = require("./playlist")
+            deleteSelected()
         }
         if (keyMatch(e, {"key": "s"})) {
             const {stopAfterTrack} = require("./playlist")

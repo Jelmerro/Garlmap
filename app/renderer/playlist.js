@@ -17,12 +17,11 @@
 */
 "use strict"
 
-const rulelist = []
+let rulelist = []
 let ruleIdx = 0
 let selectedRuleIdx = null
 let selectedPathIdx = null
 let pathIdx = 0
-const fallbackRule = "order:shuffle"
 
 const {formatTime, queryMatch} = require("../util")
 
@@ -44,10 +43,6 @@ const generatePlaylistView = () => {
         } else {
             openImg.src = "../img/right.png"
         }
-        openImg.addEventListener("mousedown", () => {
-            item.open = !item.open
-            generatePlaylistView()
-        })
         mainContainer.appendChild(openImg)
         const title = document.createElement("span")
         title.textContent = item.rule
@@ -59,7 +54,12 @@ const generatePlaylistView = () => {
         const {switchFocus, generateSongElement} = require("./dom")
         if (item.rule) {
             mainContainer.addEventListener("mousedown", e => {
-                if (!queryMatch(e, "img")) {
+                if (e.button === 1) {
+                    // TODO delete rule
+                } else if (queryMatch(e, "img") || e.button === 2) {
+                    item.open = !item.open
+                    generatePlaylistView()
+                } else {
                     switchFocus("playlist")
                     selectedRuleIdx = index
                     selectedPathIdx = null
@@ -78,12 +78,6 @@ const generatePlaylistView = () => {
                 const songInfo = generateSongElement(song)
                 const currentImg = document.createElement("img")
                 currentImg.src = "../img/play.png"
-                currentImg.addEventListener("mousedown", () => {
-                    switchFocus("playlist")
-                    ruleIdx = index
-                    pathIdx = songIdx
-                    playFromPlaylist(true)
-                })
                 songInfo.insertBefore(currentImg, songInfo.firstChild)
                 if (index === ruleIdx && songIdx === pathIdx) {
                     songInfo.classList.add("current")
@@ -95,11 +89,23 @@ const generatePlaylistView = () => {
                 if (song.upcoming) {
                     songInfo.classList.add("upcoming")
                 }
-                songInfo.addEventListener("mousedown", () => {
-                    switchFocus("playlist")
-                    selectedRuleIdx = index
-                    selectedPathIdx = songIdx
-                    generatePlaylistView()
+                songInfo.addEventListener("mousedown", e => {
+                    if (e.button === 1) {
+                        // TODO delete song
+                    } else if (e.button === 2) {
+                        song.stopAfter = !song.stopAfter
+                        generatePlaylistView()
+                    } else if (queryMatch(e, "img:first-child")) {
+                        switchFocus("playlist")
+                        ruleIdx = index
+                        pathIdx = songIdx
+                        playFromPlaylist(true)
+                    } else {
+                        switchFocus("playlist")
+                        selectedRuleIdx = index
+                        selectedPathIdx = songIdx
+                        generatePlaylistView()
+                    }
                 })
                 if (song.stopAfter) {
                     const stopImg = document.createElement("img")
@@ -111,7 +117,6 @@ const generatePlaylistView = () => {
             document.getElementById("main-playlist").appendChild(songContainer)
         }
     })
-    document.getElementById("fallback-rule").textContent = fallbackRule
 }
 
 const playSelectedSong = async() => {
@@ -124,6 +129,7 @@ const playSelectedSong = async() => {
 
 const currentAndNext = () => {
     const {query} = require("./songs")
+    const fallbackRule = document.getElementById("fallback-rule").textContent
     let current = rulelist[ruleIdx]?.songs[pathIdx]
     if (!current) {
         const songs = JSON.parse(JSON.stringify(
@@ -269,16 +275,21 @@ const playFromPlaylist = async(switchNow = true) => {
     }
 }
 
-const append = item => {
+const append = (item, upNext = false) => {
     if (!item.songs) {
         const {query} = require("./songs")
         item.songs = JSON.parse(JSON.stringify(query(item.rule)))
+        if (item.songs.length === 0) {
+            return
+        }
     }
     if (rulelist.length > 0) {
-        rulelist[rulelist.length - 1].songs = rulelist[rulelist.length - 1]
-            .songs.filter(s => !s.upcoming)
-        if (rulelist[rulelist.length - 1].songs.length === 0) {
-            rulelist.pop()
+        if (!upNext || ruleIdx === rulelist.length - 1) {
+            rulelist[rulelist.length - 1].songs = rulelist[rulelist.length - 1]
+                .songs.filter(s => !s.upcoming)
+            if (rulelist[rulelist.length - 1].songs.length === 0) {
+                rulelist.pop()
+            }
         }
     }
     if (!item.rule) {
@@ -286,21 +297,92 @@ const append = item => {
     }
     item.duration = item.songs.map(s => s.duration)
         .reduce((p, n) => (p || 0) + (n || 0))
-    rulelist.push(item)
+    if (upNext && ruleIdx !== rulelist.length) {
+        rulelist.splice(ruleIdx + 1, 0, item)
+    } else {
+        rulelist.push(item)
+    }
     playFromPlaylist(false)
 }
 
 const stopAfterTrack = (track = null) => {
-    if (!track && rulelist.length > 0) {
-        rulelist[ruleIdx].songs[pathIdx].stopAfter
-            = !rulelist[ruleIdx].songs[pathIdx].stopAfter
-    } else if (track === "selected" && rulelist.length > 0) {
+    if (rulelist.length === 0) {
+        return
+    }
+    if (track === "selected") {
         rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
             = !rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
     } else {
-        return
+        rulelist[ruleIdx].songs[pathIdx].stopAfter
+            = !rulelist[ruleIdx].songs[pathIdx].stopAfter
     }
     playFromPlaylist(false)
+}
+
+const deleteSelected = () => {
+    if (selectedRuleIdx === null) {
+        return
+    }
+    if (selectedRuleIdx === ruleIdx) {
+        if (selectedPathIdx === pathIdx || selectedPathIdx === null) {
+            return
+        }
+    }
+    if (selectedRuleIdx !== null && selectedPathIdx !== null) {
+        if (rulelist[selectedRuleIdx].songs.length === 1) {
+            rulelist = rulelist.filter((_, i) => i !== selectedRuleIdx)
+            if (ruleIdx > selectedRuleIdx) {
+                ruleIdx -= 1
+            }
+            selectedRuleIdx = Math.max(0, selectedRuleIdx -= 1)
+            if (rulelist[selectedRuleIdx]?.open) {
+                selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
+            }
+        } else {
+            rulelist[selectedRuleIdx].songs = rulelist[
+                selectedRuleIdx].songs.filter((_, i) => i !== selectedPathIdx)
+            if (selectedRuleIdx === ruleIdx && pathIdx > selectedPathIdx) {
+                pathIdx -= 1
+            }
+            selectedPathIdx = Math.max(0, selectedPathIdx -= 1)
+        }
+    } else if (selectedRuleIdx !== null) {
+        rulelist = rulelist.filter((_, i) => i !== selectedRuleIdx)
+        if (ruleIdx > selectedRuleIdx) {
+            ruleIdx -= 1
+        }
+        selectedRuleIdx = Math.max(0, selectedRuleIdx -= 1)
+        if (rulelist[selectedRuleIdx]?.open) {
+            selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
+        }
+    }
+    if (!rulelist[selectedRuleIdx]?.open) {
+        selectedPathIdx = null
+    }
+    playFromPlaylist(false)
+}
+
+const setFallbackRule = rule => {
+    const scanEl = document.getElementById("status-scan")
+    if (!` ${rule} `.includes(" order:shuffle ")
+    && !` ${rule} `.includes(" order:albumshuffle ")) {
+        scanEl.textContent = "Fallback rule "
+            + "must have a shuffling order so it can continue forever"
+        scanEl.style.color = "var(--tertiary)"
+        return
+    }
+    const {query} = require("./songs")
+    const {length} = query(rule)
+    if (length < 2) {
+        scanEl.textContent
+            = "Fallback rule must match at least 2 tracks to work properly"
+        scanEl.style.color = "var(--tertiary)"
+        return
+    }
+    if (scanEl.textContent.startsWith("Fallback")) {
+        scanEl.textContent = ""
+    }
+    document.getElementById("fallback-rule").textContent = rule
 }
 
 module.exports = {
@@ -314,5 +396,7 @@ module.exports = {
     currentAndNext,
     append,
     playSelectedSong,
-    stopAfterTrack
+    stopAfterTrack,
+    deleteSelected,
+    setFallbackRule
 }

@@ -1,13 +1,9 @@
 - use fuzzy matching to genius api result
 - add volume controls to the GUI
-- delete rules/songs from the playlist
-- add a way to change the fallback rule
-    - including check for always being order shuffle or albumshuffle (so it's infinite)
 - keyboard
     - page jumping: page up/down
     - top and bottom of sections: home, end
     - scrolling: ctrl-e, ctrl-y
     - playlist p: toggle between current and selection
     - playlist c: move selection to current
-    - F11 for fullscreen/album art view, see TODO in input
-- mpv should quit decently at all times, see TODO in player
+- various TODOs around the code

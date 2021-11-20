@@ -22,7 +22,7 @@ const path = require("path")
 const nm = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
-const {readJSON, writeJSON, joinPath} = require("../util")
+const {readJSON, writeJSON, joinPath, resetWelcome} = require("../util")
 
 let configDir = null
 let cache = "all"
@@ -241,11 +241,11 @@ const coverArt = async p => {
 }
 
 const fetchLyrics = async req => {
-    if (req.lyrics) {
-        document.getElementById("song-info").textContent = req.lyrics
+    const cachedLyrics = songs.find(s => s.path === req.path).lyrics
+    if (cachedLyrics) {
+        document.getElementById("song-info").textContent = cachedLyrics
         return
     }
-    const low = s => s.toLowerCase()
     try {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
@@ -270,16 +270,29 @@ const fetchLyrics = async req => {
         } else {
             console.warn("No matched song found, this might be a bug", results)
             document.getElementById("status-scan").textContent
-                = `Failed to find matching song lyrics in results of Genius`
+                = "Failed to find matching song lyrics in results of Genius"
             document.getElementById("status-scan").style.color
                 = "var(--tertiary)"
         }
     } catch (e) {
         console.warn(e)
         document.getElementById("status-scan").textContent
-            = `Failed to fetch lyrics from Genius`
+            = "Failed to fetch lyrics from Genius"
         document.getElementById("status-scan").style.color = "var(--tertiary)"
     }
+}
+
+const showLyrics = async p => {
+    const {shouldAutoFetchLyrics} = require("./settings")
+    const song = songForPath(p)
+    if (song.lyrics) {
+        document.getElementById("song-info").textContent = song.lyrics
+    } else if (shouldAutoFetchLyrics()) {
+        await fetchLyrics(song)
+    } else {
+        resetWelcome()
+    }
+    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const setCachePolicy = (dir, policy) => {
@@ -298,8 +311,14 @@ const setCachePolicy = (dir, policy) => {
 }
 
 const songForPath = p => JSON.parse(JSON.stringify(
-    songs.find(s => s.path === p)))
+    songs.find(s => s.path === p) || {}))
 
 module.exports = {
-    scanner, query, coverArt, fetchLyrics, setCachePolicy, songForPath
+    scanner,
+    query,
+    coverArt,
+    fetchLyrics,
+    showLyrics,
+    setCachePolicy,
+    songForPath
 }

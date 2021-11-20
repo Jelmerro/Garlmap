@@ -113,15 +113,20 @@ Search usage
 
 You can focus the search section with either F3 or Ctrl-f,
 and then type in any query as described in the paragraph above.
-The entire query can be added as a rule to the playlist,
-which will automatically queue all matching tracks.
-Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
-or simply with the Arrow up and down keys.
-While in the list, you can also use PageUp, PageDown, Home and End to navigate.
-Once you have found the right track, you can add this single song with "Enter".
 You can always jump to the search box with "Tab", regardless of current focus.
 F3/Ctrl-f merely switch to this section, which might still have a song selected,
 instead of immediately bringing the focus to the search box.
+After entering a search, you can add the rule to the playlist in 3 ways:
+- At the end of the playlist with "Enter"
+- Immediately after the current rule/song with "Shift-Enter"
+- As a fallback rule (if it has shuffle or albumshuffle order) with "Ctrl-Enter"
+The entire query can be added as a rule to the playlist with these shortcuts,
+which will automatically queue all matching tracks based on the rule.
+Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
+or simply with the Arrow up and down keys to select individual songs.
+While in the list, you can also use PageUp, PageDown, Home and End to navigate.
+Once you have found the right track, you can add this single song with "Enter".
+Finally, with "Shift-Enter" you can queue it immediately after the current rule.
 
 Playlist usage
 
