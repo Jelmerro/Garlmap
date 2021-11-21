@@ -94,7 +94,7 @@ const logCustomSettings = config => {
                 console.info("Current custom settings:")
                 hasCustom = true
             }
-            console.info(`${key}: ${val}`)
+            console.info(`- ${key}: ${val}`)
         }
     }
     if (!hasCustom) {
@@ -248,4 +248,8 @@ ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
 ipcMain.on("dialog-dir", (e, options) => {
     e.returnValue = dialog.showOpenDialogSync(mainWindow, options)
 })
-ipcMain.on("destroy-window", () => mainWindow.destroy())
+ipcMain.on("destroy-window", (_, error) => {
+    console.error("Mpv failed to start with error:")
+    console.error(error)
+    mainWindow.destroy()
+})

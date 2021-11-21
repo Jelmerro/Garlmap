@@ -71,8 +71,7 @@ const init = () => {
             }
         }, 100)
     }).catch(e => {
-        // TODO proper error handling
-        console.warn(e)
+        ipcRenderer.send("destroy-window", JSON.stringify(e, null, 3))
     })
     // Listen for media and such
     ipcRenderer.on("media-pause", pause)
@@ -89,10 +88,15 @@ const init = () => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", async() => {
-        if (isAlive()) {
+        try {
             await mpv.quit()
-        } else {
+        } catch {
+            // Never started in the first place, or was killed separately
+        }
+        try {
             await mpv.command("quit")
+        } catch {
+            // Probably not running anymore, maybe it was killed separately
         }
         ipcRenderer.send("destroy-window")
     })
