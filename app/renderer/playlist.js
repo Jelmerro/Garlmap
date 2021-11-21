@@ -55,7 +55,10 @@ const generatePlaylistView = () => {
         if (item.rule) {
             mainContainer.addEventListener("mousedown", e => {
                 if (e.button === 1) {
-                    // TODO delete rule
+                    switchFocus("playlist")
+                    selectedRuleIdx = index
+                    selectedPathIdx = null
+                    deleteSelected()
                 } else if (queryMatch(e, "img") || e.button === 2) {
                     item.open = !item.open
                     generatePlaylistView()
@@ -91,7 +94,10 @@ const generatePlaylistView = () => {
                 }
                 songInfo.addEventListener("mousedown", e => {
                     if (e.button === 1) {
-                        // TODO delete song
+                        switchFocus("playlist")
+                        selectedRuleIdx = index
+                        selectedPathIdx = songIdx
+                        deleteSelected()
                     } else if (e.button === 2) {
                         song.stopAfter = !song.stopAfter
                         playFromPlaylist(false)
