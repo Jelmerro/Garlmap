@@ -41,7 +41,7 @@ app.on("ready", () => {
         "show": false,
         "title": app.getName(),
         "webPreferences": {
-            "contextIsolation": false,
+            "spellcheck": false,
             "disableBlinkFeatures": "Auxclick",
             "preload": joinPath(__dirname, "renderer/index.js"),
             "sandbox": false
