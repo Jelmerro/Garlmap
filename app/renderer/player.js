@@ -22,6 +22,7 @@ const {formatTime} = require("../util")
 const {ipcRenderer} = require("electron")
 
 const mpv = new mpvAPI({"audio_only": true})
+let volume = 100
 let hasAnySong = false
 let stoppedAfterTrack = false
 
@@ -29,7 +30,7 @@ const init = () => {
     mpv.start().then(() => {
         mpv.on("status", async info => {
             console.info(`${info.property}: ${info.value}`)
-            if (!hasAnySong) {
+            if (!isAlive()) {
                 return
             }
             if (info.property === "playlist-pos" && info.value === 1) {
@@ -166,6 +167,7 @@ const seek = async percent => {
 const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
+    document.querySelector("input[type='range']").disabled = null
     await mpv.load(file)
     await mpv.play()
 }
@@ -177,15 +179,34 @@ const queue = async file => {
     }
 }
 
+const volumeSet = async vol => {
+    volume = Math.min(130, Math.max(0, vol))
+    await updateVolume()
+}
+
 const volumeUp = async() => {
-    if (isAlive()) {
-        await mpv.adjustVolume(10)
-    }
+    volume = Math.min(130, volume + 10)
+    await updateVolume()
 }
 
 const volumeDown = async() => {
+    volume = Math.max(0, volume - 10)
+    await updateVolume()
+}
+
+const updateVolume = async() => {
     if (isAlive()) {
-        await mpv.adjustVolume(-10)
+        await mpv.volume(volume)
+    } else {
+        volume = 100
+    }
+    document.querySelector("input[type='range']").value = volume
+    if (isAlive() && await mpv.isMuted()) {
+        document.querySelector("input[type='range']").className = "muted"
+        document.querySelector("input[type='range']").disabled = "disabled"
+    } else {
+        document.querySelector("input[type='range']").className = ""
+        document.querySelector("input[type='range']").disabled = null
     }
 }
 
@@ -193,6 +214,7 @@ const toggleMute = async() => {
     if (isAlive()) {
         await mpv.mute()
     }
+    await updateVolume()
 }
 
 module.exports = {
@@ -203,6 +225,7 @@ module.exports = {
     load,
     queue,
     updatePlayButton,
+    volumeSet,
     volumeUp,
     volumeDown,
     toggleMute

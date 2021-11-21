@@ -66,6 +66,7 @@ F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 F11 will show the cover art in a large window.
 F12 will open the development tools where you can find any runtime errors.
+There are many more shortcuts, which are listed in most of the sections below.
 
 Startup options
 

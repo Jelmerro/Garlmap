@@ -36,6 +36,7 @@ body {color: var(--fg);font: 14px "DejaVu Sans Mono", "Courier", monospace;}
 body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
+.flex {display: flex;}
 
 
 /* general column alignment */
@@ -60,6 +61,9 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
 #progress-played, #progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
+input[type="range"] {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.7em;width: 7.5em;font: inherit;outline: none;}
+input[type="range"]::-webkit-slider-thumb {appearance: none;background: var(--secondary);height: 1.7em;width: .5em;font: inherit;}
+input[type="range"].muted {background: var(--tertiary);}
 
 
 /* search & playlist column with song info */

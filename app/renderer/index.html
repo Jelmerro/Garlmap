@@ -30,9 +30,12 @@
             <div class="button" id="next"><img src="../img/next.png" /></div>
             <span id="current-song">Welcome to Garlmap, nothing queued yet...</span>
         </div>
-        <div id="progress-container">
-            <div id="progress-played" style="width: 0%">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
-            <div id="progress-string">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
+        <div class="flex">
+            <input type="range" min="0" max="130" value="100" disabled="disabled" />
+            <div id="progress-container">
+                <div id="progress-played" style="width: 0%">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
+                <div id="progress-string">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
+            </div>
         </div>
     </div>
     <div id="column-container">

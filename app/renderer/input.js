@@ -42,8 +42,17 @@ const init = () => {
             handleKeyboard(e)
         }
     })
-    window.addEventListener("click", e => e.preventDefault())
+    window.addEventListener("click", e => {
+        if (!queryMatch(e, "input")) {
+            e.preventDefault()
+        }
+    })
     window.addEventListener("mousedown", handleMouse)
+    document.querySelector("input[type='range']")
+        .addEventListener("input", () => {
+            const {volumeSet} = require("./player")
+            volumeSet(document.querySelector("input[type='range']").value)
+        })
     resetWelcome()
 }
 
@@ -252,8 +261,17 @@ const handleKeyboard = async e => {
 }
 
 const handleMouse = e => {
-    if (!queryMatch(e, ".song") && !queryMatch(e, "#song-info")) {
+    if (!queryMatch(e, ".song, #song-info, textarea, input")) {
         e.preventDefault()
+    }
+    if (queryMatch(e, "input[type='range']")) {
+        if (e.button === 2) {
+            const {volumeSet} = require("./player")
+            volumeSet(100)
+        } else if (e.button === 1) {
+            const {toggleMute} = require("./player")
+            toggleMute()
+        }
     }
     if (queryMatch(e, "#prev")) {
         const {decrement} = require("./playlist")
