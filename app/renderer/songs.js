@@ -19,6 +19,7 @@
 
 const glob = require("glob")
 const path = require("path")
+const {compareTwoStrings} = require("string-similarity")
 const nm = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
@@ -253,14 +254,14 @@ const fetchLyrics = async req => {
         const [mainArtist] = low(req.artist)
             .split(/ ?\(?feat. /g)[0].split(/ ?\(?ft. /g)[0].split(" & ")
         const results = await genius.songs.search(`${req.title} ${mainArtist}`)
-        let song = results.find(
-            s => (low(s.title).includes(low(req.title))
-                || low(req.title).includes(low(s.title)))
-                && low(s.artist.name).includes(mainArtist))
-        if (!song && results.length === 1) {
-            [song] = results
-        }
-        if (song) {
+        results.forEach(s => {
+            s.score = compareTwoStrings(low(s.title), low(req.title))
+                + compareTwoStrings(low(s.artist.name), low(req.artist))
+                + compareTwoStrings(low(s.artist.name), mainArtist)
+        })
+        results.sort((a, b) => b.score - a.score)
+        const [song] = results
+        if (song && song.score > 2.4) {
             const lyrics = await song.lyrics()
             document.getElementById("song-info").textContent = lyrics
             document.getElementById("status-scan").textContent = ""
