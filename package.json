@@ -5,6 +5,13 @@
   "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
   "main": "app/index.js",
   "scripts": {
+    "build": "node build.js",
+    "buildall": "node build.js --linux --win --mac",
+    "buildlinux": "node build.js --linux",
+    "buildmac": "node build.js --mac",
+    "buildwin": "node build.js --win",
+    "fix": "eslint --fix app .eslintrc.js build.js",
+    "lint": "eslint app .eslintrc.js build.js",
     "start": "electron app"
   },
   "repository": "https://github.com/Jelmerro/Garlmap",
@@ -22,7 +29,7 @@
     "archiver": "5.3.0",
     "electron": "16.0.1",
     "electron-builder": "22.14.7",
-    "eslint": "8.2.0"
+    "eslint": "8.3.0"
   },
   "dependencies": {
     "genius-lyrics": "4.3.4",
