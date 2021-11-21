@@ -29,13 +29,13 @@ const keyMatch = (e, opts) => e.key === opts.key && e.ctrlKey === !!opts.ctrl
     && e.shiftKey === !!opts.shift && e.altKey === !!opts.alt
     && e.metaKey === !!opts.meta
 
-const formatTime = totalSeconds => {
-    if (!totalSeconds || isNaN(Number(totalSeconds))) {
+const formatTime = total => {
+    if ([null, undefined].includes(total) || isNaN(Number(total))) {
         return ""
     }
-    let hours = Math.floor(totalSeconds / 3600)
-    let minutes = Math.floor((totalSeconds - hours * 3600) / 60)
-    let seconds = Math.floor(totalSeconds - hours * 3600 - minutes * 60)
+    let hours = Math.floor(total / 3600)
+    let minutes = Math.floor((total - hours * 3600) / 60)
+    let seconds = Math.floor(total - hours * 3600 - minutes * 60)
     if (hours < 10) {
         hours = `0${hours}`
     }
@@ -67,16 +67,15 @@ F7 and F8 are for moving to the previous and next track.
 F11 will show the cover art in a large window.
 F12 will open the development tools where you can find any runtime errors.
 There are many more shortcuts, which are listed in most of the sections below.
+When in doubt, the mouse can also be used to do most actions.
 
 Startup options
 
 It's required to load a folder for Garlmap to play songs.
 It will index and cache the info of them, so you can search it easily.
-You can load a folder with Ctrl-o, by passing it on startup,
-or by setting it using ENV vars as "GARLMAP_FOLDER".
-If you just have a single music folder, I would recommend a GARLMAP_FOLDER env.
-You can also set "GARLMAP_AUTO_LYRICS=true" to automatically download lyrics,
-just as there are startup arguments for it (see --help) for details.
+You can load a folder by pressing Ctrl-o, or you can customize your settings.
+There are many ways to do so, with env vars, a config file, or with arguments,
+all of which are explained if you start Garlmap with the "--help" argument.
 
 Syntax for queueing and searching
 
@@ -97,7 +96,7 @@ Even spaces are allowed: "album:dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields:
 "dark side" will match any song that has any field with "dark" and "side" in it,
 even the lyrics are searched, if they are cached for a specific song.
-For the number fields, such as "date", "duration" or "track" and such,
+For the number fields, such as "date", "duration" or "track",
 it's also possible to specify a range like so: "date:1960-1975".
 You can also use upercase letters in a field name to make it case sensitive,
 as all searches are by default case insensitive: "Album:Dark Side" for example.
@@ -127,7 +126,10 @@ Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
 or simply with the Arrow up and down keys to select individual songs.
 While in the list, you can also use PageUp, PageDown, Home and End to navigate.
 Once you have found the right track, you can add this single song with "Enter".
-Finally, with "Shift-Enter" you can queue it immediately after the current rule.
+With "Shift-Enter" you can queue it immediately after the current rule.
+You can also select tracks with the left mouse button,
+middle-click it to add it to the playlist immediately after the current rule,
+and finally right-click to add it at the end of the playlist.
 
 Playlist usage
 
@@ -141,8 +143,12 @@ Songs will automatically be added to the playlist based on this fallback rule.
 An upcoming song will have a temporary place in the playlist in a shade of gray,
 and this upcoming song will be removed when a new rule or song is added.
 If nothing is added, it will automatically become part of the playlist on play.
-You can navigate the playlist view with the Arrow keys or hjkl.
+You can navigate the playlist view with the Arrow keys or hjkl,
+or select a rule or track directly by clicking with the left mouse button on it.
+On hover, a play icon will appear, which can be used to play a song right away.
+Right-clicking will open/close a rule, or toggle stop after track on a song.
 Stop after selected song can be toggled with "s", for which an icon will appear.
+Middle-clicking on a song or rule will remove it from the playlist.
 While in the playlist, you can also use PageUp, PageDown, Home and End.
 You can also play the selected track right away with "Enter".
 Using "c" you can move the selection to the song that is currently playing.
@@ -160,6 +166,20 @@ just know that cache greatly speeds up parsing of large folders,
 and greatly reduces the amount of requests to Genius if you want auto lyrics.
 Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
 but after startup there shouldn't be too many moments that freeze the app.
+
+Volume control
+
+The volume of the app is by default set to 100% on startup,
+and can be seen on the top left below the player controls.
+It's worth noting that the maximum volume is 130%, which is why it's not maxed.
+You can use the mouse to interact with the slider as you would expect,
+but there are more options to change the volume.
+You may right-click the volume slider to reset the volume to 100% at all times.
+Alternatively, you can middle-click it, to toggle the mute state,
+which will change the bar color and keep the volume stored for when you unmute.
+The keyboard shortcuts for this are Ctrl-minus and Ctrl-plus for volume change,
+and you can do Ctrl-m to toggle mute, all of which is reflected in the bar.
+Finally you can reset the volume by pressing Ctrl-0 on the keyboard.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
 }
@@ -192,6 +212,15 @@ const readJSON = loc => {
     }
 }
 
+const readFile = loc => {
+    const {readFileSync} = require("fs")
+    try {
+        return readFileSync(loc).toString()
+    } catch {
+        return null
+    }
+}
+
 const writeJSON = (loc, data) => {
     const {writeFileSync} = require("fs")
     try {
@@ -211,5 +240,6 @@ module.exports = {
     joinPath,
     basePath,
     readJSON,
+    readFile,
     writeJSON
 }

@@ -90,6 +90,11 @@ const handleKeyboard = async e => {
         toggleMute()
         return
     }
+    if (keyMatch(e, {"key": "0", "ctrl": true})) {
+        const {volumeSet} = require("./player")
+        volumeSet(100)
+        return
+    }
     if (keyMatch(e, {"key": "=", "ctrl": true})) {
         const {volumeUp} = require("./player")
         volumeUp()
@@ -201,11 +206,17 @@ const handleKeyboard = async e => {
                         const {append} = require("./playlist")
                         append({"songs": [JSON.parse(JSON.stringify(song))]})
                     })
-                    el.addEventListener("mousedown", () => {
+                    el.addEventListener("mousedown", mouseEv => {
                         document.querySelector("#search-results .selected")
                             ?.classList.remove("selected")
                         el.classList.add("selected")
                         el?.scrollIntoView({"block": "nearest"})
+                        if (mouseEv.button !== 0) {
+                            const {append} = require("./playlist")
+                            append(
+                                {"songs": [JSON.parse(JSON.stringify(song))]},
+                                mouseEv.button === 1)
+                        }
                     })
                 })
             }

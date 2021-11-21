@@ -24,12 +24,20 @@ let autoLyrics = false
 const init = () => {
     ipcRenderer.on("config", (_, config) => {
         const {setCachePolicy} = require("./songs")
-        setCachePolicy(config.configDir, config.cache)
+        setCachePolicy(config.configDir, config.cache || "all")
         if (config.folder) {
             const {scanner} = require("./songs")
             setTimeout(() => scanner(config.folder), 1)
         }
         autoLyrics = !!config.autoLyrics
+        if (config.fontSize) {
+            document.body.style.fontSize = `${config.fontSize}px`
+        }
+        if (config.customTheme) {
+            const styleEl = document.createElement("style")
+            styleEl.textContent = config.customTheme
+            document.head.appendChild(styleEl)
+        }
     })
 }
 

@@ -283,16 +283,14 @@ const fetchLyrics = async req => {
 }
 
 const showLyrics = async p => {
+    resetWelcome()
     const {shouldAutoFetchLyrics} = require("./settings")
     const song = songForPath(p)
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
     } else if (shouldAutoFetchLyrics()) {
         await fetchLyrics(song)
-    } else {
-        resetWelcome()
     }
-    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const setCachePolicy = (dir, policy) => {

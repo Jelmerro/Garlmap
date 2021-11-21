@@ -94,7 +94,7 @@ const generatePlaylistView = () => {
                         // TODO delete song
                     } else if (e.button === 2) {
                         song.stopAfter = !song.stopAfter
-                        generatePlaylistView()
+                        playFromPlaylist(false)
                     } else if (queryMatch(e, "img:first-child")) {
                         switchFocus("playlist")
                         ruleIdx = index

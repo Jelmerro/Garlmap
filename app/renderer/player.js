@@ -203,10 +203,8 @@ const updateVolume = async() => {
     document.querySelector("input[type='range']").value = volume
     if (isAlive() && await mpv.isMuted()) {
         document.querySelector("input[type='range']").className = "muted"
-        document.querySelector("input[type='range']").disabled = "disabled"
     } else {
         document.querySelector("input[type='range']").className = ""
-        document.querySelector("input[type='range']").disabled = null
     }
 }
 

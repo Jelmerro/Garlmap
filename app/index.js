@@ -20,7 +20,7 @@
 const {
     app, BrowserWindow, systemPreferences, globalShortcut, ipcMain, dialog
 } = require("electron")
-const {joinPath, basePath, isDirectory} = require("./util")
+const {joinPath, basePath, isDirectory, readJSON, readFile} = require("./util")
 
 const version = process.env.npm_package_version || app.getVersion()
 const configDir = joinPath(app.getPath("appData"), "Garlmap")
@@ -28,6 +28,7 @@ app.setPath("appData", configDir)
 app.setPath("userData", configDir)
 let mainWindow = null
 app.on("ready", () => {
+    const config = processStartupArgs()
     if (!app.requestSingleInstanceLock()) {
         console.info(`Garlmap is a single instance app for performance reasons`)
         app.exit(0)
@@ -37,7 +38,7 @@ app.on("ready", () => {
         "frame": true,
         "height": 600,
         "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
-        "show": true,
+        "show": false,
         "title": app.getName(),
         "webPreferences": {
             "contextIsolation": false,
@@ -60,10 +61,13 @@ app.on("ready", () => {
         mainWindow.webContents.on("new-window", e => e.preventDefault())
         mainWindow.webContents.on("will-navigate", e => e.preventDefault())
         mainWindow.webContents.on("will-redirect", e => e.preventDefault())
+        logCustomSettings(config)
+        config.version = version
+        config.configDir = configDir
+        mainWindow.webContents.send("config", config)
         registerMediaKeys()
+        mainWindow.show()
     })
-    processStartupArgs()
-    mainWindow.show()
 })
 
 const registerMediaKeys = () => {
@@ -82,6 +86,22 @@ const registerMediaKeys = () => {
     })
 }
 
+const logCustomSettings = config => {
+    let hasCustom = false
+    for (const [key, val] of Object.entries(config)) {
+        if (val !== null && val !== undefined) {
+            if (!hasCustom) {
+                console.info("Current custom settings:")
+                hasCustom = true
+            }
+            console.info(`${key}: ${val}`)
+        }
+    }
+    if (!hasCustom) {
+        console.info("No custom settings, all defaults")
+    }
+}
+
 const processStartupArgs = () => {
     let args = process.argv.slice(1)
     const exec = basePath(process.argv[0])
@@ -92,11 +112,18 @@ const processStartupArgs = () => {
         const argStr = String(arg).trim().toLowerCase()
         return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
     }
-    let cache = process.env.GARLMAP_CACHE?.trim().toLowerCase() || "all"
-    let autoLyrics = isTruthyArg(process.env.GARLMAP_AUTO_LYRICS)
-    let folder = process.env.GARLMAP_FOLDER?.trim()
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
+    let config = {
+        "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
+        "customTheme": readFile(joinPath(configDir, "theme.css")),
+        "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
+        "folder": process.env.GARLMAP_FOLDER?.trim()
+    }
+    const configFile = readJSON(joinPath(configDir, "settings.json"))
+    if (configFile) {
+        config = {...config, ...configFile}
+    }
     args.forEach(arg => {
         if (arg.startsWith("-")) {
             const [name] = arg.split("=")
@@ -106,40 +133,50 @@ const processStartupArgs = () => {
             } else if (name === "--version") {
                 outputVersion()
             } else if (name === "--cache") {
-                if (["all", "song", "lyrics", "none"].includes(value)) {
-                    cache = value
-                } else {
-                    console.warn("Error, cache arg only accepts one of:")
-                    console.warn("- all, song, lyrics, none")
-                    app.exit(1)
-                }
+                config.cache = value
+            } else if (name === "--font-size") {
+                config.fontSize = value
             } else if (name === "--auto-lyrics") {
-                autoLyrics = isTruthyArg(value) || arg === "--auto-lyrics"
+                config.autoLyrics = isTruthyArg(value)
+                    || arg === "--auto-lyrics"
             } else {
                 console.warn(`Error, unsupported argument '${arg}'`)
                 app.exit(1)
             }
         } else {
-            folder = arg
+            config.folder = arg
         }
     })
-    if (folder && !isDirectory(folder)) {
-        console.warn(`Music dir '${folder}' could not be found`)
+    if (!["all", "song", "lyrics", "none", undefined].includes(config.cache)) {
+        console.warn("Error, cache arg only accepts one of:")
+        console.warn("- all, song, lyrics, none")
         app.exit(1)
     }
-    mainWindow.webContents.send("config", {
-        version, folder, autoLyrics, cache, configDir
-    })
+    if (config.fontSize) {
+        const s = Number(config.fontSize)
+        if (isNaN(s) || s > 100 || s < 8 || Math.floor(s) !== s) {
+            console.warn("Font size must be a round number between 8 and 100.")
+            app.exit(1)
+        }
+        config.fontSize = s
+    }
+    if (config.folder && !isDirectory(config.folder)) {
+        console.warn(`Music dir '${config.folder}' could not be found`)
+        app.exit(1)
+    }
+    return config
 }
 
 const outputHelp = () => {
-    console.info(`> garlmap --cache=<ALL,song,lyrics,none> --auto-lyrics folder
+    console.info(`${`
+> garlmap --cache=<ALL,song,lyrics,none> --auto-lyrics --font-size=<int> folder
 
+For help with app usage, see the built-in help on the right.
 Garlmap can be started without any arguments, but it supports the following:
 
-    --help         Shows this help and exits.
+    --help         Show this help and exit.
 
-    --version      Shows the current Garlmap version and exits.
+    --version      Show the current Garlmap version and exit.
 
     --cache=all    Define the cache policy to use for this instance.
                    By default, both lyrics and song data are cached forever.
@@ -148,22 +185,46 @@ Garlmap can be started without any arguments, but it supports the following:
                    Cache will still be written after being freshly fetched/read.
                    Other than "all", this arg can be set to these values:
                    Song data (songs), lyrics (lyrics), or nothing at all (none)
-                   Can be set with env GARLMAP_CACHE, but this arg overrides it.
+                   If no arg is found, it will read the "cache" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_CACHE env will be read,
+                   or this setting will by default fallback to using "all".
 
-    --auto-lyrics  Enables the automatic downloading of lyrics when songs play.
-                   Can be set with GARLMAP_AUTO_LYRICS, but args go over envs.
-                   Which means you can do: GARLMAP_AUTO_LYRICS=1 or TRUE or w/e,
-                   and then disable it again at startup with --auto-lyrics=false
-                   If neither are present, default is set to not download auto,
-                   but you can still download them per song by pressing F4.
+    --auto-lyrics  Enable the automatic downloading of lyrics when songs play.
+                   If disabled, you can download them per song by pressing F4.
                    Lyrics will be cached forever after being fetched once,
-                   unless you disable it with the cache argument or env var.
+                   unless you disable it with the cache setting listed above.
+                   The argument can optionally be provided with value:
+                   "--auto-lyrics=true", "--auto-lyrics=0, "--auto-lyrics=no".
+                   If no arg is found, it will read the "autoLyrics" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_AUTO_LYRICS env will be read,
+                   or this setting will by default be disabled from auto fetch.
+
+    --font-size=14 Define a custom font size, without requiring a custom theme.
+                   Accepted values are between 8-100, and the unit is in pixels.
+                   Especially helpful on very high resolution screens.
+                   Even values are recommend regardless of font size value,
+                   to prevent rounding errors on small elements in the player.
 
     folder         Provide a folder to load the songs from for this instance.
-                   If not provided, no default folder is opened in Garlmap.
-                   This means that you need to open one manually with Ctrl-O.
-                   Can also be set with GARLMAP_FOLDER, again, arg overrides it.
-`)
+                   If no arg is found, it will read the "folder" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_FOLDER env will be read,
+                   or no default folder is opened on startup.
+                   This means that you need to open one manually with Ctrl-o.
+                   This is a positional argument, of which only one is allowed.
+                   Though I would recommend to set this to your root music dir,
+                   especially if you have a single dir to store all your music.
+
+You can also customize the look and feel of Garlmap using a custom theme file:
+${joinPath(configDir, "theme.css")}
+If not present, the default theme will be used,
+although you may still change the fontsize without using a custom theme.
+The default theme, including the color configuration, is located here:
+https://github.com/Jelmerro/Garlmap/blob/master/app/renderer/index.css
+If you JUST want to change the colors, you ONLY need the ":root" section!
+`.trim()}\n`)
     showLicense()
 }
 

@@ -40,7 +40,7 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 
 
 /* general column alignment */
-#app, #info-container {display: flex;flex-direction: column;}
+#info-container {display: flex;flex-direction: column;}
 #column-container {display: flex;flex: 1;margin: .5em 0;min-height: 0;}
 #column-container * {flex: 1;}
 #column-container > * {background: var(--accent);}
@@ -57,11 +57,11 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #current-song .artist {margin-left: .5em;}
 #current-song .album {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
-#progress-container {display: flex;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
+#progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
 #progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
 #progress-played, #progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
-input[type="range"] {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.7em;width: 7.5em;font: inherit;outline: none;}
+input[type="range"] {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.25em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}
 input[type="range"]::-webkit-slider-thumb {appearance: none;background: var(--secondary);height: 1.7em;width: .5em;font: inherit;}
 input[type="range"].muted {background: var(--tertiary);}
 

@@ -1,8 +1,10 @@
 - use fuzzy matching to genius api result
-- keyboard
+- keyboard and add to help
+    - make ctrl tab switch between playlist and search section
     - page jumping: page up/down
     - top and bottom of sections: home, end
     - scrolling: ctrl-e, ctrl-y
+    - scroll lyrics/help faster with Shift-F9/F10
     - playlist p: toggle between current and selection
     - playlist c: move selection to current
 - various TODOs around the code
