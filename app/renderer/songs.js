@@ -18,7 +18,6 @@
 "use strict"
 
 const glob = require("glob")
-const path = require("path")
 const {compareTwoStrings} = require("string-similarity")
 const nm = require("music-metadata")
 const {Client} = require("genius-lyrics")
@@ -78,7 +77,7 @@ const scanner = folder => {
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
-    glob(path.join(escapedFolder, "**/*.mp3"), async(_e, files) => {
+    glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
         songs = cachedSongs.filter(s => files.includes(s.path))
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--primary)"
@@ -251,17 +250,14 @@ const fetchLyrics = async req => {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
         document.getElementById("status-scan").style.color = "var(--primary)"
-        const [mainArtist] = low(req.artist)
-            .split(/ ?\(?feat. /g)[0].split(/ ?\(?ft. /g)[0].split(" & ")
-        const results = await genius.songs.search(`${req.title} ${mainArtist}`)
+        const results = await genius.songs.search(`${req.title} ${req.artist}`)
         results.forEach(s => {
             s.score = compareTwoStrings(low(s.title), low(req.title))
                 + compareTwoStrings(low(s.artist.name), low(req.artist))
-                + compareTwoStrings(low(s.artist.name), mainArtist)
         })
         results.sort((a, b) => b.score - a.score)
         const [song] = results
-        if (song && song.score > 2.4) {
+        if (song && song.score > 1.6) {
             const lyrics = await song.lyrics()
             document.getElementById("song-info").textContent = lyrics
             document.getElementById("status-scan").textContent = ""

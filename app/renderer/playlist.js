@@ -273,6 +273,8 @@ const playFromPlaylist = async(switchNow = true) => {
         if (switchNow) {
             await load(current.path)
             document.getElementById("status-scan").textContent = ""
+            const {showLyrics} = require("./songs")
+            showLyrics(current.path)
         }
         await queue(next?.path)
         const {displayCurrentSong} = require("./dom")

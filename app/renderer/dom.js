@@ -94,8 +94,6 @@ const displayCurrentSong = async song => {
     await audio.play()
     const {updatePlayButton} = require("./player")
     updatePlayButton()
-    const {showLyrics} = require("./songs")
-    showLyrics(song.path)
     // MediaSession details
     navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     const {coverArt} = require("./songs")

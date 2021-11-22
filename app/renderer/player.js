@@ -37,6 +37,10 @@ const init = () => {
                 const {increment} = require("./playlist")
                 await increment(false)
                 document.getElementById("status-scan").textContent = ""
+                const {showLyrics} = require("./songs")
+                const {currentAndNext} = require("./playlist")
+                const {current} = currentAndNext()
+                showLyrics(current.path)
             }
             if (info.property === "playlist-pos" && info.value === -1) {
                 const {currentAndNext, playFromPlaylist} = require("./playlist")
