@@ -56,6 +56,19 @@ const init = () => {
     resetWelcome()
 }
 
+const openFolder = () => {
+    if (document.getElementById("status-current").textContent !== "Ready") {
+        return
+    }
+    const {scanner} = require("./songs")
+    const folder = ipcRenderer.sendSync("dialog-dir", {
+        "title": "Open a folder", "properties": ["openDirectory"]
+    })?.[0]
+    if (folder) {
+        setTimeout(() => scanner(folder), 1)
+    }
+}
+
 const handleKeyboard = async e => {
     if (e.key === "Tab" || !queryMatch(e, "textarea")) {
         e.preventDefault()
@@ -66,16 +79,7 @@ const handleKeyboard = async e => {
         return
     }
     if (keyMatch(e, {"key": "o", "ctrl": true})) {
-        if (document.getElementById("status-current").textContent !== "Ready") {
-            return
-        }
-        const {scanner} = require("./songs")
-        const folder = ipcRenderer.sendSync("dialog-dir", {
-            "title": "Open a folder", "properties": ["openDirectory"]
-        })?.[0]
-        if (folder) {
-            setTimeout(() => scanner(folder), 1)
-        }
+        openFolder()
         return
     }
     if (keyMatch(e, {"key": "c", "ctrl": true})) {
@@ -150,6 +154,14 @@ const handleKeyboard = async e => {
     if (keyMatch(e, {"key": "F8"})) {
         const {increment} = require("./playlist")
         increment()
+        return
+    }
+    if (keyMatch(e, {"key": "F9", "shift": true})) {
+        document.getElementById("song-info").scrollBy(0, 1000)
+        return
+    }
+    if (keyMatch(e, {"key": "F10", "shift": true})) {
+        document.getElementById("song-info").scrollBy(0, -1000)
         return
     }
     if (keyMatch(e, {"key": "F9"})) {
@@ -275,6 +287,11 @@ const handleMouse = e => {
     if (!queryMatch(e, ".song, #song-info, textarea, input")) {
         e.preventDefault()
     }
+    if (queryMatch(e, "#status-folder, #status-files")) {
+        // #bug Electron will freeze the mouse if this is not called on a delay
+        setTimeout(() => openFolder(), 100)
+        return
+    }
     if (queryMatch(e, "input[type='range']")) {
         if (e.button === 2) {
             const {volumeSet} = require("./player")
@@ -283,6 +300,7 @@ const handleMouse = e => {
             const {toggleMute} = require("./player")
             toggleMute()
         }
+        return
     }
     if (queryMatch(e, "#prev")) {
         const {decrement} = require("./playlist")
@@ -307,10 +325,12 @@ const handleMouse = e => {
     if (queryMatch(e, "#search-container")) {
         const {switchFocus} = require("./dom")
         switchFocus("search")
+        return
     }
     if (queryMatch(e, "#playlist-container")) {
         const {switchFocus} = require("./dom")
         switchFocus("playlist")
+        return
     }
     if (queryMatch(e, "#progress-container")) {
         const {seek} = require("./player")
