@@ -23,13 +23,15 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 - Lyrics and gapless playback are essential features for active listening to music
 - Completely offline, unless told to fetch stuff, which should be cached until you tell it not to
 - Re-ordering songs to play should be configurable for that specific set of songs
-- Removing multiple songs from your queue should not require you to remove each song individually
+- Adding a group of songs to your queue in bulk should allow you to remove them in one go too
 
 ## Building
 
 - Install MPV from [mpv.io](https://mpv.io) or your package manager
 - Clone this repo and run `npm ci` then `npm run build`
 - Run or install the executables/packages from the `dist` folder
+
+Only for Windows and Linux, mac is unsupported until all packages used also support it.
 
 ## License
 

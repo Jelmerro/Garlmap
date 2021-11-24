@@ -6,9 +6,8 @@
   "main": "app/index.js",
   "scripts": {
     "build": "node build.js",
-    "buildall": "node build.js --linux --win --mac",
+    "buildall": "node build.js --linux --win",
     "buildlinux": "node build.js --linux",
-    "buildmac": "node build.js --mac",
     "buildwin": "node build.js --win",
     "fix": "eslint --fix app .eslintrc.js build.js",
     "lint": "eslint app .eslintrc.js build.js",
@@ -26,7 +25,6 @@
   "email": "Jelmerro@users.noreply.github.com",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "archiver": "5.3.0",
     "electron": "16.0.1",
     "electron-builder": "22.14.7",
     "eslint": "8.3.0"
@@ -38,8 +36,5 @@
     "node-mpv": "2.0.0-beta.2",
     "rimraf": "3.0.2",
     "string-similarity": "4.0.4"
-  },
-  "browserslist": [
-    "last 2 Chrome versions"
-  ]
+  }
 }
