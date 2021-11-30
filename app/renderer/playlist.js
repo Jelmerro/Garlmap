@@ -349,6 +349,9 @@ const deleteSelected = () => {
         } else {
             rulelist[selectedRuleIdx].songs = rulelist[
                 selectedRuleIdx].songs.filter((_, i) => i !== selectedPathIdx)
+            rulelist[selectedRuleIdx].duration = rulelist[
+                selectedRuleIdx].songs.map(s => s.duration)
+                .reduce((p, n) => (p || 0) + (n || 0))
             if (selectedRuleIdx === ruleIdx && pathIdx > selectedPathIdx) {
                 pathIdx -= 1
             }

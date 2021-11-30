@@ -19,7 +19,7 @@
 
 const glob = require("glob")
 const {compareTwoStrings} = require("string-similarity")
-const nm = require("music-metadata")
+const musicMetadata = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
 const {readJSON, writeJSON, joinPath, resetWelcome} = require("../util")
@@ -35,9 +35,9 @@ const low = s => s.toLowerCase()
 const processFile = async(file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     try {
-        let details = await nm.parseFile(file, {"skipCovers": true})
+        let details = await musicMetadata.parseFile(file, {"skipCovers": true})
         if (!details.format.duration) {
-            details = await nm.parseFile(
+            details = await musicMetadata.parseFile(
                 file, {"skipCovers": true, "duration": true})
         }
         const song = {
@@ -102,6 +102,7 @@ const scanner = folder => {
         } else {
             document.getElementById("status-scan").textContent = ""
         }
+        setTimeout(() => updateCache(), 1)
     })
 }
 
@@ -228,7 +229,7 @@ const query = search => {
 
 const coverArt = async p => {
     try {
-        const details = await nm.parseFile(p, {"skipCovers": false})
+        const details = await musicMetadata.parseFile(p, {"skipCovers": false})
         const pic = details.common.picture?.[0]
         if (pic) {
             const str = Buffer.from(pic.data, "binary").toString("base64")
