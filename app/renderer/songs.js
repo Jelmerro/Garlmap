@@ -51,14 +51,20 @@ const processFile = async(file, total, lyrics = null) => {
             "track_total": details.common.track.of,
             "duration": details.format.duration,
             "date": details.common.year,
+            "bitrate": details.format.bitrate,
             lyrics
         }
-        songs.push(song)
-        const existing = cachedSongs.find(s => s.path === song.path)
-        if (existing) {
-            cachedSongs[cachedSongs.indexOf(existing)] = song
+        const existingCache = cachedSongs.find(s => s.path === song.path)
+        if (existingCache) {
+            cachedSongs[cachedSongs.indexOf(existingCache)] = song
         } else {
             cachedSongs.push(song)
+        }
+        const existingCurrent = songs.find(s => s.path === song.path)
+        if (existingCurrent) {
+            songs[songs.indexOf(existingCurrent)] = song
+        } else {
+            songs.push(song)
         }
     } catch {
         failures.push(file)

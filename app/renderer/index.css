@@ -52,6 +52,7 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 #player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
 #player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
+#current-song:hover {white-space: pre-line;}
 #current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
 #current-song .title {margin-right: .5em;}
 #current-song .artist {margin-left: .5em;}
