@@ -38,21 +38,21 @@ const processFile = async(file, total, lyrics = null) => {
         let details = await musicMetadata.parseFile(file, {"skipCovers": true})
         if (!details.format.duration) {
             details = await musicMetadata.parseFile(
-                file, {"skipCovers": true, "duration": true})
+                file, {"duration": true, "skipCovers": true})
         }
         const song = {
-            "path": file,
-            "title": details.common.title,
-            "artist": details.common.artist,
             "album": details.common.album,
+            "artist": details.common.artist,
+            "bitrate": details.format.bitrate,
+            "date": details.common.year,
             "disc": details.common.disk.no,
             "disc_total": details.common.disk.of,
-            "track": details.common.track.no,
-            "track_total": details.common.track.of,
             "duration": details.format.duration,
-            "date": details.common.year,
-            "bitrate": details.format.bitrate,
-            lyrics
+            lyrics,
+            "path": file,
+            "title": details.common.title,
+            "track": details.common.track.no,
+            "track_total": details.common.track.of
         }
         const existingCache = cachedSongs.find(s => s.path === song.path)
         if (existingCache) {
@@ -119,11 +119,11 @@ const query = search => {
         return []
     }
     const filters = search.split(/(?= \w+:)/g).map(p => ({
+        "cased": low(p.trim().split(":")[0]) !== p.trim().split(":")[0],
         "name": p.trim().split(":")[0],
-        "value": p.trim().split(":")[1],
-        "cased": low(p.trim().split(":")[0]) !== p.trim().split(":")[0]
+        "value": p.trim().split(":")[1]
     }))
-    let globalSearch = {"name": null, "cased": false}
+    let globalSearch = {"cased": false, "name": null}
     if (filters[0]?.value === undefined) {
         globalSearch = filters.shift()
     }
@@ -307,7 +307,7 @@ const setCachePolicy = (dir, policy) => {
         }
         if (cache === "lyrics") {
             cachedSongs = cachedSongs.filter(s => s.lyrics).map(
-                s => ({"path": s.path, "lyrics": s.lyrics}))
+                s => ({"lyrics": s.lyrics, "path": s.path}))
         }
     }
 }
@@ -316,11 +316,11 @@ const songForPath = p => JSON.parse(JSON.stringify(
     songs.find(s => s.path === p) || {}))
 
 module.exports = {
-    scanner,
-    query,
     coverArt,
     fetchLyrics,
-    showLyrics,
+    query,
+    scanner,
     setCachePolicy,
+    showLyrics,
     songForPath
 }

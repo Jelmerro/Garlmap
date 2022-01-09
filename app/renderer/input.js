@@ -62,7 +62,7 @@ const openFolder = () => {
     }
     const {scanner} = require("./songs")
     const folder = ipcRenderer.sendSync("dialog-dir", {
-        "title": "Open a folder", "properties": ["openDirectory"]
+        "properties": ["openDirectory"], "title": "Open a folder"
     })?.[0]
     if (folder) {
         setTimeout(() => scanner(folder), 1)
@@ -78,33 +78,33 @@ const handleKeyboard = async e => {
         switchFocus("searchbox")
         return
     }
-    if (keyMatch(e, {"key": "o", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "o"})) {
         openFolder()
         return
     }
-    if (keyMatch(e, {"key": "c", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "c"})) {
         const text = window.getSelection().toString()
         if (text) {
             clipboard.writeText(text)
         }
         return
     }
-    if (keyMatch(e, {"key": "m", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "m"})) {
         const {toggleMute} = require("./player")
         toggleMute()
         return
     }
-    if (keyMatch(e, {"key": "0", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "0"})) {
         const {volumeSet} = require("./player")
         volumeSet(100)
         return
     }
-    if (keyMatch(e, {"key": "=", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "="})) {
         const {volumeUp} = require("./player")
         volumeUp()
         return
     }
-    if (keyMatch(e, {"key": "-", "ctrl": true})) {
+    if (keyMatch(e, {"ctrl": true, "key": "-"})) {
         const {volumeDown} = require("./player")
         volumeDown()
         return
@@ -113,12 +113,12 @@ const handleKeyboard = async e => {
         resetWelcome()
         return
     }
-    if (keyMatch(e, {"key": "F2"}) || keyMatch(e, {"key": "f", "ctrl": true})) {
+    if (keyMatch(e, {"key": "F2"}) || keyMatch(e, {"ctrl": true, "key": "f"})) {
         const {switchFocus} = require("./dom")
         switchFocus("search")
         return
     }
-    if (keyMatch(e, {"key": "F3"}) || keyMatch(e, {"key": "l", "ctrl": true})) {
+    if (keyMatch(e, {"key": "F3"}) || keyMatch(e, {"ctrl": true, "key": "l"})) {
         const {switchFocus} = require("./dom")
         switchFocus("playlist")
         return
@@ -172,23 +172,19 @@ const handleKeyboard = async e => {
         document.getElementById("song-info").scrollBy(0, -100)
         return
     }
-    if (keyMatch(e, {"key": "F11"})) {
-        // TODO fullscreen
-        return
-    }
     if (keyMatch(e, {"key": "F12"})) {
         ipcRenderer.invoke("toggle-devtools")
         return
     }
     if (document.body.getAttribute("focus-el") === "search") {
         if (keyMatch(e, {"key": "ArrowUp"})
-        || keyMatch(e, {"key": "p", "ctrl": true})) {
+        || keyMatch(e, {"ctrl": true, "key": "p"})) {
             const {decrementSelected} = require("./dom")
             decrementSelected()
             return
         }
         if (keyMatch(e, {"key": "ArrowDown"})
-        || keyMatch(e, {"key": "n", "ctrl": true})) {
+        || keyMatch(e, {"ctrl": true, "key": "n"})) {
             const {incrementSelected} = require("./dom")
             incrementSelected()
             return
@@ -203,7 +199,7 @@ const handleKeyboard = async e => {
                 const {append} = require("./playlist")
                 append({"rule": search}, true)
                 e.preventDefault()
-            } else if (keyMatch(e, {"key": "Enter", "ctrl": true})) {
+            } else if (keyMatch(e, {"ctrl": true, "key": "Enter"})) {
                 const {setFallbackRule} = require("./playlist")
                 setFallbackRule(search)
                 e.preventDefault()
@@ -255,14 +251,14 @@ const handleKeyboard = async e => {
             openSelectedRule()
         }
         if (keyMatch(e, {"key": "ArrowUp"}) || keyMatch(e, {"key": "k"})
-        || keyMatch(e, {"key": "p", "ctrl": true})) {
+        || keyMatch(e, {"ctrl": true, "key": "p"})) {
             setTimeout(() => {
                 const {decrementSelected} = require("./playlist")
                 decrementSelected()
             }, 1)
         }
         if (keyMatch(e, {"key": "ArrowDown"}) || keyMatch(e, {"key": "j"})
-        || keyMatch(e, {"key": "n", "ctrl": true})) {
+        || keyMatch(e, {"ctrl": true, "key": "n"})) {
             setTimeout(() => {
                 const {incrementSelected} = require("./playlist")
                 incrementSelected()

@@ -145,9 +145,9 @@ const currentAndNext = () => {
             return {}
         }
         append({
+            "rule": fallbackRule,
             "songs": [current,
-                {...songs[songs.indexOf(current) + 1], "upcoming": true}],
-            "rule": fallbackRule
+                {...songs[songs.indexOf(current) + 1], "upcoming": true}]
         })
         ruleIdx = rulelist.length - 1
         pathIdx = 0
@@ -167,8 +167,8 @@ const currentAndNext = () => {
             rulelist[ruleIdx].songs.push(next)
             playFromPlaylist(false)
         } else {
-            append({"songs": [{...next, "upcoming": true}],
-                "rule": fallbackRule})
+            append({"rule": fallbackRule,
+                "songs": [{...next, "upcoming": true}]})
         }
     }
     if (current.stopAfter) {
@@ -397,17 +397,17 @@ const setFallbackRule = rule => {
 }
 
 module.exports = {
-    playFromPlaylist,
-    increment,
-    decrement,
-    incrementSelected,
-    decrementSelected,
-    closeSelectedRule,
-    openSelectedRule,
-    currentAndNext,
     append,
-    playSelectedSong,
-    stopAfterTrack,
+    closeSelectedRule,
+    currentAndNext,
+    decrement,
+    decrementSelected,
     deleteSelected,
-    setFallbackRule
+    increment,
+    incrementSelected,
+    openSelectedRule,
+    playFromPlaylist,
+    playSelectedSong,
+    setFallbackRule,
+    stopAfterTrack
 }

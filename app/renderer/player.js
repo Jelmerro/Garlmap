@@ -62,7 +62,7 @@ const init = () => {
                 const duration = await mpv.getDuration() || 0
                 navigator.mediaSession.setPositionState({
                     // #bug Position not recognized by Electron
-                    duration, "position": seconds, "playbackRate": 1
+                    duration, "playbackRate": 1, "position": seconds
                 })
                 document.getElementById("progress-played").innerHTML = `&nbsp;${
                     formatTime(seconds)}/${formatTime(duration)}&nbsp;`
@@ -224,15 +224,15 @@ const toggleMute = async() => {
 }
 
 module.exports = {
-    isAlive,
     init,
-    seek,
-    pause,
+    isAlive,
     load,
+    pause,
     queue,
+    seek,
+    toggleMute,
     updatePlayButton,
-    volumeSet,
-    volumeUp,
     volumeDown,
-    toggleMute
+    volumeSet,
+    volumeUp
 }

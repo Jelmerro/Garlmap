@@ -176,10 +176,10 @@ const appendSelectedSong = (upNext = false) => {
 }
 
 module.exports = {
-    generateSongElement,
-    displayCurrentSong,
-    switchFocus,
+    appendSelectedSong,
     decrementSelected,
+    displayCurrentSong,
+    generateSongElement,
     incrementSelected,
-    appendSelectedSong
+    switchFocus
 }

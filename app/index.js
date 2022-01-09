@@ -41,10 +41,10 @@ app.on("ready", () => {
         "show": false,
         "title": app.getName(),
         "webPreferences": {
-            "spellcheck": false,
             "disableBlinkFeatures": "Auxclick",
             "preload": joinPath(__dirname, "renderer/index.js"),
-            "sandbox": false
+            "sandbox": false,
+            "spellcheck": false
         },
         "width": 600
     }
@@ -115,9 +115,9 @@ const processStartupArgs = () => {
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
     let config = {
+        "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "customTheme": readFile(joinPath(configDir, "theme.css")),
-        "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
         "folder": process.env.GARLMAP_FOLDER?.trim()
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
