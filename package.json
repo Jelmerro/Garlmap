@@ -25,13 +25,13 @@
   "email": "Jelmerro@users.noreply.github.com",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "16.0.2",
-    "electron-builder": "22.14.8",
-    "eslint": "8.3.0",
+    "electron": "17.0.0-beta.1",
+    "electron-builder": "22.14.12",
+    "eslint": "8.6.0",
     "rimraf": "3.0.2"
   },
   "dependencies": {
-    "genius-lyrics": "4.3.4",
+    "genius-lyrics": "4.3.5",
     "glob": "7.2.0",
     "music-metadata": "7.11.4",
     "node-mpv": "2.0.0-beta.2",

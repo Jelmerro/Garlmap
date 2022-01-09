@@ -5,3 +5,10 @@
 - playlist p: toggle between current and selection
 - playlist c: move selection to current
 - implement fullscreen interface with large cover art
+- add options to change the playlist VIEW automatically, such as:
+    - auto scroll current
+    - auto delete older than x
+    - auto close rules that are not playing
+- refactor keyboard input file
+    - fix key holding not working when textarea is focused
+    - remove repetition in the code with large amount for queries and returns
