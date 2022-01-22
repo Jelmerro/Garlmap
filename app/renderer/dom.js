@@ -21,7 +21,7 @@ const {formatTime} = require("../util")
 
 const generateSongElement = song => {
     const songContainer = document.createElement("div")
-    songContainer.setAttribute("song-path", song.path)
+    songContainer.setAttribute("song-id", song.id)
     songContainer.className = "song"
     const mainInfo = document.createElement("span")
     mainInfo.className = "main-info"
@@ -170,8 +170,8 @@ const appendSelectedSong = (upNext = false) => {
     const song = document.querySelector("#search-results .selected.song")
     if (song) {
         const {append} = require("./playlist")
-        const {songForPath} = require("./songs")
-        append({"songs": [songForPath(song.getAttribute("song-path"))]}, upNext)
+        const {songById} = require("./songs")
+        append({"songs": [songById(song.getAttribute("song-id"))]}, upNext)
     }
 }
 

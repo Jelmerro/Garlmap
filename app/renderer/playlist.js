@@ -159,7 +159,7 @@ const currentAndNext = () => {
     if (!next) {
         const songs = query(fallbackRule)
         next = JSON.parse(JSON.stringify(songs[songs.indexOf(songs.find(
-            s => s.path === current.path) + 1)] || songs[0]))
+            s => s.id === current.id) + 1)] || songs[0]))
         next.upcoming = true
         if (rulelist[ruleIdx]?.rule === fallbackRule) {
             rulelist[ruleIdx].duration = rulelist[ruleIdx].songs
@@ -274,7 +274,7 @@ const playFromPlaylist = async(switchNow = true) => {
             await load(current.path)
             document.getElementById("status-scan").textContent = ""
             const {showLyrics} = require("./songs")
-            showLyrics(current.path)
+            showLyrics(current.id)
         }
         await queue(next?.path)
         const {displayCurrentSong} = require("./dom")

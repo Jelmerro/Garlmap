@@ -3,7 +3,7 @@ productName: Garlmap
 linux:
   icon: app/img/icons
   executableName: garlmap
-  category: Music;
+  category: Audio;
   maintainer: Jelmer van Arnhem
   target:
     - target: AppImage

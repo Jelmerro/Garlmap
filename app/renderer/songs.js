@@ -32,7 +32,7 @@ let failures = []
 let processedFiles = 0
 const low = s => s.toLowerCase()
 
-const processFile = async(file, total, lyrics = null) => {
+const processFile = async(folder, file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     try {
         let details = await musicMetadata.parseFile(file, {"skipCovers": true})
@@ -48,19 +48,20 @@ const processFile = async(file, total, lyrics = null) => {
             "disc": details.common.disk.no,
             "disc_total": details.common.disk.of,
             "duration": details.format.duration,
+            "id": file.replace(folder, "").replace(/^[/\\]+/g, ""),
             lyrics,
             "path": file,
             "title": details.common.title,
             "track": details.common.track.no,
             "track_total": details.common.track.of
         }
-        const existingCache = cachedSongs.find(s => s.path === song.path)
+        const existingCache = cachedSongs.find(s => s.id === song.id)
         if (existingCache) {
             cachedSongs[cachedSongs.indexOf(existingCache)] = song
         } else {
             cachedSongs.push(song)
         }
-        const existingCurrent = songs.find(s => s.path === song.path)
+        const existingCurrent = songs.find(s => s.id === song.id)
         if (existingCurrent) {
             songs[songs.indexOf(existingCurrent)] = song
         } else {
@@ -84,16 +85,18 @@ const scanner = folder => {
     document.getElementById("status-scan").style.color = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
-        songs = cachedSongs.filter(s => files.includes(s.path))
+        songs = cachedSongs.filter(s => s.id && s.path)
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--primary)"
         const useCache = ["all", "songs"].includes(cache)
-        for (const file of files) {
-            const match = songs.find(s => s.path === file)
+        for (const f of files) {
+            const match = songs.find(s => f.endsWith(s.id) || f === s.path)
             if (useCache && match) {
+                match.id = f.replace(folder, "").replace(/^[/\\]+/g, "")
+                match.path = f
                 continue
             }
-            await processFile(file, files.length, match?.lyrics)
+            await processFile(folder, f, files.length, match?.lyrics)
         }
         document.getElementById("status-current").textContent = `Ready`
         document.getElementById("status-current").style.color
@@ -195,7 +198,7 @@ const query = search => {
         () => Math.random() - 0.5)
     filtered.sort((a, b) => {
         if (order === "disk") {
-            if (a.path > b.path) {
+            if (a.id > b.id) {
                 return 1
             }
             return -1
@@ -248,7 +251,7 @@ const coverArt = async p => {
 }
 
 const fetchLyrics = async req => {
-    const cachedLyrics = songs.find(s => s.path === req.path).lyrics
+    const cachedLyrics = songs.find(s => s.id === req.id).lyrics
     if (cachedLyrics) {
         document.getElementById("song-info").textContent = cachedLyrics
         return
@@ -268,8 +271,8 @@ const fetchLyrics = async req => {
             const lyrics = await song.lyrics()
             document.getElementById("song-info").textContent = lyrics
             document.getElementById("status-scan").textContent = ""
-            songs.find(s => s.path === req.path).lyrics = lyrics
-            cachedSongs.find(s => s.path === req.path).lyrics = lyrics
+            songs.find(s => s.id === req.id).lyrics = lyrics
+            cachedSongs.find(s => s.id === req.id).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
         } else {
             console.warn("No matched song found, this might be a bug", results)
@@ -289,7 +292,7 @@ const fetchLyrics = async req => {
 const showLyrics = async p => {
     resetWelcome()
     const {shouldAutoFetchLyrics} = require("./settings")
-    const song = songForPath(p)
+    const song = songById(p)
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
     } else if (shouldAutoFetchLyrics()) {
@@ -306,14 +309,14 @@ const setCachePolicy = (dir, policy) => {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
         }
         if (cache === "lyrics") {
-            cachedSongs = cachedSongs.filter(s => s.lyrics).map(
-                s => ({"lyrics": s.lyrics, "path": s.path}))
+            cachedSongs = cachedSongs.filter(s => s.id && s.lyrics).map(
+                s => ({"id": s.id, "lyrics": s.lyrics}))
         }
     }
 }
 
-const songForPath = p => JSON.parse(JSON.stringify(
-    songs.find(s => s.path === p) || {}))
+const songById = id => JSON.parse(JSON.stringify(
+    songs.find(s => s.id === id) || {}))
 
 module.exports = {
     coverArt,
@@ -322,5 +325,5 @@ module.exports = {
     scanner,
     setCachePolicy,
     showLyrics,
-    songForPath
+    songById
 }

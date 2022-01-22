@@ -40,7 +40,7 @@ const init = () => {
                 const {showLyrics} = require("./songs")
                 const {currentAndNext} = require("./playlist")
                 const {current} = currentAndNext()
-                showLyrics(current.path)
+                showLyrics(current.id)
             }
             if (info.property === "playlist-pos" && info.value === -1) {
                 const {currentAndNext, playFromPlaylist} = require("./playlist")
