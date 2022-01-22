@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021 Jelmer van Arnhem
+*  Copyright (C) 2021-2022 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ It will index and cache the info of them, so you can search it easily.
 You can load a folder by pressing Ctrl-o, or you can customize your settings.
 There are many ways to do so, with env vars, a config file, or with arguments,
 all of which are explained if you start Garlmap with the "--help" argument.
+It's recommended to read both this help and the startup help at least once.
 
 Syntax for queueing and searching
 
@@ -90,15 +91,15 @@ while others are specific to Garlmap for ordering or counting the query.
 The full list is: "title", "artist", "album", "disc", "disc_total", "track",
 "track_total", "lyrics", "duration", "date", "order" and "limit".
 Feel free to add a lot more to Garlmap with a PR or make an issue for it.
-You can search for anything inside a field based on regex, separated with ":".
-Even spaces are allowed: "album:dark side of the moon" is an album name search.
+You can search for text in a field based on regex, separated with ":" or "=".
+Even spaces are allowed: "album=dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields:
 "dark side" will match any song that has any field with "dark" and "side" in it,
 even the lyrics are searched, if they are cached for a specific song.
 For the number fields, such as "date", "duration" or "track",
 it's also possible to specify a range like so: "date:1960-1975".
 You can also use upercase letters in a field name to make it case sensitive,
-as all searches are by default case insensitive: "Album:Dark Side" for example.
+as all searches are by default case insensitive: "Album=Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
 The default sort order "disk", which means it's sorted on path alphabetically,
 is used for all queries, unless a custom "order" field is provided.
@@ -116,9 +117,9 @@ You can always jump to the search box with "Tab", regardless of current focus.
 F3/Ctrl-f merely switch to this section, which might still have a song selected,
 instead of immediately bringing the focus to the search box.
 After entering a search, you can add the rule to the playlist in 3 ways:
-- At the end of the playlist with "Enter"
-- Immediately after the current rule/song with "Shift-Enter"
-- As a fallback rule (if it has shuffle or albumshuffle order) with "Ctrl-Enter"
+1. At the end of the playlist with "Enter".
+2. Immediately after the current rule/song with "Shift-Enter".
+3. As a fallback rule (if it has a shuffling order) with "Ctrl-Enter".
 The entire query can be added as a rule to the playlist with these shortcuts,
 which will automatically queue all matching tracks based on the rule.
 Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
@@ -137,11 +138,11 @@ You can also open the rule in the playlist and view the individual tracks.
 The rules can be added at the end or immediately after the current track.
 The playlist can also include simple individual tracks with no specific rule,
 but rules are the core of what gives Garlmap superpowers in the playlist.
-There is one special rule at the bottom displayed in green: the fallback rule.
+There is one special highlighted rule at the bottom: the fallback rule.
 Songs will automatically be added to the playlist based on this fallback rule.
-An upcoming song will have a temporary place in the playlist in a shade of gray,
-and this upcoming song will be removed when a new rule or song is added.
-If nothing is added, it will automatically become part of the playlist on play.
+An upcoming song will have a temporary place in the playlist,
+which will automatically become part of the playlist on play.
+This upcoming song will be removed when a new rule or song is added before that.
 You can navigate the playlist view with the Arrow keys or hjkl,
 or select a rule or track directly by clicking with the left mouse button on it.
 On hover, a play icon will appear, which can be used to play a song right away.

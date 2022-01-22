@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021 Jelmer van Arnhem
+*  Copyright (C) 2021-2022 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -121,10 +121,10 @@ const query = search => {
     if (!search.trim()) {
         return []
     }
-    const filters = search.split(/(?= \w+:)/g).map(p => ({
-        "cased": low(p.trim().split(":")[0]) !== p.trim().split(":")[0],
-        "name": p.trim().split(":")[0],
-        "value": p.trim().split(":")[1]
+    const filters = search.split(/(?= \w+[:=])/g).map(p => ({
+        "cased": low(p.trim().split(/[:=]/g)[0]) !== p.trim().split(/[:=]/g)[0],
+        "name": p.trim().split(/[:=]/g)[0],
+        "value": p.trim().split(/[:=]/g)[1]
     }))
     let globalSearch = {"cased": false, "name": null}
     if (filters[0]?.value === undefined) {
