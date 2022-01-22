@@ -25,16 +25,16 @@
   "email": "Jelmerro@users.noreply.github.com",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "17.0.0-beta.1",
-    "electron-builder": "22.14.12",
-    "eslint": "8.6.0",
+    "electron": "17.0.0-beta.6",
+    "electron-builder": "23.0.0-alpha.0",
+    "eslint": "8.7.0",
     "rimraf": "3.0.2"
   },
   "dependencies": {
     "eslint-plugin-sort-keys": "2.3.5",
     "genius-lyrics": "4.3.5",
     "glob": "7.2.0",
-    "music-metadata": "7.11.4",
+    "music-metadata": "7.11.7",
     "node-mpv": "2.0.0-beta.2",
     "string-similarity": "4.0.4"
   }
