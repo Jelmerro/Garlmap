@@ -151,9 +151,8 @@ Stop after selected song can be toggled with "s", for which an icon will appear.
 Middle-clicking on a song or rule will remove it from the playlist.
 While in the playlist, you can also use PageUp, PageDown, Home and End.
 You can also play the selected track right away with "Enter".
-Using "c" you can move the selection to the song that is currently playing.
-Finally, with "p" you can switch the position of the list between two places,
-one for the current song, and the other for the currently selected song.
+Using "c" you can scroll the playlist to the song that is currently playing,
+though it will not move the selection, similar to scrolling with Ctrl-e/Ctrl-y.
 
 Caching
 

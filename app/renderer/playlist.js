@@ -22,6 +22,7 @@ let ruleIdx = 0
 let selectedRuleIdx = null
 let selectedPathIdx = null
 let pathIdx = 0
+let shouldAutoScrollTrack = false
 
 const {formatTime, queryMatch} = require("../util")
 
@@ -280,6 +281,9 @@ const playFromPlaylist = async(switchNow = true) => {
         const {displayCurrentSong} = require("./dom")
         await displayCurrentSong(current)
         generatePlaylistView()
+        if (switchNow) {
+            autoScrollTrack()
+        }
     }
 }
 
@@ -396,8 +400,21 @@ const setFallbackRule = rule => {
     document.getElementById("fallback-rule").textContent = rule
 }
 
+const toggleAutoScroll = () => {
+    shouldAutoScrollTrack = !shouldAutoScrollTrack
+    document.getElementById("toggle-autoscroll").checked = shouldAutoScrollTrack
+}
+
+const autoScrollTrack = () => {
+    if (shouldAutoScrollTrack) {
+        [...document.querySelectorAll("#playlist-container .current")].pop()
+            ?.scrollIntoView({"behavior": "smooth", "block": "center"})
+    }
+}
+
 module.exports = {
     append,
+    autoScrollTrack,
     closeSelectedRule,
     currentAndNext,
     decrement,
@@ -409,5 +426,6 @@ module.exports = {
     playFromPlaylist,
     playSelectedSong,
     setFallbackRule,
-    stopAfterTrack
+    stopAfterTrack,
+    toggleAutoScroll
 }

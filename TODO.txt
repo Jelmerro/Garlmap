@@ -1,16 +1,18 @@
-- make ctrl tab switch between playlist and search section
 - page jumping: page up/down
+    - without ctrl it will scroll the list, with ctrl it will move the selection
 - top and bottom of sections: home, end
-- scrolling: ctrl-e, ctrl-y
-- playlist p: toggle between current and selection
-- playlist c: move selection to current
-- allow manual selection/override of lyrics, both custom or from result list
-- double check if deletion always updates counters and works, it seems buggy
+    - without ctrl it will scroll the list, with ctrl it will move the selection
+- improve lyrics handling
+    - also fetch lyrics by search for it without parts that are between "()" brackets
+    - make shift-f4 refetch the lyrics
+    - make ctrl-f4 open a text editor for the lyrics
+        - have a search box to do a custom search on the genius api
 - implement fullscreen interface with large cover art
 - add options to change the playlist VIEW automatically, such as:
-    - auto scroll current
     - auto delete older than x
     - auto close rules that are not playing
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
     - remove repetition in the code with large amount for queries and returns
+    - after this, make ctrl tab switch between playlist and search section
+- startup option for autoscroll

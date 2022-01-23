@@ -38,9 +38,10 @@ const init = () => {
                 await increment(false)
                 document.getElementById("status-scan").textContent = ""
                 const {showLyrics} = require("./songs")
-                const {currentAndNext} = require("./playlist")
+                const {currentAndNext, autoScrollTrack} = require("./playlist")
                 const {current} = currentAndNext()
                 showLyrics(current.id)
+                autoScrollTrack()
             }
             if (info.property === "playlist-pos" && info.value === -1) {
                 const {currentAndNext, playFromPlaylist} = require("./playlist")

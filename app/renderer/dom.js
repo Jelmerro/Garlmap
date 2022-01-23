@@ -123,9 +123,6 @@ const switchFocus = newFocus => {
         const selected = document.querySelector("#search-results .selected")
         if (!selected || newFocus.endsWith("box")) {
             selected?.classList.remove("selected")
-            const search = document.getElementById("rule-search")
-            search.scrollIntoView({"block": "center"})
-            search.focus({"preventScroll": true})
             document.body.setAttribute("focus-el", "search")
             document.getElementById("rule-search").focus()
         } else {

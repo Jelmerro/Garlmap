@@ -53,6 +53,11 @@ const init = () => {
             const {volumeSet} = require("./player")
             volumeSet(document.querySelector("input[type='range']").value)
         })
+    document.getElementById("toggle-autoscroll").parentNode
+        .addEventListener("click", () => {
+            const {toggleAutoScroll} = require("./playlist")
+            toggleAutoScroll()
+        })
     resetWelcome()
 }
 
@@ -267,6 +272,20 @@ const handleKeyboard = async e => {
         if (keyMatch(e, {"key": "d"}) || keyMatch(e, {"key": "Delete"})) {
             const {deleteSelected} = require("./playlist")
             deleteSelected()
+        }
+        if (keyMatch(e, {"key": "a"})) {
+            const {toggleAutoScroll} = require("./playlist")
+            toggleAutoScroll()
+        }
+        if (keyMatch(e, {"ctrl": true, "key": "e"})) {
+            document.getElementById("main-playlist").scrollBy(0, 100)
+        }
+        if (keyMatch(e, {"ctrl": true, "key": "y"})) {
+            document.getElementById("main-playlist").scrollBy(0, -100)
+        }
+        if (keyMatch(e, {"key": "c"})) {
+            [...document.querySelectorAll("#playlist-container .current")].pop()
+                ?.scrollIntoView({"behavior": "smooth", "block": "center"})
         }
         if (keyMatch(e, {"key": "s"})) {
             const {stopAfterTrack} = require("./playlist")

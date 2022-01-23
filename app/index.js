@@ -36,7 +36,7 @@ app.on("ready", () => {
     const windowData = {
         "closable": false,
         "frame": true,
-        "height": 600,
+        "height": 700,
         "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
         "show": false,
         "title": app.getName(),
@@ -46,11 +46,11 @@ app.on("ready", () => {
             "sandbox": false,
             "spellcheck": false
         },
-        "width": 600
+        "width": 1000
     }
     mainWindow = new BrowserWindow(windowData)
     mainWindow.removeMenu()
-    mainWindow.setMinimumSize(500, 500)
+    mainWindow.setMinimumSize(700, 700)
     mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
     mainWindow.on("close", e => {
         e.preventDefault()
