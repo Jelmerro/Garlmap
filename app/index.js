@@ -33,6 +33,12 @@ app.on("ready", () => {
         console.info(`Garlmap is a single instance app for performance reasons`)
         app.exit(0)
     }
+    app.on("second-instance", () => {
+        if (mainWindow.isMinimized()) {
+            mainWindow.restore()
+        }
+        mainWindow.focus()
+    })
     const windowData = {
         "closable": false,
         "frame": true,
@@ -116,9 +122,11 @@ const processStartupArgs = () => {
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
     let config = {
         "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
+        "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "customTheme": readFile(joinPath(configDir, "theme.css")),
-        "folder": process.env.GARLMAP_FOLDER?.trim()
+        "folder": process.env.GARLMAP_FOLDER?.trim(),
+        "fontSize": process.env.GARLMAP_FONT_SIZE?.trim()
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
     if (configFile) {
@@ -139,6 +147,9 @@ const processStartupArgs = () => {
             } else if (name === "--auto-lyrics") {
                 config.autoLyrics = isTruthyArg(value)
                     || arg === "--auto-lyrics"
+            } else if (name === "--auto-scroll") {
+                config.autoScroll = isTruthyArg(value)
+                    || arg === "--auto-scroll"
             } else {
                 console.warn(`Error, unsupported argument '${arg}'`)
                 app.exit(1)
@@ -201,18 +212,31 @@ Garlmap can be started without any arguments, but it supports the following:
                    If also absent, the GARLMAP_AUTO_LYRICS env will be read,
                    or this setting will by default be disabled from auto fetch.
 
+    --auto-scroll  Enable automatic scrolling to the current song in the list.
+                   If disabled, no automatic scrolling will happen.
+                   The argument can optionally be provided with value:
+                   "--auto-scroll=true", "--auto-scroll=0, "--auto-scroll=no".
+                   If no arg is found, it will read the "autoScroll" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_AUTO_SCROLL env will be read,
+                   or this setting will by default be disabled from auto scroll.
+
     --font-size=14 Define a custom font size, without requiring a custom theme.
                    Accepted values are between 8-100, and the unit is in pixels.
                    Especially helpful on very high resolution screens.
                    Even values are recommend regardless of font size value,
                    to prevent rounding errors on small elements in the player.
+                   If no arg is found, it will read the "fontSize" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_FONT_SIZE env will be read,
+                   or this setting will by default set to 14 pixels.
 
     folder         Provide a folder to load the songs from for this instance.
                    If no arg is found, it will read the "folder" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FOLDER env will be read,
-                   or no default folder is opened on startup.
-                   This means that you need to open one manually with Ctrl-o.
+                   or no default folder is opened on startup,
+                   which means that you need to open one manually with Ctrl-o.
                    This is a positional argument, of which only one is allowed.
                    Though I would recommend to set this to your root music dir,
                    especially if you have a single dir to store all your music.

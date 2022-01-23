@@ -12,4 +12,3 @@
     - fix key holding not working when textarea is focused
     - remove repetition in the code with large amount for queries and returns
     - after this, make ctrl tab switch between playlist and search section
-- startup option for autoscroll

@@ -38,6 +38,10 @@ const init = () => {
             styleEl.textContent = config.customTheme
             document.head.appendChild(styleEl)
         }
+        if (config.autoScroll) {
+            const {toggleAutoScroll} = require("./playlist")
+            toggleAutoScroll()
+        }
     })
 }
 
