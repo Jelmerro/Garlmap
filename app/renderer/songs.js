@@ -256,6 +256,9 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         document.getElementById("song-info").textContent = cachedLyrics
         return
     }
+    if (!req.artist || !req.title) {
+        return
+    }
     try {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
