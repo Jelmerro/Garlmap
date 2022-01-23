@@ -2,11 +2,8 @@
     - without ctrl it will scroll the list, with ctrl it will move the selection
 - top and bottom of sections: home, end
     - without ctrl it will scroll the list, with ctrl it will move the selection
-- improve lyrics handling
-    - also fetch lyrics by search for it without parts that are between "()" brackets
-    - make shift-f4 refetch the lyrics
-    - make ctrl-f4 open a text editor for the lyrics
-        - have a search box to do a custom search on the genius api
+- make ctrl-f4 open a text editor for the lyrics
+    - have a search box to do a custom search on the genius api
 - implement fullscreen interface with large cover art
 - add options to change the playlist VIEW automatically, such as:
     - auto delete older than x

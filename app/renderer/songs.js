@@ -250,9 +250,9 @@ const coverArt = async p => {
     }
 }
 
-const fetchLyrics = async req => {
+const fetchLyrics = async(req, force = false, originalReq = false) => {
     const cachedLyrics = songs.find(s => s.id === req.id).lyrics
-    if (cachedLyrics) {
+    if (cachedLyrics && !force) {
         document.getElementById("song-info").textContent = cachedLyrics
         return
     }
@@ -264,6 +264,14 @@ const fetchLyrics = async req => {
         results.forEach(s => {
             s.score = compareTwoStrings(low(s.title), low(req.title))
                 + compareTwoStrings(low(s.artist.name), low(req.artist))
+            if (originalReq) {
+                const originalScore = compareTwoStrings(
+                    low(s.title), low(originalReq.title))
+                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
+                if (originalScore > s.score) {
+                    s.score = originalScore
+                }
+            }
         })
         results.sort((a, b) => b.score - a.score)
         const [song] = results
@@ -274,19 +282,26 @@ const fetchLyrics = async req => {
             songs.find(s => s.id === req.id).lyrics = lyrics
             cachedSongs.find(s => s.id === req.id).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
-        } else {
-            console.warn("No matched song found, this might be a bug", results)
-            document.getElementById("status-scan").textContent
-                = "Failed to find matching song lyrics in results of Genius"
-            document.getElementById("status-scan").style.color
-                = "var(--tertiary)"
+            return
         }
+        console.warn("No matched song found, needs manual search", results)
+        document.getElementById("status-scan").textContent
+            = "Failed to find matching song lyrics in results of Genius"
+        document.getElementById("status-scan").style.color
+            = "var(--tertiary)"
     } catch (e) {
         console.warn(e)
         document.getElementById("status-scan").textContent
             = "Failed to fetch lyrics from Genius"
         document.getElementById("status-scan").style.color = "var(--tertiary)"
     }
+    if (originalReq) {
+        return
+    }
+    const reqWithoutBrackets = JSON.parse(JSON.stringify(req))
+    reqWithoutBrackets.artist = req.artist.replace(/\(.*\)/g, "").trim()
+    reqWithoutBrackets.title = req.title.replace(/\(.*\)/g, "").trim()
+    fetchLyrics(reqWithoutBrackets, force, req)
 }
 
 const showLyrics = async p => {

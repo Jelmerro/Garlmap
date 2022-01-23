@@ -128,14 +128,15 @@ const handleKeyboard = async e => {
         switchFocus("playlist")
         return
     }
-    if (keyMatch(e, {"key": "F4"})) {
+    if (keyMatch(e, {"key": "F4"})
+    || keyMatch(e, {"key": "F4", "shift": true})) {
         const {isAlive} = require("./player")
         if (isAlive()) {
             const {currentAndNext} = require("./playlist")
             const {fetchLyrics} = require("./songs")
             const {current} = currentAndNext()
             if (current) {
-                await fetchLyrics(current)
+                await fetchLyrics(current, e.shiftKey)
                 document.getElementById("song-info").scrollTo(0, 0)
             }
             return

@@ -62,6 +62,7 @@ This section can be scrolled with F9 and F10, for example.
 You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
 or you can bring back this help at any time with F1.
+With Shift-F4 you can refetch the lyrics in case the cached ones are outdated.
 F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 F12 will open the development tools where you can find any runtime errors.
