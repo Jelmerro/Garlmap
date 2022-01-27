@@ -29,6 +29,14 @@ linux:
 rpm:
   fpm:
     - --rpm-rpmbuild-define=_build_id_links none
+mac:
+  category: public.app-category.music
+  icon: app/img/icon
+  target:
+    - target: zip
+      arch:
+        - x64
+        - arm64
 win:
   icon: app/img/icon/512x512.png
   legalTrademarks: Copyright @ Jelmer van Arnhem | Licensed as free software (GPL-3.0 or later)
