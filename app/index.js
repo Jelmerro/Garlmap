@@ -121,7 +121,9 @@ const processStartupArgs = () => {
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
     let config = {
+        "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
         "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
+        "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
         "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "customTheme": readFile(joinPath(configDir, "theme.css")),
@@ -150,6 +152,12 @@ const processStartupArgs = () => {
             } else if (name === "--auto-scroll") {
                 config.autoScroll = isTruthyArg(value)
                     || arg === "--auto-scroll"
+            } else if (name === "--auto-close") {
+                config.autoClose = isTruthyArg(value)
+                    || arg === "--auto-close"
+            } else if (name === "--auto-remove") {
+                config.autoRemove = isTruthyArg(value)
+                    || arg === "--auto-remove"
             } else {
                 console.warn(`Error, unsupported argument '${arg}'`)
                 app.exit(1)
@@ -200,6 +208,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE env will be read,
                    or this setting will by default fallback to using "all".
+                   This setting cannot be changed once Garlmap is started.
 
     --auto-lyrics  Enable the automatic downloading of lyrics when songs play.
                    If disabled, you can download them per song by pressing F4.
@@ -211,6 +220,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_AUTO_LYRICS env will be read,
                    or this setting will by default be disabled from auto fetch.
+                   This setting cannot be changed once Garlmap is started.
 
     --auto-scroll  Enable automatic scrolling to the current song in the list.
                    If disabled, no automatic scrolling will happen.
@@ -219,7 +229,29 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "autoScroll" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_AUTO_SCROLL env will be read,
-                   or this setting will by default be disabled from auto scroll.
+                   or this setting will by default be disabled.
+                   Change this setting in the playlist with "a" or the mouse.
+
+    --auto-close   Enable automatic closing and opening of rules when played.
+                   The current rule will be opened, all others will be closed.
+                   If disabled, no automatic open or closing will happen.
+                   The argument can optionally be provided with value:
+                   "--auto-close=true", "--auto-close=0, "--auto-close=no".
+                   If no arg is found, it will read the "autoClose" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_AUTO_CLOSE env will be read,
+                   or this setting will by default be disabled.
+                   Change this setting in the playlist with "c" or the mouse.
+
+    --auto-remove  Enable automatic removal of old rules and tracks after play.
+                   If disabled, no automatic removal of songs/rules will happen.
+                   The argument can optionally be provided with value:
+                   "--auto-remove=true", "--auto-remove=0, "--auto-remove=no".
+                   If no arg is found, it will read the "autoRemove" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_AUTO_REMOVE env will be read,
+                   or this setting will by default be disabled.
+                   Change this setting in the playlist with "r" or the mouse.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
                    Accepted values are between 8-100, and the unit is in pixels.
@@ -230,16 +262,15 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FONT_SIZE env will be read,
                    or this setting will by default set to 14 pixels.
+                   This setting cannot be changed once Garlmap is started.
 
     folder         Provide a folder to load the songs from for this instance.
                    If no arg is found, it will read the "folder" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FOLDER env will be read,
-                   or no default folder is opened on startup,
-                   which means that you need to open one manually with Ctrl-o.
+                   or no default folder is opened on startup.
                    This is a positional argument, of which only one is allowed.
-                   Though I would recommend to set this to your root music dir,
-                   especially if you have a single dir to store all your music.
+                   You can change the folder after starting with "Ctrl-o".
 
 You can also customize the look and feel of Garlmap using a custom theme file:
 ${joinPath(configDir, "theme.css")}

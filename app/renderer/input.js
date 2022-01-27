@@ -58,6 +58,16 @@ const init = () => {
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
         })
+    document.getElementById("toggle-autoclose").parentNode
+        .addEventListener("click", () => {
+            const {toggleAutoClose} = require("./playlist")
+            toggleAutoClose()
+        })
+    document.getElementById("toggle-autoremove").parentNode
+        .addEventListener("click", () => {
+            const {toggleAutoRemove} = require("./playlist")
+            toggleAutoRemove()
+        })
     resetWelcome()
 }
 
@@ -278,15 +288,19 @@ const handleKeyboard = async e => {
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
         }
+        if (keyMatch(e, {"key": "c"})) {
+            const {toggleAutoClose} = require("./playlist")
+            toggleAutoClose()
+        }
+        if (keyMatch(e, {"key": "r"})) {
+            const {toggleAutoRemove} = require("./playlist")
+            toggleAutoRemove()
+        }
         if (keyMatch(e, {"ctrl": true, "key": "e"})) {
             document.getElementById("main-playlist").scrollBy(0, 100)
         }
         if (keyMatch(e, {"ctrl": true, "key": "y"})) {
             document.getElementById("main-playlist").scrollBy(0, -100)
-        }
-        if (keyMatch(e, {"key": "c"})) {
-            [...document.querySelectorAll("#playlist-container .current")].pop()
-                ?.scrollIntoView({"behavior": "smooth", "block": "center"})
         }
         if (keyMatch(e, {"key": "s"})) {
             const {stopAfterTrack} = require("./playlist")

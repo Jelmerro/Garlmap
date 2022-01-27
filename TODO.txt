@@ -4,11 +4,10 @@
     - without ctrl it will scroll the list, with ctrl it will move the selection
 - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
-- implement fullscreen interface with large cover art
-- add options to change the playlist VIEW automatically, such as:
-    - auto delete older than x
-    - auto close rules that are not playing
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
     - remove repetition in the code with large amount for queries and returns
     - after this, make ctrl tab switch between playlist and search section
+- implement fullscreen interface with large cover art
+    - might want to refactor the input file before picking this up (as it requires a new "mode"/layer)
+- setting cog/gear somewhere that will write a config file for you

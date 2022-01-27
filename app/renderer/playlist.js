@@ -23,6 +23,8 @@ let selectedRuleIdx = null
 let selectedPathIdx = null
 let pathIdx = 0
 let shouldAutoScrollTrack = false
+let shouldAutoClose = false
+let shouldAutoRemove = false
 
 const {formatTime, queryMatch} = require("../util")
 
@@ -282,7 +284,7 @@ const playFromPlaylist = async(switchNow = true) => {
         await displayCurrentSong(current)
         generatePlaylistView()
         if (switchNow) {
-            autoScrollTrack()
+            autoPlayOpts()
         }
     }
 }
@@ -403,10 +405,53 @@ const setFallbackRule = rule => {
 const toggleAutoScroll = () => {
     shouldAutoScrollTrack = !shouldAutoScrollTrack
     document.getElementById("toggle-autoscroll").checked = shouldAutoScrollTrack
+    if (shouldAutoScrollTrack) {
+        autoPlayOpts("scroll")
+    }
 }
 
-const autoScrollTrack = () => {
-    if (shouldAutoScrollTrack) {
+const toggleAutoClose = () => {
+    shouldAutoClose = !shouldAutoClose
+    document.getElementById("toggle-autoclose").checked = shouldAutoClose
+    if (shouldAutoClose) {
+        autoPlayOpts("close")
+    }
+}
+
+const toggleAutoRemove = () => {
+    shouldAutoRemove = !shouldAutoRemove
+    document.getElementById("toggle-autoremove").checked = shouldAutoRemove
+    if (shouldAutoRemove) {
+        autoPlayOpts("remove")
+    }
+}
+
+const autoPlayOpts = (singleOpt = false) => {
+    if (shouldAutoRemove && [false, "remove"].includes(singleOpt)) {
+        rulelist = rulelist.filter((_, index) => index >= ruleIdx)
+        if (selectedRuleIdx) {
+            selectedRuleIdx -= ruleIdx
+            if (selectedRuleIdx < 0) {
+                selectedRuleIdx = null
+                selectedPathIdx = null
+            }
+            if (!rulelist[selectedRuleIdx]?.open) {
+                selectedPathIdx = null
+            }
+        }
+        ruleIdx = 0
+        generatePlaylistView()
+    }
+    if (shouldAutoClose && [false, "close"].includes(singleOpt)) {
+        rulelist.forEach((rule, index) => {
+            rule.open = index === ruleIdx
+        })
+        if (rulelist[selectedRuleIdx] !== rulelist[ruleIdx]) {
+            selectedPathIdx = null
+        }
+        generatePlaylistView()
+    }
+    if (shouldAutoScrollTrack && [false, "scroll"].includes(singleOpt)) {
         [...document.querySelectorAll("#playlist-container .current")].pop()
             ?.scrollIntoView({"behavior": "smooth", "block": "center"})
     }
@@ -414,7 +459,7 @@ const autoScrollTrack = () => {
 
 module.exports = {
     append,
-    autoScrollTrack,
+    autoPlayOpts,
     closeSelectedRule,
     currentAndNext,
     decrement,
@@ -427,5 +472,7 @@ module.exports = {
     playSelectedSong,
     setFallbackRule,
     stopAfterTrack,
+    toggleAutoClose,
+    toggleAutoRemove,
     toggleAutoScroll
 }
