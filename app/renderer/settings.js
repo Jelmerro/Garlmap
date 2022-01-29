@@ -30,6 +30,9 @@ const init = () => {
             setTimeout(() => scanner(config.folder), 1)
         }
         autoLyrics = !!config.autoLyrics
+        document.getElementById("toggle-autolyrics").checked = autoLyrics
+        document.getElementById("toggle-autolyrics").parentNode
+            .addEventListener("click", () => toggleAutoLyrics())
         if (config.fontSize) {
             document.body.style.fontSize = `${config.fontSize}px`
         }
@@ -55,4 +58,9 @@ const init = () => {
 
 const shouldAutoFetchLyrics = () => autoLyrics
 
-module.exports = {init, shouldAutoFetchLyrics}
+const toggleAutoLyrics = () => {
+    autoLyrics = !autoLyrics
+    document.getElementById("toggle-autolyrics").checked = autoLyrics
+}
+
+module.exports = {init, shouldAutoFetchLyrics, toggleAutoLyrics}

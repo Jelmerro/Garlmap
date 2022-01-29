@@ -220,7 +220,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_AUTO_LYRICS env will be read,
                    or this setting will by default be disabled from auto fetch.
-                   This setting cannot be changed once Garlmap is started.
+                   Change this setting in the playlist with "t" or the mouse.
 
     --auto-scroll  Enable automatic scrolling to the current song in the list.
                    If disabled, no automatic scrolling will happen.

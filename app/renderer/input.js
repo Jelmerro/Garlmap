@@ -296,6 +296,10 @@ const handleKeyboard = async e => {
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         }
+        if (keyMatch(e, {"key": "t"})) {
+            const {toggleAutoLyrics} = require("./settings")
+            toggleAutoLyrics()
+        }
         if (keyMatch(e, {"ctrl": true, "key": "e"})) {
             document.getElementById("main-playlist").scrollBy(0, 100)
         }

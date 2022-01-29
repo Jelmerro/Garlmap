@@ -63,6 +63,7 @@ You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
 or you can bring back this help at any time with F1.
 With Shift-F4 you can refetch the lyrics in case the cached ones are outdated.
+You can toggle automatic fetching with "t" in the playlist or with the checkbox.
 F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 F12 will open the development tools where you can find any runtime errors.
