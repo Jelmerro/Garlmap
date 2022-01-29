@@ -76,7 +76,7 @@ input[type="range"].muted {background: var(--tertiary);}
 #playlist-container .song img:first-child {opacity: 0;cursor: pointer;}
 #playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected img {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #playlist-container .song:hover img, #playlist-container .song.current img {opacity: 1;}
-#playlist-controls {display: flex;padding: .5em;}
+#playlist-controls {display: flex;padding: .5em;flex-wrap: wrap;}
 #main-playlist {flex: 1;overflow: auto;}
 #main-playlist * {flex: 1;}
 .rule {display: flex;border: .2em solid var(--fg);}
