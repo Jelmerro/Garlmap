@@ -2,7 +2,10 @@
     - without ctrl it will scroll the list, with ctrl it will move the selection
 - top and bottom of sections: home, end
     - without ctrl it will scroll the list, with ctrl it will move the selection
-- make ctrl-f4 open a text editor for the lyrics
+- improve lyrics
+    - read local text files if the filename matches, but only the extension is different
+        - read local text files if above is true, but also for tracklist-like folders
+    - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
