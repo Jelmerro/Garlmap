@@ -259,6 +259,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (!req.artist || !req.title) {
         return
     }
+    const {currentAndNext} = require("./playlist")
     try {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
@@ -280,7 +281,9 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         const [song] = results
         if (song && song.score > 1.6) {
             const lyrics = await song.lyrics()
-            document.getElementById("song-info").textContent = lyrics
+            if (currentAndNext().current?.id === req.id) {
+                document.getElementById("song-info").textContent = lyrics
+            }
             document.getElementById("status-scan").textContent = ""
             songs.find(s => s.id === req.id).lyrics = lyrics
             cachedSongs.find(s => s.id === req.id).lyrics = lyrics
@@ -288,23 +291,36 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             return
         }
         console.warn("No matched song found, needs manual search", results)
-        document.getElementById("status-scan").textContent
-            = "Failed to find matching song lyrics in results of Genius"
-        document.getElementById("status-scan").style.color
-            = "var(--tertiary)"
+        if (currentAndNext().current?.id === req.id) {
+            document.getElementById("status-scan").textContent
+                = "Failed to find matching song lyrics in results of Genius"
+            document.getElementById("status-scan").style.color
+                = "var(--tertiary)"
+        } else {
+            document.getElementById("status-scan").textContent = ""
+        }
     } catch (e) {
         console.warn(e)
-        document.getElementById("status-scan").textContent
-            = "Failed to fetch lyrics from Genius"
-        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        if (currentAndNext().current?.id === req.id) {
+            document.getElementById("status-scan").textContent
+                = "Failed to fetch lyrics from Genius"
+            document.getElementById("status-scan").style.color
+                = "var(--tertiary)"
+        } else {
+            document.getElementById("status-scan").textContent = ""
+        }
     }
     if (originalReq) {
         return
     }
-    const reqWithoutBrackets = JSON.parse(JSON.stringify(req))
-    reqWithoutBrackets.artist = req.artist.replace(/\(.*\)/g, "").trim()
-    reqWithoutBrackets.title = req.title.replace(/\(.*\)/g, "").trim()
-    fetchLyrics(reqWithoutBrackets, force, req)
+    if (currentAndNext().current?.id === req.id) {
+        const reqWithoutBrackets = JSON.parse(JSON.stringify(req))
+        reqWithoutBrackets.artist = req.artist.replace(/\(.*\)/g, "").trim()
+        reqWithoutBrackets.title = req.title.replace(/\(.*\)/g, "").trim()
+        fetchLyrics(reqWithoutBrackets, force, req)
+    } else {
+        document.getElementById("status-scan").textContent = ""
+    }
 }
 
 const showLyrics = async p => {
