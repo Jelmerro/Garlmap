@@ -444,7 +444,7 @@ const autoPlayOpts = (singleOpt = false) => {
     }
     if (shouldAutoClose && [false, "close"].includes(singleOpt)) {
         rulelist.forEach((rule, index) => {
-            rule.open = index === ruleIdx
+            rule.open = index === ruleIdx || !rule.rule
         })
         if (rulelist[selectedRuleIdx] !== rulelist[ruleIdx]) {
             selectedPathIdx = null
