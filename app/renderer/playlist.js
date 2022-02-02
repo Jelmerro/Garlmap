@@ -35,7 +35,7 @@ const generatePlaylistView = () => {
         const mainContainer = document.createElement("div")
         mainContainer.className = "rule"
         if (index === ruleIdx) {
-            mainContainer.className = "rule current"
+            mainContainer.classList.add("current")
         }
         if (index === selectedRuleIdx && selectedPathIdx === null) {
             mainContainer.classList.add("selected")
@@ -69,8 +69,14 @@ const generatePlaylistView = () => {
                     switchFocus("playlist")
                     selectedRuleIdx = index
                     selectedPathIdx = null
-                    generatePlaylistView()
+                    document.querySelector("#main-playlist .selected")
+                        ?.classList.remove("selected")
+                    mainContainer.classList.add("selected")
                 }
+            })
+            mainContainer.addEventListener("dblclick", () => {
+                item.open = !item.open
+                generatePlaylistView()
             })
             document.getElementById("main-playlist").appendChild(mainContainer)
         }
@@ -113,8 +119,15 @@ const generatePlaylistView = () => {
                         switchFocus("playlist")
                         selectedRuleIdx = index
                         selectedPathIdx = songIdx
-                        generatePlaylistView()
+                        document.querySelector("#main-playlist .selected")
+                            ?.classList.remove("selected")
+                        songInfo.classList.add("selected")
                     }
+                })
+                songInfo.addEventListener("dblclick", () => {
+                    ruleIdx = index
+                    pathIdx = songIdx
+                    playFromPlaylist(true)
                 })
                 if (song.stopAfter) {
                     const stopImg = document.createElement("img")
@@ -255,6 +268,9 @@ const incrementSelected = () => {
 }
 
 const closeSelectedRule = () => {
+    if (selectedRuleIdx === null) {
+        selectedRuleIdx = 0
+    }
     if (rulelist[selectedRuleIdx].rule) {
         rulelist[selectedRuleIdx].open = false
         selectedPathIdx = null
@@ -263,6 +279,9 @@ const closeSelectedRule = () => {
 }
 
 const openSelectedRule = () => {
+    if (selectedRuleIdx === null) {
+        selectedRuleIdx = 0
+    }
     if (rulelist[selectedRuleIdx].rule && selectedPathIdx === null) {
         rulelist[selectedRuleIdx].open = true
     }
