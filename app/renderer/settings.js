@@ -18,6 +18,7 @@
 "use strict"
 
 const {ipcRenderer} = require("electron")
+const {deleteFile, joinPath, writeJSON} = require("../util")
 
 let autoLyrics = false
 let startupConfig = {}
@@ -29,7 +30,7 @@ const init = () => {
         setCachePolicy(config.configDir, config.cache || "all")
         if (config.folder) {
             const {scanner} = require("./songs")
-            setTimeout(() => scanner(config.folder), 1)
+            scanner(config.folder)
         }
         autoLyrics = !!config.autoLyrics
         document.getElementById("toggle-autolyrics").checked = autoLyrics
@@ -67,7 +68,6 @@ const toggleAutoLyrics = () => {
 
 const saveSettings = () => {
     const config = JSON.parse(JSON.stringify(startupConfig))
-    const {joinPath} = require("../util")
     const configFile = joinPath(config.configDir, "settings.json")
     delete config.configDir
     delete config.version
@@ -104,10 +104,8 @@ const saveSettings = () => {
         delete config.fontSize
     }
     if (Object.keys(config).length === 0) {
-        const {deleteFile} = require("../util")
         deleteFile(configFile)
     } else {
-        const {writeJSON} = require("../util")
         writeJSON(configFile, config, 4)
     }
 }

@@ -14,3 +14,4 @@
     - after this, make ctrl tab switch between playlist and search section
 - implement fullscreen interface with large cover art
     - might want to refactor the input file before picking this up (as it requires a new "mode"/layer)
+- find a less buggy mpv library, maybe: https://github.com/porsager/mpv

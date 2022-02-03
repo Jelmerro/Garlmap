@@ -300,8 +300,11 @@ See the LICENSE file or the GNU website for details.`)
 }
 
 ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
-ipcMain.on("dialog-dir", (e, options) => {
+ipcMain.on("dialog-open", (e, options) => {
     e.returnValue = dialog.showOpenDialogSync(mainWindow, options)
+})
+ipcMain.on("dialog-save", (e, options) => {
+    e.returnValue = dialog.showSaveDialogSync(mainWindow, options)
 })
 ipcMain.on("destroy-window", (_, error) => {
     if (error) {

@@ -26,7 +26,10 @@ let shouldAutoScrollTrack = false
 let shouldAutoClose = false
 let shouldAutoRemove = false
 
-const {formatTime, queryMatch} = require("../util")
+const {ipcRenderer} = require("electron")
+const {
+    formatTime, queryMatch, writeJSON, readJSON, resetWelcome, isDirectory
+} = require("../util")
 
 const generatePlaylistView = () => {
     document.getElementById("main-playlist").textContent = ""
@@ -476,14 +479,95 @@ const autoPlayOpts = (singleOpt = false) => {
     }
 }
 
+const exportList = () => {
+    const folder = document.getElementById("status-folder").textContent.trim()
+    if (folder === "No folder selected") {
+        document.getElementById("status-scan").textContent
+            = "No folder open yet, nothing to export"
+        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        return
+    }
+    let file = ipcRenderer.sendSync("dialog-save", {
+        "filters": [{
+            "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
+        }],
+        "title": "Export playlist"
+    })
+    if (!file) {
+        return
+    }
+    if (!file.endsWith(".garlmap.json")) {
+        file += ".garlmap.json"
+    }
+    const list = rulelist.map(r => {
+        if (r.rule) {
+            return {"rule": r.rule}
+        }
+        return {"songs": r.songs}
+    })
+    const success = writeJSON(file, {folder, list}, 4)
+    if (success) {
+        document.getElementById("status-scan").textContent = ""
+        document.getElementById("status-scan").style.color = "var(--primary)"
+    } else {
+        document.getElementById("status-scan").textContent
+            = "Failed to save playlist, write error"
+        document.getElementById("status-scan").style.color = "var(--tertiary)"
+    }
+}
+
+const importList = async() => {
+    const file = ipcRenderer.sendSync("dialog-open", {
+        "filters": [{
+            "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
+        }],
+        "properties": ["openFile"],
+        "title": "Import playlist"
+    })?.[0]
+    if (!file) {
+        return
+    }
+    const imported = readJSON(file)
+    if (!imported?.list || !imported?.folder) {
+        document.getElementById("status-scan").textContent
+            = "Not a valid Garlmap playlist file"
+        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        return
+    }
+    if (!isDirectory(imported.folder)) {
+        document.getElementById("status-scan").textContent
+            = "Playlist base folder could not be found"
+        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        return
+    }
+    const {scanner} = require("./songs")
+    await scanner(imported.folder)
+    imported.list.filter(r => r?.rule || r?.songs).forEach(append)
+}
+
+const clearPlaylist = async() => {
+    rulelist = []
+    ruleIdx = 0
+    selectedRuleIdx = null
+    selectedPathIdx = null
+    pathIdx = 0
+    generatePlaylistView()
+    const {displayCurrentSong} = require("./dom")
+    await displayCurrentSong({})
+    resetWelcome()
+}
+
 module.exports = {
     append,
     autoPlayOpts,
+    clearPlaylist,
     closeSelectedRule,
     currentAndNext,
     decrement,
     decrementSelected,
     deleteSelected,
+    exportList,
+    importList,
     increment,
     incrementSelected,
     openSelectedRule,

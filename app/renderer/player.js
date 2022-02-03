@@ -18,8 +18,8 @@
 "use strict"
 
 const mpvAPI = require("node-mpv")
-const {formatTime} = require("../util")
 const {ipcRenderer} = require("electron")
+const {formatTime} = require("../util")
 
 const mpv = new mpvAPI({"audio_only": true})
 let volume = 100
@@ -93,16 +93,8 @@ const init = () => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", async() => {
-        try {
-            await mpv.quit()
-        } catch {
-            // Never started in the first place, or was killed separately
-        }
-        try {
-            await mpv.command("quit")
-        } catch {
-            // Probably not running anymore, maybe it was killed separately
-        }
+        await mpv.quit().catch(() => null)
+        await mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })
     navigator.mediaSession.setActionHandler("play", pause)
@@ -224,6 +216,13 @@ const toggleMute = async() => {
     await updateVolume()
 }
 
+const stopPlayback = async() => {
+    if (isAlive()) {
+        await mpv.stop().catch(() => null)
+        await mpv.clearPlaylist().catch(() => null)
+    }
+}
+
 module.exports = {
     init,
     isAlive,
@@ -231,6 +230,7 @@ module.exports = {
     pause,
     queue,
     seek,
+    stopPlayback,
     toggleMute,
     updatePlayButton,
     volumeDown,

@@ -34,50 +34,54 @@ const low = s => s.toLowerCase()
 
 const processFile = async(folder, file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
-    try {
-        let details = await musicMetadata.parseFile(file, {"skipCovers": true})
-        if (!details.format.duration) {
-            details = await musicMetadata.parseFile(
-                file, {"duration": true, "skipCovers": true})
-        }
-        const song = {
-            "album": details.common.album,
-            "artist": details.common.artist,
-            "bitrate": details.format.bitrate,
-            "date": details.common.year,
-            "disc": details.common.disk.no,
-            "disc_total": details.common.disk.of,
-            "duration": details.format.duration,
-            "id": file.replace(folder, "").replace(/^[/\\]+/g, ""),
-            lyrics,
-            "path": file,
-            "title": details.common.title,
-            "track": details.common.track.no,
-            "track_total": details.common.track.of
-        }
-        const existingCache = cachedSongs.find(
-            s => s.id === song.id || s.path === song.path)
-        if (existingCache) {
-            cachedSongs[cachedSongs.indexOf(existingCache)] = song
-        } else {
-            cachedSongs.push(song)
-        }
-        const existingCurrent = songs.find(
-            s => s.id === song.id || s.path === song.path)
-        if (existingCurrent) {
-            songs[songs.indexOf(existingCurrent)] = song
-        } else {
-            songs.push(song)
-        }
-    } catch {
+    let details = await musicMetadata.parseFile(file, {"skipCovers": true})
+        .catch(() => null)
+    if (!details?.format?.duration) {
+        details = await musicMetadata.parseFile(
+            file, {"duration": true, "skipCovers": true}).catch(() => null)
+    }
+    if (!details) {
         failures.push(file)
+        processedFiles += 1
+        document.getElementById("status-files").textContent
+            = `${processedFiles}/${total} songs`
+        return
+    }
+    const song = {
+        "album": details.common.album,
+        "artist": details.common.artist,
+        "bitrate": details.format.bitrate,
+        "date": details.common.year,
+        "disc": details.common.disk.no,
+        "disc_total": details.common.disk.of,
+        "duration": details.format.duration,
+        "id": file.replace(folder, "").replace(/^[/\\]+/g, ""),
+        lyrics,
+        "path": file,
+        "title": details.common.title,
+        "track": details.common.track.no,
+        "track_total": details.common.track.of
+    }
+    const existingCache = cachedSongs.find(
+        s => s.id === song.id || s.path === song.path)
+    if (existingCache) {
+        cachedSongs[cachedSongs.indexOf(existingCache)] = song
+    } else {
+        cachedSongs.push(song)
+    }
+    const existingCurrent = songs.find(
+        s => s.id === song.id || s.path === song.path)
+    if (existingCurrent) {
+        songs[songs.indexOf(existingCurrent)] = song
+    } else {
+        songs.push(song)
     }
     processedFiles += 1
     document.getElementById("status-files").textContent
         = `${processedFiles}/${total} songs`
 }
 
-const scanner = folder => {
+const scanner = async folder => {
     processedFiles = 0
     songs = []
     failures = []
@@ -85,11 +89,15 @@ const scanner = folder => {
     document.getElementById("status-folder").style.color = "var(--primary)"
     document.getElementById("status-scan").textContent = ""
     document.getElementById("status-scan").style.color = ""
+    document.getElementById("status-current").textContent = `Scanning`
+    document.getElementById("status-current").style.color = "var(--primary)"
     const escapedFolder = folder.replace(/\[/g, "\\[")
+    const {stopPlayback} = require("./player")
+    await stopPlayback()
+    const {clearPlaylist} = require("./playlist")
+    await clearPlaylist()
     glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
         songs = cachedSongs.filter(s => s.path?.startsWith(folder))
-        document.getElementById("status-current").textContent = `Scanning`
-        document.getElementById("status-current").style.color = "var(--primary)"
         const useCache = ["all", "songs"].includes(cache)
         for (const f of files) {
             const match = songs.find(s => f.endsWith(s.id) || f === s.path)
@@ -241,7 +249,8 @@ const query = search => {
 const coverArt = async p => {
     try {
         const details = await musicMetadata.parseFile(p, {"skipCovers": false})
-        const pic = details.common.picture?.[0]
+            .catch(() => null)
+        const pic = details?.common?.picture?.[0]
         if (pic) {
             const str = Buffer.from(pic.data, "binary").toString("base64")
             return `data:${pic.format};base64,${str}`
@@ -253,7 +262,8 @@ const coverArt = async p => {
 }
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
-    const cachedLyrics = songs.find(s => s.id === req.id || s.path === s.path).lyrics
+    const cachedLyrics = songs.find(s => s.id === req.id
+        || s.path === req.path).lyrics
     if (cachedLyrics && !force) {
         document.getElementById("song-info").textContent = cachedLyrics
         return
@@ -287,8 +297,10 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 document.getElementById("song-info").textContent = lyrics
             }
             document.getElementById("status-scan").textContent = ""
-            songs.find(s => s.id === req.id || s.path === req.path).lyrics = lyrics
-            cachedSongs.find(s => s.id === req.id || s.path === req.path).lyrics = lyrics
+            songs.find(s => s.id === req.id
+                || s.path === req.path).lyrics = lyrics
+            cachedSongs.find(s => s.id === req.id
+                || s.path === req.path).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
             return
         }

@@ -50,37 +50,49 @@ const init = () => {
     window.addEventListener("mousedown", handleMouse)
     document.querySelector("input[type='range']")
         .addEventListener("input", () => {
+            if (isReady()) {
+                return
+            }
             const {volumeSet} = require("./player")
             volumeSet(document.querySelector("input[type='range']").value)
         })
     document.getElementById("toggle-autoscroll").parentNode
         .addEventListener("click", () => {
+            if (isReady()) {
+                return
+            }
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
         })
     document.getElementById("toggle-autoclose").parentNode
         .addEventListener("click", () => {
+            if (isReady()) {
+                return
+            }
             const {toggleAutoClose} = require("./playlist")
             toggleAutoClose()
         })
     document.getElementById("toggle-autoremove").parentNode
         .addEventListener("click", () => {
+            if (isReady()) {
+                return
+            }
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         })
     resetWelcome()
 }
 
+const isReady = () => document.getElementById(
+    "status-current").textContent !== "Ready"
+
 const openFolder = () => {
-    if (document.getElementById("status-current").textContent !== "Ready") {
-        return
-    }
     const {scanner} = require("./songs")
-    const folder = ipcRenderer.sendSync("dialog-dir", {
+    const folder = ipcRenderer.sendSync("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
     })?.[0]
     if (folder) {
-        setTimeout(() => scanner(folder), 1)
+        scanner(folder)
     }
 }
 
@@ -88,17 +100,28 @@ const handleKeyboard = async e => {
     if (e.key === "Tab" || !queryMatch(e, "textarea")) {
         e.preventDefault()
     }
+    if (keyMatch(e, {"key": "F12"})) {
+        ipcRenderer.invoke("toggle-devtools")
+        return
+    }
+    if (isReady()) {
+        return
+    }
     if (keyMatch(e, {"key": "Tab"})) {
         const {switchFocus} = require("./dom")
         switchFocus("searchbox")
         return
     }
     if (keyMatch(e, {"ctrl": true, "key": "e"})) {
-        // TODO export playlist
+        const {exportList} = require("./playlist")
+        // #bug Electron will freeze the mouse if this is not called on a delay
+        setTimeout(() => exportList(), 100)
         return
     }
     if (keyMatch(e, {"ctrl": true, "key": "i"})) {
-        // TODO import playlist
+        const {importList} = require("./playlist")
+        // #bug Electron will freeze the mouse if this is not called on a delay
+        setTimeout(() => importList(), 100)
         return
     }
     if (keyMatch(e, {"ctrl": true, "key": "s"})) {
@@ -199,10 +222,6 @@ const handleKeyboard = async e => {
     }
     if (keyMatch(e, {"key": "F10"})) {
         document.getElementById("song-info").scrollBy(0, -100)
-        return
-    }
-    if (keyMatch(e, {"key": "F12"})) {
-        ipcRenderer.invoke("toggle-devtools")
         return
     }
     if (document.body.getAttribute("focus-el") === "search") {
@@ -331,19 +350,25 @@ const handleKeyboard = async e => {
 }
 
 const handleMouse = e => {
+    if (isReady()) {
+        return
+    }
     if (!queryMatch(e, ".song, #song-info, textarea, input")) {
         e.preventDefault()
     }
     if (queryMatch(e, "#status-folder, #status-files, #open-folder")) {
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => openFolder(), 100)
-        return
-    }
-    if (queryMatch(e, "#import-playlist")) {
-        // TODO import playlist
     }
     if (queryMatch(e, "#export-playlist")) {
-        // TODO export playlist
+        const {exportList} = require("./playlist")
+        // #bug Electron will freeze the mouse if this is not called on a delay
+        setTimeout(() => exportList(), 100)
+    }
+    if (queryMatch(e, "#import-playlist")) {
+        const {importList} = require("./playlist")
+        // #bug Electron will freeze the mouse if this is not called on a delay
+        setTimeout(() => importList(), 100)
     }
     if (queryMatch(e, "#save-settings")) {
         const {saveSettings} = require("./settings")
