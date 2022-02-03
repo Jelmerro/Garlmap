@@ -91,7 +91,7 @@ const displayCurrentSong = async song => {
     audio.src = "../static/empty.mp3"
     document.body.appendChild(audio)
     audio.loop = true
-    await audio.play()
+    await audio.play().catch(() => null)
     const {updatePlayButton} = require("./player")
     updatePlayButton()
     // MediaSession details
