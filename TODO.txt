@@ -7,7 +7,6 @@
         - read local text files if above is true, but also for tracklist-like folders
     - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
-- fix open folder bug: second time opening a folder keeps the old one
 - refactor arrow up and down in playlist to no longer require complete list refresh
 - refactor keyboard input file
     - fix key holding not working when textarea is focused

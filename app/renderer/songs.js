@@ -55,13 +55,15 @@ const processFile = async(folder, file, total, lyrics = null) => {
             "track": details.common.track.no,
             "track_total": details.common.track.of
         }
-        const existingCache = cachedSongs.find(s => s.id === song.id)
+        const existingCache = cachedSongs.find(
+            s => s.id === song.id || s.path === song.path)
         if (existingCache) {
             cachedSongs[cachedSongs.indexOf(existingCache)] = song
         } else {
             cachedSongs.push(song)
         }
-        const existingCurrent = songs.find(s => s.id === song.id)
+        const existingCurrent = songs.find(
+            s => s.id === song.id || s.path === song.path)
         if (existingCurrent) {
             songs[songs.indexOf(existingCurrent)] = song
         } else {
@@ -85,7 +87,7 @@ const scanner = folder => {
     document.getElementById("status-scan").style.color = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
-        songs = cachedSongs.filter(s => s.id && s.path)
+        songs = cachedSongs.filter(s => s.path?.startsWith(folder))
         document.getElementById("status-current").textContent = `Scanning`
         document.getElementById("status-current").style.color = "var(--primary)"
         const useCache = ["all", "songs"].includes(cache)
@@ -251,7 +253,7 @@ const coverArt = async p => {
 }
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
-    const cachedLyrics = songs.find(s => s.id === req.id).lyrics
+    const cachedLyrics = songs.find(s => s.id === req.id || s.path === s.path).lyrics
     if (cachedLyrics && !force) {
         document.getElementById("song-info").textContent = cachedLyrics
         return
@@ -285,8 +287,8 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 document.getElementById("song-info").textContent = lyrics
             }
             document.getElementById("status-scan").textContent = ""
-            songs.find(s => s.id === req.id).lyrics = lyrics
-            cachedSongs.find(s => s.id === req.id).lyrics = lyrics
+            songs.find(s => s.id === req.id || s.path === req.path).lyrics = lyrics
+            cachedSongs.find(s => s.id === req.id || s.path === req.path).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
             return
         }
@@ -339,6 +341,7 @@ const setCachePolicy = (dir, policy) => {
     cache = policy
     if (cache !== "none") {
         cachedSongs = readJSON(joinPath(configDir, "cache")) || []
+        cachedSongs = cachedSongs.filter(s => s.id && s.path)
         if (cache === "songs") {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
         }
