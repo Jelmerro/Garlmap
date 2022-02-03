@@ -13,8 +13,7 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
   - Search with filters, custom queries and build a dynamic playlist
 - Logical in form and function, no hidden magic
   - A base folder, your own queries and a playlist, that's all
-- Mpv is used as the underlying technology to play the files themselves
-  - Requires [mpv](https://mpv.io) to be installed
+- [Mpv](https://mpv.io) is used as the underlying technology to play the files
 - Audio only playback, no video support or other second-grade features
 - Player that plays music >.>
 

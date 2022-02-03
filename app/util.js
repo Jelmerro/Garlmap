@@ -70,14 +70,17 @@ F12 will open the development tools where you can find any runtime errors.
 There are many more shortcuts, which are listed in most of the sections below.
 When in doubt, the mouse can also be used to do most actions.
 
-Startup options
+Settings
 
 It's required to load a folder for Garlmap to play songs.
 It will index and cache the info of them, so you can search it easily.
-You can load a folder by pressing Ctrl-o, or you can customize your settings.
+You can load a folder with Ctrl-o, the button, or by changing your settings.
 There are many ways to do so, with env vars, a config file, or with arguments,
 all of which are explained if you start Garlmap with the "--help" argument.
 It's recommended to read both this help and the startup help at least once.
+You can save all your settings with the button or using Ctrl-s at any time,
+a list of custom settings currently in use is always displayed on startup.
+Your playlist is not part of the settings, but you can import/export it instead.
 
 Syntax for queueing and searching
 
