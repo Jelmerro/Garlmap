@@ -56,12 +56,12 @@ const init = () => {
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         }
-        const {"init": startMPV} = require("./player")
+        const {"init": startMpv} = require("./player")
         let defaultMpv = "mpv"
         if (process.platform === "win32") {
             defaultMpv = "mpv.exe"
         }
-        startMPV(config.mpv || defaultMpv)
+        startMpv(config.mpv || defaultMpv)
     })
 }
 

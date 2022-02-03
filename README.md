@@ -14,7 +14,7 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 - Logical in form and function, no hidden magic
   - A base folder, your own queries and a playlist, that's all
 - Mpv is used as the underlying technology to play the files themselves
-  - Requires [mpv](https://mpv.io) to be installed and in the path.
+  - Requires [mpv](https://mpv.io) to be installed
 - Audio only playback, no video support or other second-grade features
 - Player that plays music >.>
 
@@ -30,13 +30,10 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 
 ## Getting started
 
-You NEED to install MPV from [mpv.io](https://mpv.io) or your package manager,
-otherwise Garlmap WON'T be able to play anything at all.
-Now download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
-
-There is a ton of help included on the most right-hand pane of the application,
-which you can always show the help in with `F1` regardless of current focus.
-You can also find a lot of info by using the `--help` startup argument.
+1. Install mpv from [mpv.io](https://mpv.io) or your package manager.
+You must add mpv to your path, or use the `--mpv` option.
+2. Download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
+3. Read the built-in help on the right or run Garlmap with `--help` on startup.
 
 ## Building
 

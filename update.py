@@ -20,8 +20,7 @@ import subprocess
 import re
 
 overrides = {
-    "electron-builder": "next",
-    "node-mpv": "beta"
+    "electron-builder": "next"
 }
 
 
