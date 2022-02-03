@@ -30,7 +30,7 @@
             <div class="button" id="next"><img src="../img/next.png" /></div>
             <span id="current-song">Welcome to Garlmap, nothing queued yet...</span>
         </div>
-        <div class="flex">
+        <div>
             <input type="range" min="0" max="130" value="100" disabled="disabled" />
             <div id="progress-container">
                 <div id="progress-played" style="width: 0%">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
@@ -61,6 +61,10 @@
                     <input type="checkbox" id="toggle-autolyrics">
                     <span class="checkbox-mark" />
                 </label>
+                <div class="button" id="open-folder">Open folder</div>
+                <div class="button" id="import-playlist">Import</div>
+                <div class="button" id="export-playlist">Export</div>
+                <div class="button" id="save-settings">Save settings</div>
             </div>
             <div id="main-playlist"></div>
             <div id="fallback-rule">order:shuffle</div>
@@ -73,7 +77,7 @@
     <div id="status-line">
         <span id="status-current">Ready</span>
         <span id="status-folder">No folder selected</span>
-        <span id="status-files">Press Ctrl-O to open a folder</span>
+        <span id="status-files"></span>
         <span id="status-scan"></span>
     </div>
 </body>

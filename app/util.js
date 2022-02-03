@@ -224,10 +224,10 @@ const readFile = loc => {
     }
 }
 
-const writeJSON = (loc, data) => {
+const writeJSON = (loc, data, indent = null) => {
     const {writeFileSync} = require("fs")
     try {
-        writeFileSync(loc, JSON.stringify(data))
+        writeFileSync(loc, JSON.stringify(data, null, indent))
         return true
     } catch {
         return false

@@ -36,7 +36,9 @@ body {color: var(--fg);font: 14px "DejaVu Sans Mono", "Courier", monospace;}
 body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
-.flex {display: flex;}
+.button:hover {background: var(--border);}
+#progress-container:hover {background: var(--accent);}
+input[type="range"]:hover {border-color: var(--border);}
 
 
 /* general column alignment */
@@ -47,8 +49,9 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 
 
 /* current song info bar */
-#player-status {display: flex;margin-bottom: .5em;}
-#player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);}
+#player-container > * {display: flex;}
+#player-status {margin-bottom: .5em;}
+#player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);cursor: pointer;}
 #player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
 #current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
@@ -67,15 +70,21 @@ input[type="range"].muted {background: var(--tertiary);}
 
 /* search & playlist column with song info */
 #search-results {overflow-y: auto;}
-#rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--bg);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: none;min-height: 2.5em;}
-#rule-search:focus {color: var(--primary);font-weight:bold;border-color: var(--primary);}
+#rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--accent);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: none;min-height: 2.5em;}
+#rule-search:focus {color: var(--primary);background: var(--bg);font-weight:bold;border-color: var(--primary);}
+#rule-search:hover {background: var(--bg);}
+#rule-search:focus:hover {background: var(--accent);}
 #playlist-container img {height: 2em;max-width: 2em;float: left;margin: auto;}
 #playlist-container .rule:not(.current):not(.selected) img {filter: invert(.8);}
 #playlist-container .rule img:first-child {cursor: pointer;}
 #playlist-container .song img:first-child {opacity: 0;cursor: pointer;}
 #playlist-container .song:not(.current):not(.selected) img, body[focus-el="search"] #playlist-container .song.selected img {filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #playlist-container .song:hover img, #playlist-container .song.current img {opacity: 1;}
-#playlist-controls {display: flex;padding: .5em;flex-wrap: wrap;gap: 1em;}
+#playlist-controls {display: grid;grid-template-columns: repeat(2, 1fr);padding: .5em;gap: .5em;}
+@media screen and (min-width: 1400px) {
+    #playlist-controls {grid-template-columns: repeat(4, 1fr);}
+}
+#playlist-controls .button {cursor: pointer;padding: .5em;border: .1em solid var(--primary);}
 #main-playlist {flex: 1;overflow: auto;}
 #main-playlist * {flex: 1;}
 .rule {display: flex;border: .2em solid var(--fg);}
@@ -116,13 +125,16 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #status-line *:last-child {margin-right: 0;}
 #status-current {color: var(--secondary);}
 #status-folder {color: var(--primary);}
+#status-folder, #status-files {cursor: pointer;}
 
 
 /* checkbox styling */
-.checkbox-container {display: block;position: relative;padding-left: 1.5em;margin: auto;cursor: pointer;user-select: none;}
+.checkbox-container {display: block;position: relative;padding-left: 1.5em;cursor: pointer;user-select: none;}
 .checkbox-container input {position: absolute;opacity: 0;cursor: pointer;height: 0;width: 0;}
-.checkbox-mark {position: absolute;top: 0;left: 0;height: 1.3em;width: 1.3em;background-color: var(--bg);}
-.checkbox-container input:checked ~ .checkbox-mark {background-color: var(--primary);}
+.checkbox-mark {position: absolute;top: 0;left: 0;height: 1.3em;width: 1.3em;background: var(--bg);}
+.checkbox-container input:checked ~ .checkbox-mark {background: var(--primary);}
 .checkbox-mark:after {content: "";position: absolute;display: none;}
 .checkbox-container input:checked ~ .checkbox-mark:after {display: block;}
 .checkbox-container .checkbox-mark:after {left: .35em;top: .1em;width: .4em;height: .6em;border: solid var(--bg);border-width: 0 .2em .2em 0;transform: rotate(45deg);}
+.checkbox-container:hover .checkbox-mark {background: var(--border);}
+.checkbox-container:hover {font-style: italic;}

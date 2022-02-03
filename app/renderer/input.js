@@ -93,6 +93,19 @@ const handleKeyboard = async e => {
         switchFocus("searchbox")
         return
     }
+    if (keyMatch(e, {"ctrl": true, "key": "e"})) {
+        // TODO export playlist
+        return
+    }
+    if (keyMatch(e, {"ctrl": true, "key": "i"})) {
+        // TODO import playlist
+        return
+    }
+    if (keyMatch(e, {"ctrl": true, "key": "s"})) {
+        const {saveSettings} = require("./settings")
+        saveSettings()
+        return
+    }
     if (keyMatch(e, {"ctrl": true, "key": "o"})) {
         openFolder()
         return
@@ -321,10 +334,20 @@ const handleMouse = e => {
     if (!queryMatch(e, ".song, #song-info, textarea, input")) {
         e.preventDefault()
     }
-    if (queryMatch(e, "#status-folder, #status-files")) {
+    if (queryMatch(e, "#status-folder, #status-files, #open-folder")) {
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => openFolder(), 100)
         return
+    }
+    if (queryMatch(e, "#import-playlist")) {
+        // TODO import playlist
+    }
+    if (queryMatch(e, "#export-playlist")) {
+        // TODO export playlist
+    }
+    if (queryMatch(e, "#save-settings")) {
+        const {saveSettings} = require("./settings")
+        saveSettings()
     }
     if (queryMatch(e, "input[type='range']")) {
         if (e.button === 2) {

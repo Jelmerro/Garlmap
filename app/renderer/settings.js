@@ -20,9 +20,11 @@
 const {ipcRenderer} = require("electron")
 
 let autoLyrics = false
+let startupConfig = {}
 
 const init = () => {
     ipcRenderer.on("config", (_, config) => {
+        startupConfig = config
         const {setCachePolicy} = require("./songs")
         setCachePolicy(config.configDir, config.cache || "all")
         if (config.folder) {
@@ -63,4 +65,51 @@ const toggleAutoLyrics = () => {
     document.getElementById("toggle-autolyrics").checked = autoLyrics
 }
 
-module.exports = {init, shouldAutoFetchLyrics, toggleAutoLyrics}
+const saveSettings = () => {
+    const config = JSON.parse(JSON.stringify(startupConfig))
+    const {joinPath} = require("../util")
+    const configFile = joinPath(config.configDir, "settings.json")
+    delete config.configDir
+    delete config.version
+    const folder = document.getElementById("status-folder").textContent.trim()
+    if (folder !== "No folder selected") {
+        config.folder = folder
+    }
+    config.autoScroll = document.getElementById("toggle-autoscroll").checked
+    config.autoClose = document.getElementById("toggle-autoclose").checked
+    config.autoRemove = document.getElementById("toggle-autoremove").checked
+    config.autoLyrics = document.getElementById("toggle-autolyrics").checked
+    if (!config.autoScroll) {
+        delete config.autoScroll
+    }
+    if (!config.autoClose) {
+        delete config.autoClose
+    }
+    if (!config.autoRemove) {
+        delete config.autoRemove
+    }
+    if (!config.autoLyrics) {
+        delete config.autoLyrics
+    }
+    if (config.cache === "all") {
+        delete config.cache
+    }
+    if (!config.customTheme) {
+        delete config.customTheme
+    }
+    if (!config.folder) {
+        delete config.folder
+    }
+    if (!config.fontSize || config.fontSize === 14) {
+        delete config.fontSize
+    }
+    if (Object.keys(config).length === 0) {
+        const {deleteFile} = require("../util")
+        deleteFile(configFile)
+    } else {
+        const {writeJSON} = require("../util")
+        writeJSON(configFile, config, 4)
+    }
+}
+
+module.exports = {init, saveSettings, shouldAutoFetchLyrics, toggleAutoLyrics}
