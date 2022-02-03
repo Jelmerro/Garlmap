@@ -128,7 +128,8 @@ const processStartupArgs = () => {
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "customTheme": readFile(joinPath(configDir, "theme.css")),
         "folder": process.env.GARLMAP_FOLDER?.trim(),
-        "fontSize": process.env.GARLMAP_FONT_SIZE?.trim()
+        "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
+        "mpv": process.env.GARLMAP_MPV?.trim()
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
     if (configFile) {
@@ -144,6 +145,8 @@ const processStartupArgs = () => {
                 outputVersion()
             } else if (name === "--cache") {
                 config.cache = value
+            } else if (name === "--mpv") {
+                config.mpv = value
             } else if (name === "--font-size") {
                 config.fontSize = value
             } else if (name === "--auto-lyrics") {
@@ -262,6 +265,15 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FONT_SIZE env will be read,
                    or this setting will by default set to 14 pixels.
+                   This setting cannot be changed once Garlmap is started.
+
+    --mpv=loc      Define a custom location for the mpv executable.
+                   Mostly useful in case you don't want to have mpv on the path.
+                   If no arg is found, it will read the "mpv" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_MPV env will be read,
+                   or this setting will by default set to "mpv" or "mpv.exe,
+                   the latter only being the default on Windows.
                    This setting cannot be changed once Garlmap is started.
 
     folder         Provide a folder to load the songs from for this instance.

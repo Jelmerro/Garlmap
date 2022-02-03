@@ -57,11 +57,11 @@ const init = () => {
             toggleAutoRemove()
         }
         const {"init": startMPV} = require("./player")
-        let fallback = "mpv"
+        let defaultMpv = "mpv"
         if (process.platform === "win32") {
-            fallback = "mpv.exe"
+            defaultMpv = "mpv.exe"
         }
-        startMPV(config.mpv || fallback)
+        startMPV(config.mpv || defaultMpv)
     })
 }
 
@@ -108,6 +108,13 @@ const saveSettings = () => {
     }
     if (!config.fontSize || config.fontSize === 14) {
         delete config.fontSize
+    }
+    let defaultMpv = "mpv"
+    if (process.platform === "win32") {
+        defaultMpv = "mpv.exe"
+    }
+    if (!config.mpv || config.mpv === defaultMpv) {
+        delete config.mpv
     }
     if (Object.keys(config).length === 0) {
         deleteFile(configFile)
