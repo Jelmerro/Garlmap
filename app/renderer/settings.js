@@ -56,6 +56,12 @@ const init = () => {
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         }
+        const {"init": startMPV} = require("./player")
+        let fallback = "mpv"
+        if (process.platform === "win32") {
+            fallback = "mpv.exe"
+        }
+        startMPV(config.mpv || fallback)
     })
 }
 

@@ -17,67 +17,66 @@
 */
 "use strict"
 
-const mpvAPI = require("node-mpv")
+const mpvAPI = require("mpv")
 const {ipcRenderer} = require("electron")
 const {formatTime} = require("../util")
 
-const mpv = new mpvAPI({"audio_only": true})
+let mpv = null
 let volume = 100
 let hasAnySong = false
 let stoppedAfterTrack = false
 
-const init = () => {
-    mpv.start().then(() => {
-        mpv.on("status", async info => {
-            console.info(`${info.property}: ${info.value}`)
-            if (!isAlive()) {
-                return
-            }
-            if (info.property === "playlist-pos" && info.value === 1) {
-                const {increment} = require("./playlist")
-                await increment(false)
-                document.getElementById("status-scan").textContent = ""
-                const {showLyrics} = require("./songs")
-                const {currentAndNext, autoPlayOpts} = require("./playlist")
-                const {current} = currentAndNext()
-                showLyrics(current.id)
-                autoPlayOpts()
-            }
-            if (info.property === "playlist-pos" && info.value === -1) {
-                const {currentAndNext, playFromPlaylist} = require("./playlist")
-                const {current} = currentAndNext()
-                current.stopAfter = false
-                stoppedAfterTrack = true
-                playFromPlaylist(false)
-                await mpv.pause()
-                updatePlayButton()
-            }
-        })
-        mpv.on("started", updatePlayButton)
-        mpv.on("resumed", updatePlayButton)
-        mpv.on("stopped", updatePlayButton)
-        mpv.on("paused", updatePlayButton)
-        setInterval(async() => {
-            try {
-                const seconds = Math.max(await mpv.getTimePosition(), 0)
-                const duration = await mpv.getDuration() || 0
-                navigator.mediaSession.setPositionState({
-                    // #bug Position not recognized by Electron
-                    duration, "playbackRate": 1, "position": seconds
-                })
-                document.getElementById("progress-played").innerHTML = `&nbsp;${
-                    formatTime(seconds)}/${formatTime(duration)}&nbsp;`
-                document.getElementById("progress-played").style.width
+const init = path => {
+    mpv = new mpvAPI({"args": ["--no-video", "--no-audio-display"], path})
+        .on("error", e => ipcRenderer.send("destroy-window", e))
+    mpv.command("observe_property", 1, "playlist-pos")
+    mpv.command("observe_property", 2, "playback-time")
+    mpv.command("observe_property", 3, "playback-count")
+    mpv.on("error", console.warn)
+    mpv.on("property-change", async info => {
+        if (!isAlive()) {
+            return
+        }
+        if (info.name === "playback-time" && info.data >= 0) {
+            const seconds = info.data
+            const duration = await mpv.get("duration")
+                .catch(() => null) || info.data
+            navigator.mediaSession.setPositionState({
+                // #bug Position not recognized by Electron
+                duration, "playbackRate": 1, "position": seconds
+            })
+            document.getElementById("progress-played").innerHTML = `&nbsp;${
+                formatTime(seconds)}/${formatTime(duration)}&nbsp;`
+            document.getElementById("progress-played").style.width
                     = `${seconds / duration * 100}%`
-                document.getElementById("progress-string").innerHTML = `&nbsp;${
-                    formatTime(seconds)}/${formatTime(duration)}&nbsp;`
-            } catch {
-                // No duration yet
-            }
-        }, 100)
-    }).catch(e => {
-        ipcRenderer.send("destroy-window", JSON.stringify(e, null, 3))
+            document.getElementById("progress-string").innerHTML = `&nbsp;${
+                formatTime(seconds)}/${formatTime(duration)}&nbsp;`
+            return
+        }
+        console.info(`${info.name}: ${info.data}`)
+        if (info.name === "playlist-pos" && info.data === 1) {
+            const {increment} = require("./playlist")
+            await increment(false)
+            document.getElementById("status-scan").textContent = ""
+            const {showLyrics} = require("./songs")
+            const {currentAndNext, autoPlayOpts} = require("./playlist")
+            const {current} = currentAndNext()
+            showLyrics(current.id)
+            autoPlayOpts()
+        }
+        if (info.name === "playlist-pos" && info.data === -1) {
+            const {currentAndNext, playFromPlaylist} = require("./playlist")
+            const {current} = currentAndNext()
+            current.stopAfter = false
+            stoppedAfterTrack = true
+            playFromPlaylist(false)
+            await mpv.set("pause", true)
+            updatePlayButton()
+        }
     })
+    mpv.on("unpause", updatePlayButton)
+    mpv.on("stop", updatePlayButton)
+    mpv.on("pause", updatePlayButton)
     // Listen for media and such
     ipcRenderer.on("media-pause", pause)
     ipcRenderer.on("media-prev", () => {
@@ -93,7 +92,6 @@ const init = () => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", async() => {
-        await mpv.quit().catch(() => null)
         await mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })
@@ -111,7 +109,7 @@ const init = () => {
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
     navigator.mediaSession.setActionHandler("seekforward", () => null)
     navigator.mediaSession.setActionHandler(
-        "seekto", details => mpv.seek(details.seekTime, "absolute"))
+        "seekto", details => mpv.command("seek", details.seekTime, "absolute"))
     navigator.mediaSession.setActionHandler("previoustrack", () => {
         const {decrement} = require("./playlist")
         decrement()
@@ -122,16 +120,16 @@ const init = () => {
     })
 }
 
-const isAlive = () => hasAnySong
+const isAlive = () => hasAnySong && mpv
 
 const updatePlayButton = async() => {
-    if (!isAlive() || await mpv.isPaused()) {
+    if (!isAlive() || await mpv.get("pause")) {
         document.getElementById("pause").querySelector("img").src
             = "../img/play.png"
         navigator.mediaSession.playbackState = "paused"
         // #bug Workaround for (you guessed it) another Electron bug
         try {
-            document.querySelector("audio").pause()
+            document.querySelector("audio").pause().catch(() => null)
         } catch {
             // There is no fallback for workarounds
         }
@@ -141,7 +139,7 @@ const updatePlayButton = async() => {
         navigator.mediaSession.playbackState = "playing"
         // #bug Workaround for (you guessed it) another Electron bug
         try {
-            document.querySelector("audio").play()
+            document.querySelector("audio").play().catch(() => null)
         } catch {
             // There is no fallback for workarounds
         }
@@ -150,7 +148,7 @@ const updatePlayButton = async() => {
 
 const pause = async() => {
     if (isAlive() && !stoppedAfterTrack) {
-        await mpv.togglePause()
+        await mpv.set("pause", !await mpv.get("pause"))
     } else {
         const {playFromPlaylist} = require("./playlist")
         playFromPlaylist()
@@ -160,8 +158,8 @@ const pause = async() => {
 
 const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
-        const duration = await mpv.getDuration()
-        await mpv.seek(percent * duration, "absolute")
+        const duration = await mpv.get("duration")
+        await mpv.command("seek", percent * duration, "absolute")
     }
 }
 
@@ -169,14 +167,14 @@ const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
     document.querySelector("input[type='range']").disabled = null
-    await mpv.load(file)
-    await mpv.play()
+    await mpv.command("loadfile", file)
+    await mpv.set("pause", false)
 }
 
 const queue = async file => {
-    await mpv.clearPlaylist()
+    await mpv.command("playlist-clear")
     if (file) {
-        await mpv.append(file)
+        await mpv.command("loadfile", file, "append")
     }
 }
 
@@ -197,12 +195,12 @@ const volumeDown = async() => {
 
 const updateVolume = async() => {
     if (isAlive()) {
-        await mpv.volume(volume)
+        await mpv.set("volume", volume)
     } else {
         volume = 100
     }
     document.querySelector("input[type='range']").value = volume
-    if (isAlive() && await mpv.isMuted()) {
+    if (isAlive() && await mpv.get("mute")) {
         document.querySelector("input[type='range']").className = "muted"
     } else {
         document.querySelector("input[type='range']").className = ""
@@ -211,15 +209,14 @@ const updateVolume = async() => {
 
 const toggleMute = async() => {
     if (isAlive()) {
-        await mpv.mute()
+        await mpv.set("mute", !await mpv.get("mute"))
     }
     await updateVolume()
 }
 
 const stopPlayback = async() => {
     if (isAlive()) {
-        await mpv.stop().catch(() => null)
-        await mpv.clearPlaylist().catch(() => null)
+        await mpv.command("stop").catch(() => null)
     }
 }
 

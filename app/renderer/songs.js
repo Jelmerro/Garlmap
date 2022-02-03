@@ -331,7 +331,11 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         const reqWithoutBrackets = JSON.parse(JSON.stringify(req))
         reqWithoutBrackets.artist = req.artist.replace(/\(.*\)/g, "").trim()
         reqWithoutBrackets.title = req.title.replace(/\(.*\)/g, "").trim()
-        fetchLyrics(reqWithoutBrackets, force, req)
+        if (reqWithoutBrackets.artist !== req.artist) {
+            fetchLyrics(reqWithoutBrackets, force, req)
+        } else if (reqWithoutBrackets.title !== req.title) {
+            fetchLyrics(reqWithoutBrackets, force, req)
+        }
     } else {
         document.getElementById("status-scan").textContent = ""
     }
