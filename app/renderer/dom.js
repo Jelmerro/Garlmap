@@ -55,6 +55,10 @@ const generateSongElement = song => {
 
 const displayCurrentSong = async song => {
     const songContainer = document.getElementById("current-song")
+    if (!song) {
+        songContainer.textContent = "Welcome to Garlmap"
+        return
+    }
     songContainer.textContent = ""
     const titleEl = document.createElement("span")
     titleEl.className = "title"

@@ -318,6 +318,9 @@ const append = (item, upNext = false) => {
         if (item.songs.length === 0) {
             return
         }
+        if (item.songs.length === 1) {
+            return append({"songs": item.songs})
+        }
     }
     if (rulelist.length > 0) {
         if (!upNext || ruleIdx === rulelist.length - 1) {
@@ -553,7 +556,7 @@ const clearPlaylist = async() => {
     pathIdx = 0
     generatePlaylistView()
     const {displayCurrentSong} = require("./dom")
-    await displayCurrentSong({})
+    await displayCurrentSong(null)
     resetWelcome()
 }
 
