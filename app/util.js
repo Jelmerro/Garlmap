@@ -199,6 +199,15 @@ const isDirectory = loc => {
     }
 }
 
+const isFile = loc => {
+    const {statSync} = require("fs")
+    try {
+        return statSync(loc).isFile()
+    } catch {
+        return false
+    }
+}
+
 const joinPath = (...args) => {
     const {join, resolve} = require("path")
     return resolve(join(...args))
@@ -241,6 +250,7 @@ module.exports = {
     basePath,
     formatTime,
     isDirectory,
+    isFile,
     joinPath,
     keyMatch,
     queryMatch,

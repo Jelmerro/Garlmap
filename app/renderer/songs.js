@@ -22,7 +22,7 @@ const {compareTwoStrings} = require("string-similarity")
 const musicMetadata = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
-const {readJSON, writeJSON, joinPath, resetWelcome} = require("../util")
+const {readJSON, writeJSON, joinPath, resetWelcome, isFile} = require("../util")
 
 let configDir = null
 let cache = "all"
@@ -98,6 +98,7 @@ const scanner = async folder => {
     await clearPlaylist()
     glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
         songs = cachedSongs.filter(s => s.path?.startsWith(folder))
+            .filter(s => isFile(s.path))
         const useCache = ["all", "songs"].includes(cache)
         for (const f of files) {
             const match = songs.find(s => f.endsWith(s.id) || f === s.path)
