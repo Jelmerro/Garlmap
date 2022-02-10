@@ -97,9 +97,11 @@ const scanner = async folder => {
     const {clearPlaylist} = require("./playlist")
     await clearPlaylist()
     glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
-        songs = cachedSongs.filter(s => s.path?.startsWith(folder))
-            .filter(s => isFile(s.path))
         const useCache = ["all", "songs"].includes(cache)
+        if (useCache !== "none") {
+            songs = cachedSongs.filter(s => s.path?.startsWith(folder))
+                .filter(s => isFile(s.path))
+        }
         for (const f of files) {
             const match = songs.find(s => f.endsWith(s.id) || f === s.path)
             if (useCache && match) {
