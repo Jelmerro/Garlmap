@@ -407,7 +407,9 @@ const deleteSelected = () => {
 const setFallbackRule = rule => {
     const scanEl = document.getElementById("status-scan")
     if (!` ${rule} `.includes(" order:shuffle ")
-    && !` ${rule} `.includes(" order:albumshuffle ")) {
+    && !` ${rule} `.includes(" order:albumshuffle ")
+    && !` ${rule} `.includes(" order=shuffle ")
+    && !` ${rule} `.includes(" order=albumshuffle ")) {
         scanEl.textContent = "Fallback rule "
             + "must have a shuffling order so it can continue forever"
         scanEl.style.color = "var(--tertiary)"
