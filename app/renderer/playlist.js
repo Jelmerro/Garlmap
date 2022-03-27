@@ -342,6 +342,7 @@ const append = (item, upNext = false) => {
         rulelist.push(item)
     }
     playFromPlaylist(false)
+    autoPlayOpts("scroll")
 }
 
 const stopAfterTrack = (track = null) => {

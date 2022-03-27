@@ -26,17 +26,17 @@
   "email": "Jelmerro@users.noreply.github.com",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "17.0.1",
+    "electron": "17.2.0",
     "electron-builder": "22.14.13",
-    "eslint": "8.9.0",
+    "eslint": "8.12.0",
     "eslint-plugin-sort-keys": "2.3.5",
     "rimraf": "3.0.2"
   },
   "dependencies": {
-    "genius-lyrics": "4.3.5",
+    "genius-lyrics": "4.3.6",
     "glob": "7.2.0",
     "mpv": "1.0.0",
-    "music-metadata": "7.11.8",
+    "music-metadata": "7.12.2",
     "string-similarity": "4.0.4"
   }
 }
