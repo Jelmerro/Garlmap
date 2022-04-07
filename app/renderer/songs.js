@@ -22,7 +22,16 @@ const {compareTwoStrings} = require("string-similarity")
 const musicMetadata = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
-const {readJSON, writeJSON, joinPath, resetWelcome, isFile} = require("../util")
+const {
+    readJSON,
+    writeJSON,
+    joinPath,
+    resetWelcome,
+    isFile,
+    dirName,
+    basePath,
+    readFile
+} = require("../util")
 
 let configDir = null
 let cache = "all"
@@ -265,6 +274,7 @@ const coverArt = async p => {
 }
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
+    // Use cache
     const cachedLyrics = songs.find(s => s.id === req.id
         || s.path === req.path).lyrics
     if (cachedLyrics && !force) {
@@ -274,6 +284,21 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (!req.artist || !req.title) {
         return
     }
+    // Find it in a local file
+    const localFile = req.path.replace(/\.[^ .]+$/g, ".txt")
+    const localLyrics = readFile(localFile)
+    if (localLyrics) {
+        document.getElementById("song-info").textContent = localLyrics
+        return
+    }
+    const tracklistFile = joinPath(
+        dirName(localFile), "Tracklists", basePath(localFile))
+    const tracklistLyrics = readFile(tracklistFile)
+    if (tracklistLyrics) {
+        document.getElementById("song-info").textContent = tracklistLyrics
+        return
+    }
+    // Fetch it from Genius
     const {currentAndNext} = require("./playlist")
     try {
         document.getElementById("status-scan").textContent
@@ -327,6 +352,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             document.getElementById("status-scan").textContent = ""
         }
     }
+    // Retry without text between brackets in song title and artist
     if (originalReq) {
         return
     }

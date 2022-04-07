@@ -213,6 +213,11 @@ const joinPath = (...args) => {
     return resolve(join(...args))
 }
 
+const dirName = (...args) => {
+    const {dirname} = require("path")
+    return dirname(...args)
+}
+
 const basePath = (...args) => {
     const {basename} = require("path")
     return basename(...args)
@@ -248,6 +253,7 @@ const writeJSON = (loc, data, indent = null) => {
 
 module.exports = {
     basePath,
+    dirName,
     formatTime,
     isDirectory,
     isFile,

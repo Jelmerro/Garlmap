@@ -37,6 +37,7 @@ const generatePlaylistView = () => {
         // Main playlist row
         const mainContainer = document.createElement("div")
         mainContainer.className = "rule"
+        mainContainer.setAttribute("rule-id", index)
         if (index === ruleIdx) {
             mainContainer.classList.add("current")
         }
@@ -104,6 +105,7 @@ const generatePlaylistView = () => {
                 if (song.upcoming) {
                     songInfo.classList.add("upcoming")
                 }
+                songInfo.setAttribute("rule-id", index)
                 songInfo.addEventListener("mousedown", e => {
                     if (e.button === 1) {
                         switchFocus("playlist")
@@ -341,8 +343,9 @@ const append = (item, upNext = false) => {
     } else {
         rulelist.push(item)
     }
-    playFromPlaylist(false)
-    autoPlayOpts("scroll")
+    playFromPlaylist(false).then(() => {
+        autoPlayOpts("scroll")
+    })
 }
 
 const stopAfterTrack = (track = null) => {

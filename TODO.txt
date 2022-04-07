@@ -3,10 +3,9 @@
 - top and bottom of sections: home, end
     - without ctrl it will scroll the list, with ctrl it will move the selection
 - improve lyrics
-    - read local text files if the filename matches, but only the extension is different
-        - read local text files if above is true, but also for tracklist-like folders
     - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
+    - try to strip featuring artists as an attempt to fetch lyrics better
 - refactor arrow up and down in playlist to no longer require complete list refresh
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
@@ -15,3 +14,7 @@
 - implement fullscreen interface with large cover art
     - might want to refactor the input file before picking this up (as it requires a new "mode"/layer)
 - investigate issue with doing "stop after current" twice on the same song
+- make a statubar component/file (or only a notification area)
+    - must have a queue and show the messages one at a time
+    - should keep the history and have an option to show it
+    - will have single function to show a new message, 2 args: text & color (or type)
