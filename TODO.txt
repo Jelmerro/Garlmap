@@ -1,12 +1,10 @@
 - page jumping: page up/down
     - without ctrl it will scroll the list, with ctrl it will move the selection
-- top and bottom of sections: home, end
-    - without ctrl it will scroll the list, with ctrl it will move the selection
 - improve lyrics
     - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
     - try to strip featuring artists as an attempt to fetch lyrics better
-- refactor arrow up and down in playlist to no longer require complete list refresh
+    - allow the lyrics cache to be cleared for files that don't exist with a new startup option
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
     - remove repetition in the code with large amount for queries and returns

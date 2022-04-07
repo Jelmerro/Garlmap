@@ -106,6 +106,7 @@ const generatePlaylistView = () => {
                     songInfo.classList.add("upcoming")
                 }
                 songInfo.setAttribute("rule-id", index)
+                songInfo.setAttribute("path-id", songIdx)
                 songInfo.addEventListener("mousedown", e => {
                     if (e.button === 1) {
                         switchFocus("playlist")
@@ -242,10 +243,7 @@ const decrementSelected = () => {
     if (!rulelist[selectedRuleIdx]?.rule) {
         selectedPathIdx = 0
     }
-    generatePlaylistView()
-    document.querySelector("#playlist-container .selected")?.scrollIntoView({
-        "block": "nearest"
-    })
+    updateSelected()
 }
 
 const incrementSelected = () => {
@@ -266,10 +264,58 @@ const incrementSelected = () => {
     if (!rulelist[selectedRuleIdx]?.rule) {
         selectedPathIdx = 0
     }
-    generatePlaylistView()
-    document.querySelector("#playlist-container .selected")?.scrollIntoView({
+    updateSelected()
+}
+
+const updateSelected = () => {
+    document.querySelector("#main-playlist .selected")
+        ?.classList.remove("selected")
+    if (selectedPathIdx === null) {
+        document.querySelector(`#main-playlist [rule-id="${selectedRuleIdx}"]`)
+            .classList.add("selected")
+    } else {
+        document.querySelector(
+            `#main-playlist [rule-id="${selectedRuleIdx}"]`
+            + `[path-id="${selectedPathIdx}"]`).classList.add("selected")
+    }
+    document.querySelector("#main-playlist .selected")?.scrollIntoView({
         "block": "nearest"
     })
+}
+
+const topSelected = () => {
+    selectedRuleIdx = null
+    selectedPathIdx = null
+    if (rulelist.length > 0) {
+        selectedRuleIdx = 0
+    }
+    if (rulelist[selectedRuleIdx] && !rulelist[selectedRuleIdx].rule) {
+        selectedPathIdx = 0
+    }
+    updateSelected()
+}
+
+const bottomSelected = () => {
+    selectedRuleIdx = null
+    selectedPathIdx = null
+    if (rulelist.length > 0) {
+        selectedRuleIdx = rulelist.length - 1
+    }
+    if (rulelist[selectedRuleIdx]?.songs) {
+        if (rulelist[selectedRuleIdx].open || !rulelist[selectedRuleIdx].rule) {
+            selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
+        }
+    }
+    updateSelected()
+}
+
+const topScroll = () => {
+    document.getElementById("main-playlist").scrollTo(0, 0)
+}
+
+const bottomScroll = () => {
+    document.getElementById("main-playlist").scrollTo(
+        0, Number.MAX_SAFE_INTEGER)
 }
 
 const closeSelectedRule = () => {
@@ -483,7 +529,7 @@ const autoPlayOpts = (singleOpt = false) => {
         generatePlaylistView()
     }
     if (shouldAutoScrollTrack && [false, "scroll"].includes(singleOpt)) {
-        [...document.querySelectorAll("#playlist-container .current")].pop()
+        [...document.querySelectorAll("#main-playlist .current")].pop()
             ?.scrollIntoView({"behavior": "smooth", "block": "center"})
     }
 }
@@ -569,6 +615,8 @@ const clearPlaylist = async() => {
 module.exports = {
     append,
     autoPlayOpts,
+    bottomScroll,
+    bottomSelected,
     clearPlaylist,
     closeSelectedRule,
     currentAndNext,
@@ -586,5 +634,7 @@ module.exports = {
     stopAfterTrack,
     toggleAutoClose,
     toggleAutoRemove,
-    toggleAutoScroll
+    toggleAutoScroll,
+    topScroll,
+    topSelected
 }

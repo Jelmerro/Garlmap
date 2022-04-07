@@ -346,6 +346,22 @@ const handleKeyboard = async e => {
             const {playSelectedSong} = require("./playlist")
             await playSelectedSong()
         }
+        if (keyMatch(e, {"key": "Home"})) {
+            const {topScroll} = require("./playlist")
+            topScroll()
+        }
+        if (keyMatch(e, {"key": "End"})) {
+            const {bottomScroll} = require("./playlist")
+            bottomScroll()
+        }
+        if (keyMatch(e, {"ctrl": true, "key": "Home"})) {
+            const {topSelected} = require("./playlist")
+            topSelected()
+        }
+        if (keyMatch(e, {"ctrl": true, "key": "End"})) {
+            const {bottomSelected} = require("./playlist")
+            bottomSelected()
+        }
     }
 }
 

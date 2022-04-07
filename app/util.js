@@ -154,7 +154,8 @@ On hover, a play icon will appear, which can be used to play a song right away.
 Right-clicking will open/close a rule, or toggle stop after track on a song.
 Stop after selected song can be toggled with "s", for which an icon will appear.
 Middle-clicking on a song or rule will remove it from the playlist.
-While in the playlist, you can also use PageUp, PageDown, Home and End.
+While in the playlist, you can also use PageUp, PageDown, Home and End,
+which scrolls the view, or use the same keys with Ctrl to move the selection.
 You can also play the selected track right away with "Enter".
 Using "a" you can toggle auto scrolling the playlist to the current song,
 though it will not move the selection, similar to scrolling with Ctrl-e/Ctrl-y.
