@@ -285,18 +285,21 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         return
     }
     // Find it in a local file
-    const localFile = req.path.replace(/\.[^ .]+$/g, ".txt")
-    const localLyrics = readFile(localFile)
-    if (localLyrics) {
-        document.getElementById("song-info").textContent = localLyrics
-        return
-    }
-    const tracklistFile = joinPath(
-        dirName(localFile), "Tracklists", basePath(localFile))
-    const tracklistLyrics = readFile(tracklistFile)
-    if (tracklistLyrics) {
-        document.getElementById("song-info").textContent = tracklistLyrics
-        return
+    const txtPath = req.path.replace(/\.[^ .]+$/g, ".txt")
+    const txtId = req.id.replace(/\.[^ .]+$/g, ".txt")
+    const files = [
+        txtPath,
+        joinPath(dirName(txtPath), "Lyrics", basePath(txtPath)),
+        joinPath(dirName(txtPath), "Tracklists", basePath(txtPath)),
+        joinPath(req.path.replace(req.id, ""), "Lyrics", txtId),
+        joinPath(req.path.replace(req.id, ""), "Tracklists", txtId)
+    ]
+    for (const file of files) {
+        const lyrics = readFile(file)
+        if (lyrics) {
+            document.getElementById("song-info").textContent = lyrics
+            return
+        }
     }
     // Fetch it from Genius
     const {currentAndNext} = require("./playlist")

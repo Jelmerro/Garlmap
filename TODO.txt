@@ -5,6 +5,7 @@
     - have a search box to do a custom search on the genius api
     - try to strip featuring artists as an attempt to fetch lyrics better
     - allow the lyrics cache to be cleared for files that don't exist with a new startup option
+    - add "--export-lyrics" option, which uses the same structure as cached files
 - refactor keyboard input file
     - fix key holding not working when textarea is focused
     - remove repetition in the code with large amount for queries and returns

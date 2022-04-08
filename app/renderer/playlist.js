@@ -292,6 +292,7 @@ const topSelected = () => {
     if (rulelist[selectedRuleIdx] && !rulelist[selectedRuleIdx].rule) {
         selectedPathIdx = 0
     }
+    topScroll()
     updateSelected()
 }
 
@@ -306,6 +307,7 @@ const bottomSelected = () => {
             selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
         }
     }
+    bottomScroll()
     updateSelected()
 }
 
