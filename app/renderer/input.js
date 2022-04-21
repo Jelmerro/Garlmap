@@ -18,28 +18,21 @@
 "use strict"
 
 const {ipcRenderer, clipboard} = require("electron")
-const {keyMatch, queryMatch, resetWelcome} = require("../util")
+const {queryMatch, resetWelcome} = require("../util")
+const {switchFocus} = require("./dom")
 
 const init = () => {
-    window.addEventListener("keydown", e => {
-        if (["Tab", "Enter"].includes(e.key) || !queryMatch(e, "textarea")) {
-            e.preventDefault()
-        }
-        if (!queryMatch(e, "textarea")) {
-            handleKeyboard(e)
-        }
-    })
+    window.addEventListener("keydown", e => handleKeyboard(e))
     window.addEventListener("keypress", e => {
-        if (["Tab", "Enter"].includes(e.key) || !queryMatch(e, "textarea")) {
+        const id = toIdentifier(e)
+        if (["Tab", "Enter"].includes(e.key) || id.length > 1) {
             e.preventDefault()
         }
     })
     window.addEventListener("keyup", e => {
-        if (["Tab", "Enter"].includes(e.key) || !queryMatch(e, "textarea")) {
+        const id = toIdentifier(e)
+        if (["Tab", "Enter"].includes(e.key) || id.length > 1) {
             e.preventDefault()
-        }
-        if (queryMatch(e, "textarea")) {
-            handleKeyboard(e)
         }
     })
     window.addEventListener("click", e => {
@@ -50,7 +43,7 @@ const init = () => {
     window.addEventListener("mousedown", handleMouse)
     document.querySelector("input[type='range']")
         .addEventListener("input", () => {
-            if (isReady()) {
+            if (!isReady()) {
                 return
             }
             const {volumeSet} = require("./player")
@@ -58,7 +51,7 @@ const init = () => {
         })
     document.getElementById("toggle-autoscroll").parentNode
         .addEventListener("click", () => {
-            if (isReady()) {
+            if (!isReady()) {
                 return
             }
             const {toggleAutoScroll} = require("./playlist")
@@ -66,7 +59,7 @@ const init = () => {
         })
     document.getElementById("toggle-autoclose").parentNode
         .addEventListener("click", () => {
-            if (isReady()) {
+            if (!isReady()) {
                 return
             }
             const {toggleAutoClose} = require("./playlist")
@@ -74,17 +67,43 @@ const init = () => {
         })
     document.getElementById("toggle-autoremove").parentNode
         .addEventListener("click", () => {
-            if (isReady()) {
+            if (!isReady()) {
                 return
             }
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         })
+    document.getElementById("rule-search").addEventListener("input", () => {
+        const search = document.getElementById("rule-search").value
+        const {query} = require("./songs")
+        document.getElementById("search-results").textContent = ""
+        const {generateSongElement} = require("./dom")
+        query(search).slice(0, 100).forEach(song => {
+            const el = generateSongElement(song)
+            document.getElementById("search-results").appendChild(el)
+            el.addEventListener("dblclick", () => {
+                const {append} = require("./playlist")
+                append({"songs": [JSON.parse(JSON.stringify(song))]})
+            })
+            el.addEventListener("mousedown", mouseEv => {
+                document.querySelector("#search-results .selected")
+                    ?.classList.remove("selected")
+                el.classList.add("selected")
+                el?.scrollIntoView({"block": "nearest"})
+                if (mouseEv.button !== 0) {
+                    const {append} = require("./playlist")
+                    append(
+                        {"songs": [JSON.parse(JSON.stringify(song))]},
+                        mouseEv.button === 1)
+                }
+            })
+        })
+    })
     resetWelcome()
 }
 
 const isReady = () => document.getElementById(
-    "status-current").textContent !== "Ready"
+    "status-current").textContent === "Ready"
 
 const openFolder = () => {
     const {scanner} = require("./songs")
@@ -96,277 +115,301 @@ const openFolder = () => {
     }
 }
 
-const handleKeyboard = async e => {
-    if (e.key === "Tab" || !queryMatch(e, "textarea")) {
-        e.preventDefault()
+const toIdentifier = e => {
+    let keyCode = e.key
+    if (e.key === "\u0000") {
+        keyCode = "Delete"
     }
-    if (keyMatch(e, {"key": "F12"})) {
-        ipcRenderer.invoke("toggle-devtools")
-        return
+    // If the shift status can be detected by casing, don't add the 'S-' prefix
+    const needsShift = keyCode.length > 1
+    if (e.shiftKey && needsShift && keyCode !== "Shift") {
+        keyCode = `S-${keyCode}`
     }
-    if (isReady()) {
-        return
+    if (e.altKey && keyCode !== "Alt") {
+        keyCode = `A-${keyCode}`
     }
-    if (keyMatch(e, {"key": "Tab"})) {
-        const {switchFocus} = require("./dom")
-        switchFocus("searchbox")
-        return
+    if (e.metaKey && keyCode !== "Meta") {
+        keyCode = `M-${keyCode}`
     }
-    if (keyMatch(e, {"ctrl": true, "key": "e"})) {
-        const {exportList} = require("./playlist")
-        // #bug Electron will freeze the mouse if this is not called on a delay
-        setTimeout(() => exportList(), 100)
-        return
+    if (e.ctrlKey && keyCode !== "Ctrl") {
+        keyCode = `C-${keyCode}`
     }
-    if (keyMatch(e, {"ctrl": true, "key": "i"})) {
-        const {importList} = require("./playlist")
-        // #bug Electron will freeze the mouse if this is not called on a delay
-        setTimeout(() => importList(), 100)
-        return
+    if (keyCode.length > 1) {
+        keyCode = `<${keyCode}>`
     }
-    if (keyMatch(e, {"ctrl": true, "key": "s"})) {
-        const {saveSettings} = require("./settings")
-        saveSettings()
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "o"})) {
-        openFolder()
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "c"})) {
-        const text = window.getSelection().toString()
-        if (text) {
-            clipboard.writeText(text)
-        }
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "m"})) {
-        const {toggleMute} = require("./player")
-        toggleMute()
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "0"})) {
-        const {volumeSet} = require("./player")
-        volumeSet(100)
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "="})) {
-        const {volumeUp} = require("./player")
-        volumeUp()
-        return
-    }
-    if (keyMatch(e, {"ctrl": true, "key": "-"})) {
-        const {volumeDown} = require("./player")
-        volumeDown()
-        return
-    }
-    if (keyMatch(e, {"key": "F1"})) {
-        resetWelcome()
-        return
-    }
-    if (keyMatch(e, {"key": "F2"}) || keyMatch(e, {"ctrl": true, "key": "f"})) {
-        const {switchFocus} = require("./dom")
-        switchFocus("search")
-        return
-    }
-    if (keyMatch(e, {"key": "F3"}) || keyMatch(e, {"ctrl": true, "key": "l"})) {
-        const {switchFocus} = require("./dom")
-        switchFocus("playlist")
-        return
-    }
-    if (keyMatch(e, {"key": "F4"})
-    || keyMatch(e, {"key": "F4", "shift": true})) {
-        const {isAlive} = require("./player")
-        if (isAlive()) {
-            const {currentAndNext} = require("./playlist")
-            const {fetchLyrics} = require("./songs")
-            const {current} = currentAndNext()
-            if (current) {
-                await fetchLyrics(current, e.shiftKey)
-                document.getElementById("song-info").scrollTo(0, 0)
+    return keyCode
+}
+
+const mappings = {
+    "global": {
+        "<C-=>": () => {
+            const {volumeUp} = require("./player")
+            volumeUp()
+        },
+        "<C-->": () => {
+            const {volumeDown} = require("./player")
+            volumeDown()
+        },
+        "<C-0>": () => {
+            const {volumeSet} = require("./player")
+            volumeSet(100)
+        },
+        "<C-c>": () => {
+            const text = window.getSelection().toString()
+            if (text) {
+                clipboard.writeText(text)
             }
-            return
-        }
-    }
-    if (keyMatch(e, {"key": "F5"})) {
-        const {pause} = require("./player")
-        pause()
-        return
-    }
-    if (keyMatch(e, {"key": "F6"})) {
-        const {stopAfterTrack} = require("./playlist")
-        stopAfterTrack()
-        return
-    }
-    if (keyMatch(e, {"key": "F7"})) {
-        const {decrement} = require("./playlist")
-        decrement()
-        return
-    }
-    if (keyMatch(e, {"key": "F8"})) {
-        const {increment} = require("./playlist")
-        increment()
-        return
-    }
-    if (keyMatch(e, {"key": "F9", "shift": true})) {
-        document.getElementById("song-info").scrollBy(0, 1000)
-        return
-    }
-    if (keyMatch(e, {"key": "F10", "shift": true})) {
-        document.getElementById("song-info").scrollBy(0, -1000)
-        return
-    }
-    if (keyMatch(e, {"key": "F9"})) {
-        document.getElementById("song-info").scrollBy(0, 100)
-        return
-    }
-    if (keyMatch(e, {"key": "F10"})) {
-        document.getElementById("song-info").scrollBy(0, -100)
-        return
-    }
-    if (document.body.getAttribute("focus-el") === "search") {
-        if (keyMatch(e, {"key": "ArrowUp"})
-        || keyMatch(e, {"ctrl": true, "key": "p"})) {
-            const {decrementSelected} = require("./dom")
-            decrementSelected()
-            return
-        }
-        if (keyMatch(e, {"key": "ArrowDown"})
-        || keyMatch(e, {"ctrl": true, "key": "n"})) {
-            const {incrementSelected} = require("./dom")
+        },
+        "<C-f>": () => switchFocus("search"),
+        "<C-i>": () => {
+            const {importList} = require("./playlist")
+            // #bug Electron will freeze the mouse if this is not called later
+            setTimeout(() => importList(), 100)
+        },
+        "<C-l>": () => switchFocus("playlist"),
+        "<C-m>": () => {
+            const {toggleMute} = require("./player")
+            toggleMute()
+        },
+        "<C-o>": () => {
+            openFolder()
+        },
+        "<C-s>": () => {
+            const {saveSettings} = require("./settings")
+            saveSettings()
+        },
+        "<C-x>": () => {
+            const {exportList} = require("./playlist")
+            // #bug Electron will freeze the mouse if this is not called later
+            setTimeout(() => exportList(), 100)
+        },
+        "<F1>": () => resetWelcome(),
+        "<F2>": () => switchFocus("search"),
+        "<F3>": () => switchFocus("playlist"),
+        "<F4>": async() => {
+            const {isAlive} = require("./player")
+            if (isAlive()) {
+                const {currentAndNext} = require("./playlist")
+                const {fetchLyrics} = require("./songs")
+                const {current} = currentAndNext()
+                if (current) {
+                    await fetchLyrics(current)
+                    document.getElementById("song-info").scrollTo(0, 0)
+                }
+            }
+        },
+        "<F5>": () => {
+            const {pause} = require("./player")
+            pause()
+        },
+        "<F6>": () => {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack()
+        },
+        "<F7>": () => {
+            const {decrement} = require("./playlist")
+            decrement()
+        },
+        "<F8>": () => {
+            const {increment} = require("./playlist")
+            increment()
+        },
+        "<F9>": () => document.getElementById("song-info").scrollBy(0, 100),
+        "<F10>": () => document.getElementById("song-info").scrollBy(0, -100),
+        "<F12>": () => ipcRenderer.invoke("toggle-devtools"),
+        "<S-F4>": async() => {
+            const {isAlive} = require("./player")
+            if (isAlive()) {
+                const {currentAndNext} = require("./playlist")
+                const {fetchLyrics} = require("./songs")
+                const {current} = currentAndNext()
+                if (current) {
+                    await fetchLyrics(current, true)
+                    document.getElementById("song-info").scrollTo(0, 0)
+                }
+            }
+        },
+        "<S-F9>": () => document.getElementById("song-info").scrollBy(0, 1000),
+        "<S-F10>": () => {
+            document.getElementById("song-info").scrollBy(0, -1000)
+        },
+        "<Tab>": () => switchFocus("searchbox")
+    },
+    "playlist": {
+        "<ArrowDown>": () => {
+            const {incrementSelected} = require("./playlist")
             incrementSelected()
-            return
-        }
-        if (queryMatch(e, "#rule-search")) {
-            const search = document.getElementById("rule-search").value
-            if (keyMatch(e, {"key": "Enter"})) {
-                const {append} = require("./playlist")
-                append({"rule": search})
-                e.preventDefault()
-            } else if (keyMatch(e, {"key": "Enter", "shift": true})) {
-                const {append} = require("./playlist")
-                append({"rule": search}, true)
-                e.preventDefault()
-            } else if (keyMatch(e, {"ctrl": true, "key": "Enter"})) {
-                const {setFallbackRule} = require("./playlist")
-                setFallbackRule(search)
-                e.preventDefault()
-            } else if (!["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
-                const {query} = require("./songs")
-                document.getElementById("search-results").textContent = ""
-                const {generateSongElement} = require("./dom")
-                query(search).slice(0, 100).forEach(song => {
-                    const el = generateSongElement(song)
-                    document.getElementById("search-results").appendChild(el)
-                    el.addEventListener("dblclick", () => {
-                        const {append} = require("./playlist")
-                        append({"songs": [JSON.parse(JSON.stringify(song))]})
-                    })
-                    el.addEventListener("mousedown", mouseEv => {
-                        document.querySelector("#search-results .selected")
-                            ?.classList.remove("selected")
-                        el.classList.add("selected")
-                        el?.scrollIntoView({"block": "nearest"})
-                        if (mouseEv.button !== 0) {
-                            const {append} = require("./playlist")
-                            append(
-                                {"songs": [JSON.parse(JSON.stringify(song))]},
-                                mouseEv.button === 1)
-                        }
-                    })
-                })
-            }
-            return
-        }
-        if (keyMatch(e, {"key": "Enter"})) {
-            const {appendSelectedSong} = require("./dom")
-            appendSelectedSong()
-            return
-        }
-        if (keyMatch(e, {"key": "Enter", "shift": true})) {
-            const {appendSelectedSong} = require("./dom")
-            appendSelectedSong(true)
-            return
-        }
-    }
-    if (document.body.getAttribute("focus-el") === "playlist") {
-        if (keyMatch(e, {"key": "ArrowLeft"}) || keyMatch(e, {"key": "h"})) {
+        },
+        "<ArrowLeft>": () => {
             const {closeSelectedRule} = require("./playlist")
             closeSelectedRule()
-        }
-        if (keyMatch(e, {"key": "ArrowRight"}) || keyMatch(e, {"key": "l"})) {
+        },
+        "<ArrowRight>": () => {
             const {openSelectedRule} = require("./playlist")
             openSelectedRule()
-        }
-        if (keyMatch(e, {"key": "ArrowUp"}) || keyMatch(e, {"key": "k"})
-        || keyMatch(e, {"ctrl": true, "key": "p"})) {
-            setTimeout(() => {
-                const {decrementSelected} = require("./playlist")
-                decrementSelected()
-            }, 1)
-        }
-        if (keyMatch(e, {"key": "ArrowDown"}) || keyMatch(e, {"key": "j"})
-        || keyMatch(e, {"ctrl": true, "key": "n"})) {
-            setTimeout(() => {
-                const {incrementSelected} = require("./playlist")
-                incrementSelected()
-            }, 1)
-        }
-        if (keyMatch(e, {"key": "d"}) || keyMatch(e, {"key": "Delete"})) {
+        },
+        "<ArrowUp>": () => {
+            const {decrementSelected} = require("./playlist")
+            decrementSelected()
+        },
+        "<C-End>": () => {
+            const {bottomSelected} = require("./playlist")
+            bottomSelected()
+        },
+        "<C-Home>": () => {
+            const {topSelected} = require("./playlist")
+            topSelected()
+        },
+        "<C-Tab>": () => switchFocus("search"),
+        "<C-e>": () => {
+            document.getElementById("main-playlist").scrollBy(0, 100)
+        },
+        "<C-n>": () => {
+            const {incrementSelected} = require("./playlist")
+            incrementSelected()
+        },
+        "<C-p>": () => {
+            const {decrementSelected} = require("./playlist")
+            decrementSelected()
+        },
+        "<C-y>": () => {
+            document.getElementById("main-playlist").scrollBy(0, -100)
+        },
+        "<Delete>": () => {
             const {deleteSelected} = require("./playlist")
             deleteSelected()
-        }
-        if (keyMatch(e, {"key": "a"})) {
+        },
+        "<End>": () => {
+            const {bottomScroll} = require("./playlist")
+            bottomScroll()
+        },
+        "<Enter>": async() => {
+            const {playSelectedSong} = require("./playlist")
+            await playSelectedSong()
+        },
+        "<Home>": () => {
+            const {topScroll} = require("./playlist")
+            topScroll()
+        },
+        "a": () => {
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
-        }
-        if (keyMatch(e, {"key": "c"})) {
+        },
+        "c": () => {
             const {toggleAutoClose} = require("./playlist")
             toggleAutoClose()
-        }
-        if (keyMatch(e, {"key": "r"})) {
+        },
+        "d": () => {
+            const {deleteSelected} = require("./playlist")
+            deleteSelected()
+        },
+        "h": () => {
+            const {closeSelectedRule} = require("./playlist")
+            closeSelectedRule()
+        },
+        "j": () => {
+            const {incrementSelected} = require("./playlist")
+            incrementSelected()
+        },
+        "k": () => {
+            const {decrementSelected} = require("./playlist")
+            decrementSelected()
+        },
+        "l": () => {
+            const {openSelectedRule} = require("./playlist")
+            openSelectedRule()
+        },
+        "r": () => {
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
-        }
-        if (keyMatch(e, {"key": "t"})) {
+        },
+        "s": () => {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack("selected")
+        },
+        "t": () => {
             const {toggleAutoLyrics} = require("./settings")
             toggleAutoLyrics()
         }
-        if (keyMatch(e, {"ctrl": true, "key": "e"})) {
-            document.getElementById("main-playlist").scrollBy(0, 100)
+    },
+    "search": {
+        "<ArrowDown>": () => {
+            const {incrementSelected} = require("./dom")
+            incrementSelected()
+        },
+        "<ArrowUp>": () => {
+            const {decrementSelected} = require("./dom")
+            decrementSelected()
+        },
+        "<C-Tab>": () => switchFocus("playlist"),
+        "<C-n>": () => {
+            const {incrementSelected} = require("./dom")
+            incrementSelected()
+        },
+        "<C-p>": () => {
+            const {decrementSelected} = require("./dom")
+            decrementSelected()
+        },
+        "<Enter>": () => {
+            const {appendSelectedSong} = require("./dom")
+            appendSelectedSong()
+        },
+        "<S-Enter>": () => {
+            const {appendSelectedSong} = require("./dom")
+            appendSelectedSong(true)
         }
-        if (keyMatch(e, {"ctrl": true, "key": "y"})) {
-            document.getElementById("main-playlist").scrollBy(0, -100)
-        }
-        if (keyMatch(e, {"key": "s"})) {
-            const {stopAfterTrack} = require("./playlist")
-            stopAfterTrack("selected")
-        }
-        if (keyMatch(e, {"key": "Enter"})) {
-            const {playSelectedSong} = require("./playlist")
-            await playSelectedSong()
-        }
-        if (keyMatch(e, {"key": "Home"})) {
-            const {topScroll} = require("./playlist")
-            topScroll()
-        }
-        if (keyMatch(e, {"key": "End"})) {
-            const {bottomScroll} = require("./playlist")
-            bottomScroll()
-        }
-        if (keyMatch(e, {"ctrl": true, "key": "Home"})) {
-            const {topSelected} = require("./playlist")
-            topSelected()
-        }
-        if (keyMatch(e, {"ctrl": true, "key": "End"})) {
-            const {bottomSelected} = require("./playlist")
-            bottomSelected()
+    },
+    "searchbox": {
+        "<C-Enter>": e => {
+            const search = document.getElementById("rule-search").value
+            const {setFallbackRule} = require("./playlist")
+            setFallbackRule(search)
+            e.preventDefault()
+        },
+        "<C-Tab>": () => switchFocus("playlist"),
+        "<C-n>": () => {
+            const {incrementSelected} = require("./dom")
+            incrementSelected()
+        },
+        "<Enter>": e => {
+            const search = document.getElementById("rule-search").value
+            const {append} = require("./playlist")
+            append({"rule": search})
+            e.preventDefault()
+        },
+        "<S-Enter>": e => {
+            const search = document.getElementById("rule-search").value
+            const {append} = require("./playlist")
+            append({"rule": search}, true)
+            e.preventDefault()
         }
     }
 }
 
+const handleKeyboard = async e => {
+    if (e.key === "Tab" || !queryMatch(e, "textarea")) {
+        e.preventDefault()
+    }
+    if (!isReady()) {
+        return
+    }
+    const id = toIdentifier(e)
+    let mode = document.body.getAttribute("focus-el")
+    const searchbox = document.getElementById("rule-search")
+    if (mode === "search" && document.activeElement === searchbox) {
+        mode = "searchbox"
+    }
+    if (mappings[mode][id]) {
+        await mappings[mode][id](e)
+        e.preventDefault()
+    } else if (mappings.global[id]) {
+        await mappings.global[id](e)
+        e.preventDefault()
+    }
+}
+
 const handleMouse = e => {
-    if (isReady()) {
+    if (!isReady()) {
         return
     }
     if (!queryMatch(e, ".song, #song-info, textarea, input")) {
@@ -416,17 +459,14 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#rule-search")) {
-        const {switchFocus} = require("./dom")
         switchFocus("searchbox")
         return
     }
     if (queryMatch(e, "#search-container")) {
-        const {switchFocus} = require("./dom")
         switchFocus("search")
         return
     }
     if (queryMatch(e, "#playlist-container")) {
-        const {switchFocus} = require("./dom")
         switchFocus("playlist")
         return
     }

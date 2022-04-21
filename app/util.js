@@ -25,10 +25,6 @@ const queryMatch = (e, query) => e?.composedPath?.().find(el => {
     }
 })
 
-const keyMatch = (e, opts) => e.key === opts.key && e.ctrlKey === !!opts.ctrl
-    && e.shiftKey === !!opts.shift && e.altKey === !!opts.alt
-    && e.metaKey === !!opts.meta
-
 const formatTime = total => {
     if ([null, undefined].includes(total) || isNaN(Number(total))) {
         return ""
@@ -58,6 +54,7 @@ You can jump focus between the search section and playlist with F2 and F3.
 Alternatively you can use Ctrl-f or Ctrl-l for the search and playlist sections.
 No other sections are focusable in the traditional sense,
 but they can be controlled with other shortcuts.
+Toggling between the two sections can also be done using Ctrl-Tab.
 This section can be scrolled with F9 and F10, for example.
 You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
@@ -81,6 +78,7 @@ It's recommended to read both this help and the startup help at least once.
 You can save all your settings with the button or using Ctrl-s at any time,
 a list of custom settings currently in use is always displayed on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
+Importing and exporting can also be done using Ctrl-i and Ctrl-x respectively.
 
 Syntax for queueing and searching
 
@@ -270,7 +268,6 @@ module.exports = {
     isDirectory,
     isFile,
     joinPath,
-    keyMatch,
     makeDir,
     queryMatch,
     readFile,
