@@ -1,5 +1,3 @@
-- page jumping: page up/down
-    - without ctrl it will scroll the list, with ctrl it will move the selection
 - improve lyrics
     - make ctrl-f4 open a text editor for the lyrics
     - have a search box to do a custom search on the genius api
@@ -12,3 +10,4 @@
     - must have a queue and show the messages one at a time
     - should keep the history and have an option to show it
     - will have single function to show a new message, 2 args: text & color (or type)
+- make scrollBy actions for inputs use the container height instead of fixed high values

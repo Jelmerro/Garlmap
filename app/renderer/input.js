@@ -252,6 +252,22 @@ const mappings = {
             const {decrementSelected} = require("./playlist")
             decrementSelected()
         },
+        "<C-ArrowDown>": () => {
+            const {incrementSelected} = require("./playlist")
+            let i = 0
+            while (i < 10) {
+                incrementSelected()
+                i += 1
+            }
+        },
+        "<C-ArrowUp>": () => {
+            const {decrementSelected} = require("./playlist")
+            let i = 0
+            while (i < 10) {
+                decrementSelected()
+                i += 1
+            }
+        },
         "<C-End>": () => {
             const {bottomSelected} = require("./playlist")
             bottomSelected()
@@ -260,9 +276,25 @@ const mappings = {
             const {topSelected} = require("./playlist")
             topSelected()
         },
+        "<C-PageDown>": () => {
+            const {incrementSelected} = require("./playlist")
+            let i = 0
+            while (i < 10) {
+                incrementSelected()
+                i += 1
+            }
+        },
+        "<C-PageUp>": () => {
+            const {decrementSelected} = require("./playlist")
+            let i = 0
+            while (i < 10) {
+                decrementSelected()
+                i += 1
+            }
+        },
         "<C-Tab>": () => switchFocus("search"),
         "<C-e>": () => {
-            document.getElementById("main-playlist").scrollBy(0, 100)
+            document.getElementById("main-playlist").scrollBy(0, 50)
         },
         "<C-n>": () => {
             const {incrementSelected} = require("./playlist")
@@ -273,7 +305,7 @@ const mappings = {
             decrementSelected()
         },
         "<C-y>": () => {
-            document.getElementById("main-playlist").scrollBy(0, -100)
+            document.getElementById("main-playlist").scrollBy(0, -50)
         },
         "<Delete>": () => {
             const {deleteSelected} = require("./playlist")
@@ -290,6 +322,12 @@ const mappings = {
         "<Home>": () => {
             const {topScroll} = require("./playlist")
             topScroll()
+        },
+        "<PageDown>": () => {
+            document.getElementById("main-playlist").scrollBy(0, 300)
+        },
+        "<PageUp>": () => {
+            document.getElementById("main-playlist").scrollBy(0, -300)
         },
         "a": () => {
             const {toggleAutoScroll} = require("./playlist")
