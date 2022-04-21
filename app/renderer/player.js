@@ -38,22 +38,22 @@ const init = path => {
             return
         }
         if (info.name === "playback-time" && info.data >= 0) {
-            const seconds = info.data
-            const duration = await mpv.get("duration")
-                .catch(() => null) || info.data
+            const position = info.data
+            const {currentAndNext} = require("./playlist")
+            const {current} = currentAndNext()
+            const {duration} = current
             navigator.mediaSession.setPositionState({
                 // #bug Position not recognized by Electron
-                duration, "playbackRate": 1, "position": seconds
+                duration, "playbackRate": 1, position
             })
             document.getElementById("progress-played").innerHTML = `&nbsp;${
-                formatTime(seconds)}/${formatTime(duration)}&nbsp;`
+                formatTime(position)}/${formatTime(duration)}&nbsp;`
             document.getElementById("progress-played").style.width
-                    = `${seconds / duration * 100}%`
+                    = `${position / duration * 100}%`
             document.getElementById("progress-string").innerHTML = `&nbsp;${
-                formatTime(seconds)}/${formatTime(duration)}&nbsp;`
+                formatTime(position)}/${formatTime(duration)}&nbsp;`
             return
         }
-        console.info(`${info.name}: ${info.data}`)
         if (info.name === "playlist-pos" && info.data === 1) {
             const {increment} = require("./playlist")
             await increment(false)
@@ -158,7 +158,9 @@ const pause = async() => {
 
 const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
-        const duration = await mpv.get("duration")
+        const {currentAndNext} = require("./playlist")
+        const {current} = currentAndNext()
+        const {duration} = current
         await mpv.command("seek", percent * duration, "absolute")
     }
 }

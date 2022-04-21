@@ -60,7 +60,7 @@ input[type="range"]:hover {border-color: var(--border);}
 #current-song .album {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
 #progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
-#progress-played {background: var(--primary);color: var(--bg);transition: width .6s ease;z-index: 1;}
+#progress-played {background: var(--primary);color: var(--bg);z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
 #progress-played, #progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
 input[type="range"] {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.25em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}

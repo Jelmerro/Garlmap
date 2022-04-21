@@ -20,61 +20,37 @@
 const {
     app, BrowserWindow, systemPreferences, globalShortcut, ipcMain, dialog
 } = require("electron")
-const {joinPath, basePath, isDirectory, readJSON, readFile} = require("./util")
+const {
+    joinPath,
+    basePath,
+    isDirectory,
+    readJSON,
+    writeJSON,
+    readFile,
+    makeDir,
+    dirName
+} = require("./util")
 
-const version = process.env.npm_package_version || app.getVersion()
-const configDir = joinPath(app.getPath("appData"), "Garlmap")
-app.setPath("appData", configDir)
-app.setPath("userData", configDir)
-let mainWindow = null
-app.on("ready", () => {
-    const config = processStartupArgs()
-    if (!app.requestSingleInstanceLock()) {
-        console.info(`Garlmap is a single instance app for performance reasons`)
-        app.exit(0)
-    }
-    app.on("second-instance", () => {
-        if (mainWindow.isMinimized()) {
-            mainWindow.restore()
-        }
-        mainWindow.focus()
-    })
-    const windowData = {
-        "closable": false,
-        "frame": true,
-        "height": 700,
-        "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
-        "show": false,
-        "title": app.getName(),
-        "webPreferences": {
-            "disableBlinkFeatures": "Auxclick",
-            "preload": joinPath(__dirname, "renderer/index.js"),
-            "sandbox": false,
-            "spellcheck": false
-        },
-        "width": 1000
-    }
-    mainWindow = new BrowserWindow(windowData)
-    mainWindow.removeMenu()
-    mainWindow.setMinimumSize(700, 700)
-    mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
-    mainWindow.on("close", e => {
-        e.preventDefault()
-        mainWindow.webContents.send("window-close")
-    })
-    mainWindow.on("closed", () => app.exit(0))
-    mainWindow.webContents.once("did-finish-load", () => {
-        mainWindow.webContents.on("new-window", e => e.preventDefault())
-        mainWindow.webContents.on("will-navigate", e => e.preventDefault())
-        mainWindow.webContents.on("will-redirect", e => e.preventDefault())
-        logCustomSettings(config)
-        config.version = version
-        config.configDir = configDir
-        mainWindow.webContents.send("config", config)
-        registerMediaKeys()
-        mainWindow.show()
-    })
-})
+const applyDevtoolsSettings = prefFile => {
+    makeDir(dirName(prefFile))
+    const preferences = readJSON(prefFile) || {}
+    preferences.electron = preferences.electron || {}
+    preferences.electron.devtools = preferences.electron.devtools || {}
+    preferences.electron.devtools.preferences
+        = preferences.electron.devtools.preferences || {}
+    // Disable source maps as they are unused and produce a lot of warnings
+    preferences.electron.devtools.preferences.cssSourceMapsEnabled = false
+    preferences.electron.devtools.preferences.jsSourceMapsEnabled = false
+    // Disable release notes, none of these are relevant for Garlmap
+    preferences.electron.devtools.preferences["help.show-release-note"] = false
+    // Show timestamps in the console
+    preferences.electron.devtools.preferences.consoleTimestampsEnabled = true
+    // Disable the paused overlay which prevents interaction with the player
+    preferences.electron.devtools.preferences.disablePausedStateOverlay = true
+    // Enable dark theme
+    preferences.electron.devtools.preferences.uiTheme = `"dark"`
+    writeJSON(prefFile, preferences)
+}
 
 const registerMediaKeys = () => {
     systemPreferences.isTrustedAccessibilityClient?.(true)
@@ -272,7 +248,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "mpv" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_MPV env will be read,
-                   or this setting will by default set to "mpv" or "mpv.exe,
+                   or this setting will by default set to "mpv" or "mpv.exe",
                    the latter only being the default on Windows.
                    This setting cannot be changed once Garlmap is started.
 
@@ -310,6 +286,62 @@ There is NO WARRANTY, to the extent permitted by law.
 See the LICENSE file or the GNU website for details.`)
     app.exit(0)
 }
+
+const version = process.env.npm_package_version || app.getVersion()
+const configDir = joinPath(app.getPath("appData"), "Garlmap")
+app.setPath("appData", configDir)
+app.setPath("userData", configDir)
+applyDevtoolsSettings(joinPath(configDir, "Preferences"))
+let mainWindow = null
+
+app.on("ready", () => {
+    const config = processStartupArgs()
+    if (!app.requestSingleInstanceLock()) {
+        console.info(`Garlmap is a single instance app for performance reasons`)
+        app.exit(0)
+    }
+    app.on("second-instance", () => {
+        if (mainWindow.isMinimized()) {
+            mainWindow.restore()
+        }
+        mainWindow.focus()
+    })
+    const windowData = {
+        "closable": false,
+        "frame": true,
+        "height": 700,
+        "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
+        "show": false,
+        "title": app.getName(),
+        "webPreferences": {
+            "disableBlinkFeatures": "Auxclick",
+            "preload": joinPath(__dirname, "renderer/index.js"),
+            "sandbox": false,
+            "spellcheck": false
+        },
+        "width": 1000
+    }
+    mainWindow = new BrowserWindow(windowData)
+    mainWindow.removeMenu()
+    mainWindow.setMinimumSize(700, 700)
+    mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
+    mainWindow.on("close", e => {
+        e.preventDefault()
+        mainWindow.webContents.send("window-close")
+    })
+    mainWindow.on("closed", () => app.exit(0))
+    mainWindow.webContents.once("did-finish-load", () => {
+        mainWindow.webContents.on("new-window", e => e.preventDefault())
+        mainWindow.webContents.on("will-navigate", e => e.preventDefault())
+        mainWindow.webContents.on("will-redirect", e => e.preventDefault())
+        logCustomSettings(config)
+        config.version = version
+        config.configDir = configDir
+        mainWindow.webContents.send("config", config)
+        registerMediaKeys()
+        mainWindow.show()
+    })
+})
 
 ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
 ipcMain.on("dialog-open", (e, options) => {

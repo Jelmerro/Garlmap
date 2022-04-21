@@ -252,6 +252,17 @@ const writeJSON = (loc, data, indent = null) => {
     }
 }
 
+const makeDir = loc => {
+    try {
+        const {mkdirSync} = require("fs")
+        mkdirSync(loc, {"recursive": true})
+        return true
+    } catch {
+        // Will return false as it was unsuccessful
+    }
+    return false
+}
+
 module.exports = {
     basePath,
     dirName,
@@ -260,6 +271,7 @@ module.exports = {
     isFile,
     joinPath,
     keyMatch,
+    makeDir,
     queryMatch,
     readFile,
     readJSON,
