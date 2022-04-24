@@ -102,6 +102,7 @@ const processStartupArgs = () => {
         "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
         "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
+        "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
         "customTheme": readFile(joinPath(configDir, "theme.css")),
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
@@ -121,6 +122,9 @@ const processStartupArgs = () => {
                 outputVersion()
             } else if (name === "--cache") {
                 config.cache = value
+            } else if (name === "--cache-clean") {
+                config.cacheClean = isTruthyArg(value)
+                    || arg === "--cache-clean"
             } else if (name === "--mpv") {
                 config.mpv = value
             } else if (name === "--font-size") {
@@ -187,6 +191,19 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE env will be read,
                    or this setting will by default fallback to using "all".
+                   This setting cannot be changed once Garlmap is started.
+
+    --cache-clean  Enable the removal of cached songs that have a missing file.
+                   By default they are kept in cache at all times,
+                   because that allows you to safely move your music folder,
+                   while keeping the same cache info and especally lyrics.
+                   If enabled, the cache is filtered for files that exist.
+                   The argument can optionally be provided with value:
+                   "--cache-clean=true", "--cache-clean=0, "--cache-clean=no".
+                   If no arg is found, it will read the "cacheClean" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_CACHE_CLEAN env will be read,
+                   or this setting will by default be disabled from cleaning.
                    This setting cannot be changed once Garlmap is started.
 
     --auto-lyrics  Enable the automatic downloading of lyrics when songs play.

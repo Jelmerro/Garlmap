@@ -27,7 +27,8 @@ const init = () => {
     ipcRenderer.on("config", (_, config) => {
         startupConfig = config
         const {setCachePolicy} = require("./songs")
-        setCachePolicy(config.configDir, config.cache || "all")
+        setCachePolicy(config.configDir,
+            config.cache || "all", config.cacheClean)
         if (config.folder) {
             const {scanner} = require("./songs")
             scanner(config.folder)
@@ -99,6 +100,9 @@ const saveSettings = () => {
     }
     if (config.cache === "all") {
         delete config.cache
+    }
+    if (!config.cacheClean) {
+        delete config.cacheClean
     }
     if (!config.customTheme) {
         delete config.customTheme

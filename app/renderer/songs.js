@@ -384,12 +384,15 @@ const showLyrics = async p => {
     }
 }
 
-const setCachePolicy = (dir, policy) => {
+const setCachePolicy = (dir, policy, removeMissing) => {
     configDir = dir
     cache = policy
     if (cache !== "none") {
         cachedSongs = readJSON(joinPath(configDir, "cache")) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
+        if (removeMissing) {
+            cachedSongs = cachedSongs.filter(s => isFile(s.path))
+        }
         if (cache === "songs") {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
         }
