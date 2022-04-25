@@ -87,6 +87,9 @@ const init = () => {
             toggleAutoRemove()
         })
     document.getElementById("rule-search").addEventListener("input", () => {
+        if (!isReady()) {
+            return
+        }
         const search = document.getElementById("rule-search").value
         const {query} = require("./songs")
         document.getElementById("search-results").textContent = ""
@@ -118,6 +121,9 @@ const init = () => {
     ]
     for (const element of progressContainers) {
         element.addEventListener("mousedown", e => {
+            if (!isReady()) {
+                return
+            }
             const {seek} = require("./player")
             const x = e.pageX - element.offsetLeft
                 - element.offsetParent.offsetLeft
@@ -134,6 +140,9 @@ const init = () => {
     ]
     for (const element of coverartEls) {
         element.addEventListener("mousedown", e => {
+            if (!isReady()) {
+                return
+            }
             if (e.button === 0) {
                 const isFullscreened = document.fullscreenElement
                     || document.body.getAttribute("focus-el") === "fullscreen"
@@ -473,28 +482,25 @@ const mappings = {
         }
     },
     "searchbox": {
-        "<C-Enter>": e => {
+        "<C-Enter>": () => {
             const search = document.getElementById("rule-search").value
             const {setFallbackRule} = require("./playlist")
             setFallbackRule(search)
-            e.preventDefault()
         },
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
             incrementSelected()
         },
-        "<Enter>": e => {
+        "<Enter>": () => {
             const search = document.getElementById("rule-search").value
             const {append} = require("./playlist")
             append({"rule": search})
-            e.preventDefault()
         },
-        "<S-Enter>": e => {
+        "<S-Enter>": () => {
             const search = document.getElementById("rule-search").value
             const {append} = require("./playlist")
             append({"rule": search}, true)
-            e.preventDefault()
         }
     }
 }
@@ -513,11 +519,11 @@ const handleKeyboard = async e => {
         mode = "searchbox"
     }
     if (mappings[mode][id]) {
+        e.preventDefault()
         await mappings[mode][id](e)
-        e.preventDefault()
     } else if (mappings.global[id]) {
-        await mappings.global[id](e)
         e.preventDefault()
+        await mappings.global[id](e)
     }
 }
 
