@@ -129,12 +129,8 @@ const init = () => {
         })
     }
     document.getElementById("song-cover").addEventListener("mousedown", e => {
-        if (e.button === 0 || e.button === 1) {
-            switchFocus("fullscreen")
-        }
-        if (e.button === 0 || e.button === 2) {
-            document.getElementById("fullscreen").requestFullscreen()
-        }
+        switchFocus("fullscreen")
+        document.getElementById("fullscreen").requestFullscreen()
     })
     document.getElementById("fullscreen").addEventListener("mousedown", e => {
         if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {

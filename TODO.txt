@@ -3,10 +3,10 @@
     - have a search box to do a custom search on the genius api
     - try to strip featuring artists as an attempt to fetch lyrics better
     - add "--export-lyrics" option, which uses the same structure as cached files
-- implement fullscreen interface with large cover art
 - investigate issue with doing "stop after current" twice on the same song
 - make a statubar component/file (or only a notification area)
     - must have a queue and show the messages one at a time
     - should keep the history and have an option to show it
     - will have single function to show a new message, 2 args: text & color (or type)
 - make scrollBy actions for inputs use the container height instead of fixed high values
+- fix missing interaction when in dom fullscreen but not in fullscreen layout

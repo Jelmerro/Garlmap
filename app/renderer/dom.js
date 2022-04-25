@@ -68,7 +68,9 @@ const displayCurrentSong = async song => {
         titleEl.className = "title"
         titleEl.textContent = song.title
         songContainer.appendChild(titleEl)
-        songContainer.appendChild(document.createTextNode(" - "))
+        if (songContainer === document.getElementById("current-song")) {
+            songContainer.appendChild(document.createTextNode(" - "))
+        }
         const artistEl = document.createElement("span")
         artistEl.className = "artist"
         artistEl.textContent = song.artist
