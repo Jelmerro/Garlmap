@@ -41,14 +41,27 @@ const init = () => {
         }
     })
     window.addEventListener("mousedown", handleMouse)
-    document.querySelector("input[type='range']")
-        .addEventListener("input", () => {
+    for (const vol of [...document.querySelectorAll("input[type='range']")]) {
+        vol.addEventListener("input", () => {
             if (!isReady()) {
                 return
             }
             const {volumeSet} = require("./player")
-            volumeSet(document.querySelector("input[type='range']").value)
+            volumeSet(vol.value)
         })
+        vol.addEventListener("mousedown", e => {
+            if (!isReady()) {
+                return
+            }
+            if (e.button === 2) {
+                const {volumeSet} = require("./player")
+                volumeSet(100)
+            } else if (e.button === 1) {
+                const {toggleMute} = require("./player")
+                toggleMute()
+            }
+        })
+    }
     document.getElementById("toggle-autoscroll").parentNode
         .addEventListener("click", () => {
             if (!isReady()) {
@@ -99,6 +112,38 @@ const init = () => {
             })
         })
     })
+    const progressContainers = [
+        document.getElementById("progress-container"),
+        document.getElementById("fs-progress-container")
+    ]
+    for (const element of progressContainers) {
+        element.addEventListener("mousedown", e => {
+            const {seek} = require("./player")
+            const x = e.pageX - element.offsetLeft
+                - element.offsetParent.offsetLeft
+            let percentage = x / element.getBoundingClientRect().width
+            if (percentage < 0.01) {
+                percentage = 0
+            }
+            seek(percentage)
+        })
+    }
+    document.getElementById("song-cover").addEventListener("mousedown", e => {
+        if (e.button === 0 || e.button === 1) {
+            switchFocus("fullscreen")
+        }
+        if (e.button === 0 || e.button === 2) {
+            document.getElementById("fullscreen").requestFullscreen()
+        }
+    })
+    document.getElementById("fullscreen").addEventListener("mousedown", e => {
+        if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
+            if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
+                switchFocus("search")
+                document.exitFullscreen()
+            }
+        }
+    })
     resetWelcome()
 }
 
@@ -141,6 +186,22 @@ const toIdentifier = e => {
 }
 
 const mappings = {
+    "fullscreen": {
+        "<C-F11>": () => document.exitFullscreen().catch(() => {
+            document.getElementById("fullscreen").requestFullscreen()
+        }),
+        "<F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 100),
+        "<F10>": () => document.getElementById("fs-lyrics").scrollBy(0, -100),
+        "<F11>": () => {
+            switchFocus("search")
+            document.exitFullscreen().catch(() => null)
+        },
+        "<S-F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 1000),
+        "<S-F10>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, -1000)
+        },
+        "<S-F11>": () => switchFocus("search")
+    },
     "global": {
         "<C-=>": () => {
             const {volumeUp} = require("./player")
@@ -182,6 +243,10 @@ const mappings = {
             const {exportList} = require("./playlist")
             // #bug Electron will freeze the mouse if this is not called later
             setTimeout(() => exportList(), 100)
+        },
+        "<Escape>": () => {
+            switchFocus("search")
+            document.exitFullscreen().catch(() => null)
         },
         "<F1>": () => resetWelcome(),
         "<F2>": () => switchFocus("search"),
@@ -272,6 +337,9 @@ const mappings = {
             const {bottomSelected} = require("./playlist")
             bottomSelected()
         },
+        "<C-F11>": () => document.exitFullscreen().catch(() => {
+            document.getElementById("fullscreen").requestFullscreen()
+        }),
         "<C-Home>": () => {
             const {topSelected} = require("./playlist")
             topSelected()
@@ -319,6 +387,10 @@ const mappings = {
             const {playSelectedSong} = require("./playlist")
             await playSelectedSong()
         },
+        "<F11>": () => {
+            switchFocus("fullscreen")
+            document.getElementById("fullscreen").requestFullscreen()
+        },
         "<Home>": () => {
             const {topScroll} = require("./playlist")
             topScroll()
@@ -329,6 +401,7 @@ const mappings = {
         "<PageUp>": () => {
             document.getElementById("main-playlist").scrollBy(0, -300)
         },
+        "<S-F11>": () => switchFocus("fullscreen"),
         "a": () => {
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
@@ -379,6 +452,9 @@ const mappings = {
             const {decrementSelected} = require("./dom")
             decrementSelected()
         },
+        "<C-F11>": () => document.exitFullscreen().catch(() => {
+            document.getElementById("fullscreen").requestFullscreen()
+        }),
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
@@ -392,10 +468,15 @@ const mappings = {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong()
         },
+        "<F11>": () => {
+            switchFocus("fullscreen")
+            document.getElementById("fullscreen").requestFullscreen()
+        },
         "<S-Enter>": () => {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong(true)
-        }
+        },
+        "<S-F11>": () => switchFocus("fullscreen")
     },
     "searchbox": {
         "<C-Enter>": e => {
@@ -404,6 +485,9 @@ const mappings = {
             setFallbackRule(search)
             e.preventDefault()
         },
+        "<C-F11>": () => document.exitFullscreen().catch(() => {
+            document.getElementById("fullscreen").requestFullscreen()
+        }),
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
@@ -415,12 +499,17 @@ const mappings = {
             append({"rule": search})
             e.preventDefault()
         },
+        "<F11>": () => {
+            switchFocus("fullscreen")
+            document.getElementById("fullscreen").requestFullscreen()
+        },
         "<S-Enter>": e => {
             const search = document.getElementById("rule-search").value
             const {append} = require("./playlist")
             append({"rule": search}, true)
             e.preventDefault()
-        }
+        },
+        "<S-F11>": () => switchFocus("fullscreen")
     }
 }
 
@@ -450,7 +539,7 @@ const handleMouse = e => {
     if (!isReady()) {
         return
     }
-    if (!queryMatch(e, ".song, #song-info, textarea, input")) {
+    if (!queryMatch(e, ".song, #song-info, textarea, input, #fs-lyrics")) {
         e.preventDefault()
     }
     if (queryMatch(e, "#status-folder, #status-files, #open-folder")) {
@@ -471,27 +560,17 @@ const handleMouse = e => {
         const {saveSettings} = require("./settings")
         saveSettings()
     }
-    if (queryMatch(e, "input[type='range']")) {
-        if (e.button === 2) {
-            const {volumeSet} = require("./player")
-            volumeSet(100)
-        } else if (e.button === 1) {
-            const {toggleMute} = require("./player")
-            toggleMute()
-        }
-        return
-    }
-    if (queryMatch(e, "#prev")) {
+    if (queryMatch(e, "#prev") || queryMatch(e, "#fs-prev")) {
         const {decrement} = require("./playlist")
         decrement()
         return
     }
-    if (queryMatch(e, "#pause")) {
+    if (queryMatch(e, "#pause") || queryMatch(e, "#fs-pause")) {
         const {pause} = require("./player")
         pause()
         return
     }
-    if (queryMatch(e, "#next")) {
+    if (queryMatch(e, "#next") || queryMatch(e, "#fs-next")) {
         const {increment} = require("./playlist")
         increment()
         return
@@ -506,20 +585,6 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#playlist-container")) {
         switchFocus("playlist")
-        return
-    }
-    if (queryMatch(e, "#progress-container")) {
-        const {seek} = require("./player")
-        const clickPercent = (event, element) => {
-            const x = event.pageX - element.offsetLeft
-                - element.offsetParent.offsetLeft
-            const percentage = x / element.getBoundingClientRect().width
-            if (percentage < 0.01) {
-                return 0
-            }
-            return percentage
-        }
-        seek(clickPercent(e, document.getElementById("progress-container")))
     }
 }
 

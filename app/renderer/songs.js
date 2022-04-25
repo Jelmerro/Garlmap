@@ -279,6 +279,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         || s.path === req.path).lyrics
     if (cachedLyrics && !force) {
         document.getElementById("song-info").textContent = cachedLyrics
+        document.getElementById("fs-lyrics").textContent = cachedLyrics
         return
     }
     if (!req.artist || !req.title) {
@@ -298,6 +299,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         const lyrics = readFile(file)
         if (lyrics) {
             document.getElementById("song-info").textContent = lyrics
+            document.getElementById("fs-lyrics").textContent = lyrics
             return
         }
     }
@@ -326,6 +328,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             const lyrics = await song.lyrics()
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
+                document.getElementById("fs-lyrics").textContent = lyrics
             }
             document.getElementById("status-scan").textContent = ""
             songs.find(s => s.id === req.id
@@ -379,6 +382,7 @@ const showLyrics = async p => {
     const song = songById(p)
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
+        document.getElementById("fs-lyrics").textContent = song.lyrics
     } else if (shouldAutoFetchLyrics()) {
         await fetchLyrics(song)
     }

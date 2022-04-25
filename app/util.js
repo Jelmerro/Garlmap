@@ -189,6 +189,7 @@ and you can do Ctrl-m to toggle mute, all of which is reflected in the bar.
 Finally you can reset the volume by pressing Ctrl-0 on the keyboard.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
+    document.getElementById("fs-lyrics").textContent = ""
 }
 
 const isDirectory = loc => {

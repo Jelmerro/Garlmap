@@ -37,8 +37,6 @@ body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-s
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
 .button:hover {background: var(--border);}
-#progress-container:hover {background: var(--accent);}
-input[type="range"]:hover {border-color: var(--border);}
 
 
 /* general column alignment */
@@ -60,12 +58,14 @@ input[type="range"]:hover {border-color: var(--border);}
 #current-song .album {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
 #progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
+#progress-container:hover {background: var(--accent);}
 #progress-played {background: var(--primary);color: var(--bg);z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
 #progress-played, #progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
-input[type="range"] {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.25em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}
-input[type="range"]::-webkit-slider-thumb {appearance: none;background: var(--secondary);height: 1.7em;width: .5em;font: inherit;}
-input[type="range"].muted {background: var(--tertiary);}
+#volume-slider {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.25em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}
+#volume-slider::-webkit-slider-thumb {appearance: none;background: var(--secondary);height: 1.7em;width: .5em;font: inherit;}
+#volume-slider.muted {background: var(--tertiary);}
+#volume-slider:hover {border-color: var(--border);}
 
 
 /* search & playlist column with song info */
@@ -109,7 +109,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 .song:not(.current) .artist, .song:not(.current) .bundled-info {color: var(--secondary);}
 .song * {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
 .song .main-info {display: flex;flex-direction: column;}
-.other-info {display: flex;flex-direction: column;margin-left: auto;text-align: right;}
+.song .other-info {display: flex;flex-direction: column;margin-left: auto;text-align: right;}
 #fallback-rule {color: var(--black);background: var(--secondary);padding: .5em;}
 
 
@@ -138,3 +138,27 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 .checkbox-container .checkbox-mark:after {left: .35em;top: .1em;width: .4em;height: .6em;border: solid var(--bg);border-width: 0 .2em .2em 0;transform: rotate(45deg);}
 .checkbox-container:hover .checkbox-mark {background: var(--border);}
 .checkbox-container:hover {font-style: italic;}
+
+/* fullscreen layout */
+#fullscreen {display: none;position: fixed;top: 0;left: 0;width: 100vw;height: 100vh;background: var(--bg);z-index: 2;}
+#fs-info {margin: auto;width: 46vw;}
+#fs-info > * {display: flex;}
+#fs-player-status {margin-bottom: .5em;}
+#fs-player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);cursor: pointer;}
+#fs-player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
+#fs-current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
+#fs-current-song .title, #fs-current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
+#fs-current-song .title {margin-right: .5em;}
+#fs-current-song .artist {margin-left: .5em;}
+#fs-current-song .album {color: var(--secondary);}
+#fs-current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
+#fs-progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
+#fs-progress-played {background: var(--primary);color: var(--bg);z-index: 3;}
+#fs-progress-string {position: absolute;color: var(--primary);}
+#fs-progress-played, #fs-progress-string {font-size: 1.4em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
+#fs-volume-slider {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.25em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}
+#fs-volume-slider::-webkit-slider-thumb {appearance: none;background: var(--secondary);height: 1.7em;width: .5em;font: inherit;}
+#fs-volume-slider.muted {background: var(--tertiary);}
+#fs-volume-slider:hover {border-color: var(--border);}
+#fs-song-cover {display: none;width: 44vw;margin: 3vw;object-fit: contain;flex: none;}
+#fs-lyrics {height: 70vh;white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;margin-top: .5em;}

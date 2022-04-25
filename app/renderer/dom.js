@@ -54,37 +54,42 @@ const generateSongElement = song => {
 }
 
 const displayCurrentSong = async song => {
-    const songContainer = document.getElementById("current-song")
-    if (!song) {
-        songContainer.textContent = "Welcome to Garlmap"
-        return
+    const els = [
+        document.getElementById("current-song"),
+        document.getElementById("fs-current-song")
+    ]
+    for (const songContainer of els) {
+        if (!song) {
+            songContainer.textContent = "Welcome to Garlmap"
+            return
+        }
+        songContainer.textContent = ""
+        const titleEl = document.createElement("span")
+        titleEl.className = "title"
+        titleEl.textContent = song.title
+        songContainer.appendChild(titleEl)
+        songContainer.appendChild(document.createTextNode(" - "))
+        const artistEl = document.createElement("span")
+        artistEl.className = "artist"
+        artistEl.textContent = song.artist
+        songContainer.appendChild(artistEl)
+        const otherInfo = document.createElement("span")
+        otherInfo.className = "other-info"
+        const albumEl = document.createElement("span")
+        albumEl.className = "album"
+        albumEl.textContent = song.album
+        otherInfo.appendChild(albumEl)
+        const bundledInfo = document.createElement("span")
+        if (song.track || song.disc) {
+            bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
+                || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
+        }
+        if (song.date) {
+            bundledInfo.textContent += ` from ${song.date}`
+        }
+        otherInfo.appendChild(bundledInfo)
+        songContainer.appendChild(otherInfo)
     }
-    songContainer.textContent = ""
-    const titleEl = document.createElement("span")
-    titleEl.className = "title"
-    titleEl.textContent = song.title
-    songContainer.appendChild(titleEl)
-    songContainer.appendChild(document.createTextNode(" - "))
-    const artistEl = document.createElement("span")
-    artistEl.className = "artist"
-    artistEl.textContent = song.artist
-    songContainer.appendChild(artistEl)
-    const otherInfo = document.createElement("span")
-    otherInfo.className = "other-info"
-    const albumEl = document.createElement("span")
-    albumEl.className = "album"
-    albumEl.textContent = song.album
-    otherInfo.appendChild(albumEl)
-    const bundledInfo = document.createElement("span")
-    if (song.track || song.disc) {
-        bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
-            || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
-    }
-    if (song.date) {
-        bundledInfo.textContent += ` from ${song.date}`
-    }
-    otherInfo.appendChild(bundledInfo)
-    songContainer.appendChild(otherInfo)
     // #bug Workaround to allow mediaSession to work with Electron, sigh
     try {
         document.body.removeChild(document.querySelector("audio"))
@@ -105,6 +110,8 @@ const displayCurrentSong = async song => {
     if (cover) {
         document.getElementById("song-cover").src = cover
         document.getElementById("song-cover").style.display = "initial"
+        document.getElementById("fs-song-cover").src = cover
+        document.getElementById("fs-song-cover").style.display = "initial"
         // #bug Cover does not work due to Electron bug
         const resp = await fetch(cover)
         const blob = await resp.blob()
@@ -114,15 +121,22 @@ const displayCurrentSong = async song => {
     } else {
         document.getElementById("song-cover").src = null
         document.getElementById("song-cover").style.display = "none"
+        document.getElementById("fs-song-cover").src = null
+        document.getElementById("fs-song-cover").style.display = "none"
     }
 }
 
 const switchFocus = newFocus => {
     // Focus can be: playlist, search or searchbox
+    const oldFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {
         document.getElementById("rule-search").blur()
         document.getElementById("playlist-container").focus()
+    } else if (newFocus === "fullscreen") {
+        document.getElementById("fullscreen").style.display = "flex"
+    } else if (oldFocus === "fullscreen") {
+        document.getElementById("fullscreen").style.display = "none"
     } else {
         const selected = document.querySelector("#search-results .selected")
         if (!selected || newFocus.endsWith("box")) {

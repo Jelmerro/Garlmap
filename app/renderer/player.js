@@ -46,12 +46,15 @@ const init = path => {
                 // #bug Position not recognized by Electron
                 duration, "playbackRate": 1, position
             })
-            document.getElementById("progress-played").innerHTML = `&nbsp;${
-                formatTime(position)}/${formatTime(duration)}&nbsp;`
-            document.getElementById("progress-played").style.width
-                    = `${position / duration * 100}%`
-            document.getElementById("progress-string").innerHTML = `&nbsp;${
-                formatTime(position)}/${formatTime(duration)}&nbsp;`
+            const played = `&nbsp;${formatTime(position)}/${
+                formatTime(duration)}&nbsp;`
+            const perc = `${position / duration * 100}%`
+            document.getElementById("progress-played").innerHTML = played
+            document.getElementById("progress-played").style.width = perc
+            document.getElementById("progress-string").innerHTML = played
+            document.getElementById("fs-progress-played").innerHTML = played
+            document.getElementById("fs-progress-played").style.width = perc
+            document.getElementById("fs-progress-string").innerHTML = played
             return
         }
         if (info.name === "playlist-pos" && info.data === 1) {
@@ -126,6 +129,8 @@ const updatePlayButton = async() => {
     if (!isAlive() || await mpv.get("pause")) {
         document.getElementById("pause").querySelector("img").src
             = "../img/play.png"
+        document.getElementById("fs-pause").querySelector("img").src
+            = "../img/play.png"
         navigator.mediaSession.playbackState = "paused"
         // #bug Workaround for (you guessed it) another Electron bug
         try {
@@ -135,6 +140,8 @@ const updatePlayButton = async() => {
         }
     } else {
         document.getElementById("pause").querySelector("img").src
+            = "../img/pause.png"
+        document.getElementById("fs-pause").querySelector("img").src
             = "../img/pause.png"
         navigator.mediaSession.playbackState = "playing"
         // #bug Workaround for (you guessed it) another Electron bug
@@ -168,7 +175,8 @@ const seek = async percent => {
 const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
-    document.querySelector("input[type='range']").disabled = null
+    document.getElementById("volume-slider").disabled = null
+    document.getElementById("fs-volume-slider").disabled = null
     await mpv.command("loadfile", file)
     await mpv.set("pause", false)
 }
@@ -201,11 +209,14 @@ const updateVolume = async() => {
     } else {
         volume = 100
     }
-    document.querySelector("input[type='range']").value = volume
+    document.getElementById("volume-slider").value = volume
+    document.getElementById("fs-volume-slider").value = volume
     if (isAlive() && await mpv.get("mute")) {
-        document.querySelector("input[type='range']").className = "muted"
+        document.getElementById("volume-slider").className = "muted"
+        document.getElementById("fs-volume-slider").className = "muted"
     } else {
-        document.querySelector("input[type='range']").className = ""
+        document.getElementById("volume-slider").className = ""
+        document.getElementById("fs-volume-slider").className = ""
     }
 }
 
