@@ -9,4 +9,3 @@
     - should keep the history and have an option to show it
     - will have single function to show a new message, 2 args: text & color (or type)
 - make scrollBy actions for inputs use the container height instead of fixed high values
-- fix missing interaction when in dom fullscreen but not in fullscreen layout

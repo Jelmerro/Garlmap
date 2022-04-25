@@ -187,6 +187,17 @@ which will change the bar color and keep the volume stored for when you unmute.
 The keyboard shortcuts for this are Ctrl-minus and Ctrl-plus for volume change,
 and you can do Ctrl-m to toggle mute, all of which is reflected in the bar.
 Finally you can reset the volume by pressing Ctrl-0 on the keyboard.
+
+Fullscreen layouts
+
+There are many ways to enter fullscreen in Garlmap and two separate types of it.
+First there is a type of fullscreen that removes window borders and menu bars.
+Second there is a minimal layout that removes the search and playlist sections.
+You can toggle them at the same time with F11 or left-clicking on the cover art.
+To specifically toggle the window border removal, use Ctrl-F11 or right-click.
+To toggle only minimal layout, use Shift-F11 or middle-click on the covert art.
+You may also click with any mouse button on empty space in the minimal layout,
+which will exit one stage of fullscreen per click, similar to pressing Escape.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
     document.getElementById("fs-lyrics").textContent = ""

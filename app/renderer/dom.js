@@ -128,6 +128,26 @@ const displayCurrentSong = async song => {
     }
 }
 
+const setFullscreenLayout = async(browserFS, layoutFS) => {
+    const currentFocus = document.body.getAttribute("focus-el")
+    if (document.fullscreenElement) {
+        await document.exitFullscreen()
+    }
+    if (layoutFS) {
+        switchFocus("fullscreen")
+        if (browserFS) {
+            document.getElementById("fullscreen").requestFullscreen()
+        }
+        return
+    }
+    if (currentFocus === "fullscreen") {
+        switchFocus("search")
+    }
+    if (browserFS) {
+        document.body.requestFullscreen()
+    }
+}
+
 const switchFocus = newFocus => {
     // Focus can be: playlist, search or searchbox
     const oldFocus = document.body.getAttribute("focus-el")
@@ -198,5 +218,6 @@ module.exports = {
     displayCurrentSong,
     generateSongElement,
     incrementSelected,
+    setFullscreenLayout,
     switchFocus
 }

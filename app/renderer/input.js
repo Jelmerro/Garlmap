@@ -19,7 +19,7 @@
 
 const {ipcRenderer, clipboard} = require("electron")
 const {queryMatch, resetWelcome} = require("../util")
-const {switchFocus} = require("./dom")
+const {switchFocus, setFullscreenLayout} = require("./dom")
 
 const init = () => {
     window.addEventListener("keydown", e => handleKeyboard(e))
@@ -128,15 +128,31 @@ const init = () => {
             seek(percentage)
         })
     }
-    document.getElementById("song-cover").addEventListener("mousedown", e => {
-        switchFocus("fullscreen")
-        document.getElementById("fullscreen").requestFullscreen()
-    })
+    const coverartEls = [
+        document.getElementById("song-cover"),
+        document.getElementById("fs-song-cover")
+    ]
+    for (const element of coverartEls) {
+        element.addEventListener("mousedown", e => {
+            if (e.button === 0) {
+                const isFullscreened = document.fullscreenElement
+                    || document.body.getAttribute("focus-el") === "fullscreen"
+                setFullscreenLayout(!isFullscreened, !isFullscreened)
+            }
+            if (e.button === 1) {
+                setFullscreenLayout(document.fullscreenElement,
+                    document.body.getAttribute("focus-el") !== "fullscreen")
+            }
+            if (e.button === 2) {
+                setFullscreenLayout(!document.fullscreenElement,
+                    document.body.getAttribute("focus-el") === "fullscreen")
+            }
+        })
+    }
     document.getElementById("fullscreen").addEventListener("mousedown", e => {
         if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
             if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
-                switchFocus("search")
-                document.exitFullscreen()
+                document.exitFullscreen().catch(() => switchFocus("search"))
             }
         }
     })
@@ -183,20 +199,12 @@ const toIdentifier = e => {
 
 const mappings = {
     "fullscreen": {
-        "<C-F11>": () => document.exitFullscreen().catch(() => {
-            document.getElementById("fullscreen").requestFullscreen()
-        }),
         "<F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 100),
         "<F10>": () => document.getElementById("fs-lyrics").scrollBy(0, -100),
-        "<F11>": () => {
-            switchFocus("search")
-            document.exitFullscreen().catch(() => null)
-        },
         "<S-F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 1000),
         "<S-F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -1000)
-        },
-        "<S-F11>": () => switchFocus("search")
+        }
     },
     "global": {
         "<C-=>": () => {
@@ -211,6 +219,8 @@ const mappings = {
             const {volumeSet} = require("./player")
             volumeSet(100)
         },
+        "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
+            document.body.getAttribute("focus-el") === "fullscreen"),
         "<C-c>": () => {
             const text = window.getSelection().toString()
             if (text) {
@@ -240,10 +250,7 @@ const mappings = {
             // #bug Electron will freeze the mouse if this is not called later
             setTimeout(() => exportList(), 100)
         },
-        "<Escape>": () => {
-            switchFocus("search")
-            document.exitFullscreen().catch(() => null)
-        },
+        "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => resetWelcome(),
         "<F2>": () => switchFocus("search"),
         "<F3>": () => switchFocus("playlist"),
@@ -277,6 +284,11 @@ const mappings = {
         },
         "<F9>": () => document.getElementById("song-info").scrollBy(0, 100),
         "<F10>": () => document.getElementById("song-info").scrollBy(0, -100),
+        "<F11>": () => {
+            const isFullscreened = document.fullscreenElement
+                || document.body.getAttribute("focus-el") === "fullscreen"
+            setFullscreenLayout(!isFullscreened, !isFullscreened)
+        },
         "<F12>": () => ipcRenderer.invoke("toggle-devtools"),
         "<S-F4>": async() => {
             const {isAlive} = require("./player")
@@ -294,6 +306,8 @@ const mappings = {
         "<S-F10>": () => {
             document.getElementById("song-info").scrollBy(0, -1000)
         },
+        "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
+            document.body.getAttribute("focus-el") !== "fullscreen"),
         "<Tab>": () => switchFocus("searchbox")
     },
     "playlist": {
@@ -333,9 +347,6 @@ const mappings = {
             const {bottomSelected} = require("./playlist")
             bottomSelected()
         },
-        "<C-F11>": () => document.exitFullscreen().catch(() => {
-            document.getElementById("fullscreen").requestFullscreen()
-        }),
         "<C-Home>": () => {
             const {topSelected} = require("./playlist")
             topSelected()
@@ -383,10 +394,6 @@ const mappings = {
             const {playSelectedSong} = require("./playlist")
             await playSelectedSong()
         },
-        "<F11>": () => {
-            switchFocus("fullscreen")
-            document.getElementById("fullscreen").requestFullscreen()
-        },
         "<Home>": () => {
             const {topScroll} = require("./playlist")
             topScroll()
@@ -397,7 +404,6 @@ const mappings = {
         "<PageUp>": () => {
             document.getElementById("main-playlist").scrollBy(0, -300)
         },
-        "<S-F11>": () => switchFocus("fullscreen"),
         "a": () => {
             const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
@@ -448,9 +454,6 @@ const mappings = {
             const {decrementSelected} = require("./dom")
             decrementSelected()
         },
-        "<C-F11>": () => document.exitFullscreen().catch(() => {
-            document.getElementById("fullscreen").requestFullscreen()
-        }),
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
@@ -464,15 +467,10 @@ const mappings = {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong()
         },
-        "<F11>": () => {
-            switchFocus("fullscreen")
-            document.getElementById("fullscreen").requestFullscreen()
-        },
         "<S-Enter>": () => {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong(true)
-        },
-        "<S-F11>": () => switchFocus("fullscreen")
+        }
     },
     "searchbox": {
         "<C-Enter>": e => {
@@ -481,9 +479,6 @@ const mappings = {
             setFallbackRule(search)
             e.preventDefault()
         },
-        "<C-F11>": () => document.exitFullscreen().catch(() => {
-            document.getElementById("fullscreen").requestFullscreen()
-        }),
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
@@ -495,17 +490,12 @@ const mappings = {
             append({"rule": search})
             e.preventDefault()
         },
-        "<F11>": () => {
-            switchFocus("fullscreen")
-            document.getElementById("fullscreen").requestFullscreen()
-        },
         "<S-Enter>": e => {
             const search = document.getElementById("rule-search").value
             const {append} = require("./playlist")
             append({"rule": search}, true)
             e.preventDefault()
-        },
-        "<S-F11>": () => switchFocus("fullscreen")
+        }
     }
 }
 
