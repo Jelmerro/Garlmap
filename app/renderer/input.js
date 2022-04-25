@@ -463,6 +463,22 @@ const mappings = {
             const {decrementSelected} = require("./dom")
             decrementSelected()
         },
+        "<C-PageDown>": () => {
+            const {incrementSelected} = require("./dom")
+            let i = 0
+            while (i < 10) {
+                incrementSelected()
+                i += 1
+            }
+        },
+        "<C-PageUp>": () => {
+            const {decrementSelected} = require("./dom")
+            let i = 0
+            while (i < 10) {
+                decrementSelected()
+                i += 1
+            }
+        },
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
             const {incrementSelected} = require("./dom")
@@ -476,16 +492,34 @@ const mappings = {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong()
         },
+        "<PageDown>": () => {
+            document.getElementById("search-results").scrollBy(0, 300)
+        },
+        "<PageUp>": () => {
+            document.getElementById("search-results").scrollBy(0, -300)
+        },
         "<S-Enter>": () => {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong(true)
         }
     },
     "searchbox": {
+        "<ArrowDown>": () => {
+            const {incrementSelected} = require("./dom")
+            incrementSelected()
+        },
         "<C-Enter>": () => {
             const search = document.getElementById("rule-search").value
             const {setFallbackRule} = require("./playlist")
             setFallbackRule(search)
+        },
+        "<C-PageDown>": () => {
+            const {incrementSelected} = require("./dom")
+            let i = 0
+            while (i < 10) {
+                incrementSelected()
+                i += 1
+            }
         },
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
@@ -496,6 +530,12 @@ const mappings = {
             const search = document.getElementById("rule-search").value
             const {append} = require("./playlist")
             append({"rule": search})
+        },
+        "<PageDown>": () => {
+            document.getElementById("search-results").scrollBy(0, 300)
+        },
+        "<PageUp>": () => {
+            document.getElementById("search-results").scrollBy(0, -300)
         },
         "<S-Enter>": () => {
             const search = document.getElementById("rule-search").value
