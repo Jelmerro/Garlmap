@@ -149,7 +149,7 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
 }
 
 const switchFocus = newFocus => {
-    // Focus can be: playlist, search or searchbox
+    // Focus can be: playlist, fullscreen, search or searchbox
     const oldFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {

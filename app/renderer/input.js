@@ -220,6 +220,22 @@ const mappings = {
             const {volumeUp} = require("./player")
             volumeUp()
         },
+        "<C-[>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(-6)
+        },
+        "<C-]>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(6)
+        },
+        "<C-{>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(-60)
+        },
+        "<C-}>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(60)
+        },
         "<C-->": () => {
             const {volumeDown} = require("./player")
             volumeDown()

@@ -163,6 +163,12 @@ const pause = async() => {
     }
 }
 
+const relativeSeek = async seconds => {
+    if (isAlive() && !stoppedAfterTrack) {
+        await mpv.command("seek", seconds, "relative")
+    }
+}
+
 const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
         const {currentAndNext} = require("./playlist")
@@ -239,6 +245,7 @@ module.exports = {
     load,
     pause,
     queue,
+    relativeSeek,
     seek,
     stopPlayback,
     toggleMute,
