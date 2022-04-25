@@ -266,6 +266,16 @@ const writeJSON = (loc, data, indent = null) => {
     }
 }
 
+const writeFile = (loc, data) => {
+    const {writeFileSync} = require("fs")
+    try {
+        writeFileSync(loc, data)
+        return true
+    } catch {
+        return false
+    }
+}
+
 const makeDir = loc => {
     try {
         const {mkdirSync} = require("fs")
@@ -289,5 +299,6 @@ module.exports = {
     readFile,
     readJSON,
     resetWelcome,
+    writeFile,
     writeJSON
 }

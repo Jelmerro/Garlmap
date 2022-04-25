@@ -104,6 +104,7 @@ const processStartupArgs = () => {
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
         "customTheme": readFile(joinPath(configDir, "theme.css")),
+        "dumpLyrics": false,
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
         "mpv": process.env.GARLMAP_MPV?.trim()
@@ -125,6 +126,9 @@ const processStartupArgs = () => {
             } else if (name === "--cache-clean") {
                 config.cacheClean = isTruthyArg(value)
                     || arg === "--cache-clean"
+            } else if (name === "--dump-lyrics") {
+                config.dumpLyrics = isTruthyArg(value)
+                    || arg === "--dump-lyrics"
             } else if (name === "--mpv") {
                 config.mpv = value
             } else if (name === "--font-size") {
@@ -136,8 +140,7 @@ const processStartupArgs = () => {
                 config.autoScroll = isTruthyArg(value)
                     || arg === "--auto-scroll"
             } else if (name === "--auto-close") {
-                config.autoClose = isTruthyArg(value)
-                    || arg === "--auto-close"
+                config.autoClose = isTruthyArg(value) || arg === "--auto-close"
             } else if (name === "--auto-remove") {
                 config.autoRemove = isTruthyArg(value)
                     || arg === "--auto-remove"
@@ -152,6 +155,11 @@ const processStartupArgs = () => {
     if (!["all", "song", "lyrics", "none", undefined].includes(config.cache)) {
         console.warn("Error, cache arg only accepts one of:")
         console.warn("- all, song, lyrics, none")
+        app.exit(1)
+    }
+    if (["song", "none"].includes(config.cache) && config.dumpLyrics) {
+        console.warn("Error, cache is set to song only or none,")
+        console.warn("therefor there are no lyrics to be dumped.")
         app.exit(1)
     }
     if (config.fontSize) {
@@ -171,7 +179,9 @@ const processStartupArgs = () => {
 
 const outputHelp = () => {
     console.info(`${`
-> garlmap --cache=<ALL,song,lyrics,none> --auto-lyrics --font-size=<int> folder
+> garlmap --cache=<ALL,song,lyrics,none> --cache-clean --auto-lyrics \\
+    --auto-scroll --auto-close --auto-remove --font-size=<int> --mpv=<loc> \\
+    --dump-lyrics folder
 
 For help with app usage, see the built-in help on the right.
 Garlmap can be started without any arguments, but it supports the following:
@@ -269,6 +279,22 @@ Garlmap can be started without any arguments, but it supports the following:
                    the latter only being the default on Windows.
                    This setting cannot be changed once Garlmap is started.
 
+    --dump-lyrics  Dump all cached lyrics in a "Lyrics" subfolder of the folder.
+                   The base directory must be set with the option below,
+                   or using the folder option in the config or env vars.
+                   Inside the base music folder, it will create a "Lyrics" dir,
+                   which will have text files in the same path as the songs,
+                   with every song getting it's own text file at the right path.
+                   Each of these files is filled with the lyrics for that song.
+                   Garlmap will read "Lyrics" folders even without a cache file,
+                   as long as they follow this same file structure.
+                   You can add your own lyrics to this folder for any song,
+                   but you will need to do Shift-F4 after editing existing ones,
+                   which have already been loaded into the lyrics cache.
+                   If you supply this option, Garlmap will parse the folder,
+                   next create these files and then exit without playing songs.
+                   You cannot set this option from the config file or env vars.
+
     folder         Provide a folder to load the songs from for this instance.
                    If no arg is found, it will read the "folder" field from:
                    ${joinPath(configDir, "settings.json")}
@@ -355,8 +381,10 @@ app.on("ready", () => {
         config.version = version
         config.configDir = configDir
         mainWindow.webContents.send("config", config)
-        registerMediaKeys()
-        mainWindow.show()
+        if (!config.dumpLyrics) {
+            registerMediaKeys()
+            mainWindow.show()
+        }
     })
 })
 

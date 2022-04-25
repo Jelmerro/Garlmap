@@ -31,7 +31,7 @@ const init = () => {
             config.cache || "all", config.cacheClean)
         if (config.folder) {
             const {scanner} = require("./songs")
-            scanner(config.folder)
+            scanner(config.folder, config.dumpLyrics)
         }
         autoLyrics = !!config.autoLyrics
         document.getElementById("toggle-autolyrics").checked = autoLyrics

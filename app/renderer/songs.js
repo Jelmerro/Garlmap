@@ -22,6 +22,7 @@ const {compareTwoStrings} = require("string-similarity")
 const musicMetadata = require("music-metadata")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
+const {ipcRenderer} = require("electron")
 const {
     readJSON,
     writeJSON,
@@ -30,7 +31,9 @@ const {
     isFile,
     dirName,
     basePath,
-    readFile
+    readFile,
+    writeFile,
+    makeDir
 } = require("../util")
 
 let configDir = null
@@ -90,7 +93,20 @@ const processFile = async(folder, file, total, lyrics = null) => {
         = `${processedFiles}/${total} songs`
 }
 
-const scanner = async folder => {
+const dumpLyrics = folder => {
+    const lyricsDir = joinPath(folder, "Lyrics")
+    for (const song of songs) {
+        if (song.lyrics) {
+            const txtId = song.id.replace(/\.[^ .]+$/g, ".txt")
+            const lyricsPath = joinPath(lyricsDir, txtId)
+            makeDir(dirName(lyricsPath))
+            writeFile(lyricsPath, song.lyrics)
+        }
+    }
+    ipcRenderer.send("destroy-window")
+}
+
+const scanner = async(folder, dumpOnly = false) => {
     processedFiles = 0
     songs = []
     failures = []
@@ -119,6 +135,10 @@ const scanner = async folder => {
                 continue
             }
             await processFile(folder, f, files.length, match?.lyrics)
+        }
+        if (dumpOnly) {
+            dumpLyrics(folder)
+            return
         }
         document.getElementById("status-current").textContent = `Ready`
         document.getElementById("status-current").style.color
@@ -295,16 +315,23 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         joinPath(req.path.replace(req.id, ""), "Lyrics", txtId),
         joinPath(req.path.replace(req.id, ""), "Tracklists", txtId)
     ]
+    const {currentAndNext} = require("./playlist")
     for (const file of files) {
         const lyrics = readFile(file)
         if (lyrics) {
-            document.getElementById("song-info").textContent = lyrics
-            document.getElementById("fs-lyrics").textContent = lyrics
+            if (currentAndNext().current?.id === req.id) {
+                document.getElementById("song-info").textContent = lyrics
+                document.getElementById("fs-lyrics").textContent = lyrics
+            }
+            songs.find(s => s.id === req.id
+                || s.path === req.path).lyrics = lyrics
+            cachedSongs.find(s => s.id === req.id
+                || s.path === req.path).lyrics = lyrics
+            setTimeout(() => updateCache(), 1)
             return
         }
     }
     // Fetch it from Genius
-    const {currentAndNext} = require("./playlist")
     try {
         document.getElementById("status-scan").textContent
             = `Connecting to Genius to search for the right song lyrics`
