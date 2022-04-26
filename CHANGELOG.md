@@ -32,6 +32,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Using = in the fallback rule not working
 - Map file errors in the console by applying default devtool settings
+- Stop after current not working when called from system menu
 
 ### Versions
 
