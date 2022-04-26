@@ -315,7 +315,9 @@ If you JUST want to change the colors, you ONLY need the ":root" section!
 }
 
 const outputVersion = () => {
-    console.info(`You are dealing with version ${version}\n`)
+    console.info(`You are dealing with version ${version} of Garlmap`)
+    console.info(`This release uses Electron ${
+        process.versions.electron} and Chromium ${process.versions.chrome}\n`)
     showLicense()
 }
 

@@ -34,6 +34,8 @@ You must add mpv to your path, or use the `--mpv` option.
 2. Download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
 3. Read the built-in help on the right or run Garlmap with `--help` on startup.
 
+See what's changed recently by viewing the [changelog](CHANGELOG.md).
+
 ## Building
 
 Please clone this repo and run `npm ci` then `npm start`.
