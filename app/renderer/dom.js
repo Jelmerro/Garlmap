@@ -149,17 +149,25 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
 }
 
 const switchFocus = newFocus => {
-    // Focus can be: playlist, fullscreen, search or searchbox
-    const oldFocus = document.body.getAttribute("focus-el")
+    // Focus can be: playlist, fullscreen, events, search or searchbox
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
-    if (newFocus === "playlist") {
+    if (newFocus !== "searchbox") {
         document.getElementById("rule-search").blur()
+    }
+    if (newFocus === "playlist") {
         document.getElementById("playlist-container").focus()
-    } else if (newFocus === "fullscreen") {
-        document.getElementById("fullscreen").style.display = "flex"
-    } else if (oldFocus === "fullscreen") {
-        document.getElementById("fullscreen").style.display = "none"
+    }
+    if (newFocus === "events") {
+        document.getElementById("events").style.display = "flex"
     } else {
+        document.getElementById("events").style.display = "none"
+    }
+    if (newFocus === "fullscreen") {
+        document.getElementById("fullscreen").style.display = "flex"
+    } else {
+        document.getElementById("fullscreen").style.display = "none"
+    }
+    if (newFocus.startsWith("search")) {
         const selected = document.querySelector("#search-results .selected")
         if (!selected || newFocus.endsWith("box")) {
             selected?.classList.remove("selected")

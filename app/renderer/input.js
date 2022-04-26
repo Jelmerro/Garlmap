@@ -207,6 +207,22 @@ const toIdentifier = e => {
 }
 
 const mappings = {
+    "events": {
+        "<ArrowDown>": () => {
+            document.getElementById("events-list").scrollBy(0, 100)
+        },
+        "<ArrowUp>": () => {
+            document.getElementById("events-list").scrollBy(0, -100)
+        },
+        "<C-E>": () => switchFocus("search"),
+        "<Escape>": () => switchFocus("search"),
+        "j": () => {
+            document.getElementById("events-list").scrollBy(0, 100)
+        },
+        "k": () => {
+            document.getElementById("events-list").scrollBy(0, -100)
+        }
+    },
     "fullscreen": {
         "<F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 100),
         "<F10>": () => document.getElementById("fs-lyrics").scrollBy(0, -100),
@@ -244,6 +260,7 @@ const mappings = {
             const {volumeSet} = require("./player")
             volumeSet(100)
         },
+        "<C-E>": () => switchFocus("events"),
         "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
             document.body.getAttribute("focus-el") === "fullscreen"),
         "<C-c>": () => {
@@ -587,12 +604,16 @@ const handleMouse = e => {
     if (!isReady()) {
         return
     }
-    if (!queryMatch(e, ".song, #song-info, textarea, input, #fs-lyrics")) {
+    const ok = ".song, #song-info, textarea, input, #fs-lyrics, #events-list"
+    if (!queryMatch(e, ok)) {
         e.preventDefault()
     }
-    if (queryMatch(e, "#status-folder, #status-files, #open-folder")) {
+    if (queryMatch(e, "#status-folder, #open-folder")) {
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => openFolder(), 100)
+    }
+    if (queryMatch(e, "#status-notify")) {
+        switchFocus("events")
     }
     if (queryMatch(e, "#export-playlist")) {
         const {exportList} = require("./playlist")
@@ -633,6 +654,12 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#playlist-container")) {
         switchFocus("playlist")
+        return
+    }
+    if (document.body.getAttribute("focus-el") === "events") {
+        if (!queryMatch(e, "#events, #status-notify")) {
+            switchFocus("search")
+        }
     }
 }
 

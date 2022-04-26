@@ -81,6 +81,8 @@ You can save all your settings with the button or using Ctrl-s at any time,
 a list of custom settings currently in use is always displayed on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
 Importing and exporting can also be done using Ctrl-i and Ctrl-x respectively.
+You can view the list of events (such as lyrics fetching) with Ctrl-Shift-E,
+or by clicking the current event in the status bar at the bottom.
 
 Syntax for queueing and searching
 
@@ -175,6 +177,9 @@ just know that cache greatly speeds up parsing of large folders,
 and greatly reduces the amount of requests to Genius if you want auto lyrics.
 Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
 but after startup there shouldn't be too many moments that freeze the app.
+You can use local lyrics, by making a ".txt" that has the same path as a song,
+or do so in a "Lyrics" folder at the base music folder and then the same path.
+For example: "Lyrics/Weezer/Blue/Undone.txt" for "Weezer/Blue/Undone.mp3".
 
 Volume control
 
@@ -205,9 +210,7 @@ which will exit one stage of fullscreen per click, similar to pressing Escape.
     document.getElementById("fs-lyrics").textContent = ""
 }
 
-const notifications = []
 const displayNotificationStack = []
-const getNotificationList = () => notifications
 let notificationReady = true
 
 const notify = (msg, type = "err") => {
@@ -238,12 +241,35 @@ const displayNotificationTimer = () => {
     }
     document.getElementById("status-notify").style.color = currentNotify.color
     document.getElementById("status-notify").textContent = currentNotify.msg
-    notifications.push(currentNotify)
     setTimeout(() => {
         notificationReady = true
         displayNotificationTimer()
     }, 4000)
+    // Append entry to event list
+    const event = document.createElement("div")
+    event.classList.add("event")
+    const eventDate = document.createElement("span")
+    eventDate.classList.add("date")
+    eventDate.textContent = formatDate(currentNotify.time)
+    event.appendChild(eventDate)
+    const eventTitle = document.createElement("span")
+    eventTitle.classList.add("title")
+    eventTitle.style.color = currentNotify.color
+    eventTitle.textContent = currentNotify.msg
+    event.appendChild(eventTitle)
+    document.getElementById("events-list").appendChild(event)
 }
+
+const padZero = num => {
+    if (num < 10) {
+        return `0${num}`
+    }
+    return num
+}
+
+const formatDate = d => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${
+    padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${
+    padZero(d.getSeconds())}`
 
 const isDirectory = loc => {
     const {statSync} = require("fs")
@@ -343,7 +369,6 @@ module.exports = {
     deleteFile,
     dirName,
     formatTime,
-    getNotificationList,
     isDirectory,
     isFile,
     joinPath,

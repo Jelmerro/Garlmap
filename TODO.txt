@@ -3,5 +3,4 @@
     - have a search box to do a custom search on the genius api
     - try to strip featuring artists as an attempt to fetch lyrics better
     - after having an in-app editor and search, maybe add an option to skip genius
-- add a scrollable history list of the events/notifications
 - make scrollBy actions for inputs use the container height instead of fixed high values

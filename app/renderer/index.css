@@ -126,7 +126,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #status-line *:last-child {margin-right: 0;}
 #status-current {color: var(--secondary);}
 #status-folder {color: var(--primary);}
-#status-folder, #status-files, #status-notify {cursor: pointer;}
+#status-folder, #status-notify {cursor: pointer;}
 
 
 /* checkbox styling */
@@ -161,3 +161,10 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #fs-volume-slider:hover {border-color: var(--border);}
 #fs-song-cover {display: none;width: 44vw;margin: 3vw;object-fit: contain;flex: none;}
 #fs-lyrics {height: 60vh;white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;margin-top: 1em;}
+
+/* events viewer */
+#events {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;z-index: 2;}
+#events h1 {line-height: 1em;margin: .5em .2em;}
+#events-list {overflow: auto;user-select: text;}
+#events .event {margin: 1em .5em;}
+#events .date {margin-right: 1em;}

@@ -18,6 +18,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Fullscreen layouts (one to hide system frames/menus and one using a minimal layout)
 - Relative seeking using Ctrl-[ and Ctrl-] as well as longer seeking with Ctrl-{ and Ctrl-}
 - Option to dump/export the lyrics in a "Lyrics" folder relative to the base folder, which is read by Garlmap
+- Events panel that shows all previous events/notifications
 
 ### Changed
 
