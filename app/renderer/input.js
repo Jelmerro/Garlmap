@@ -215,7 +215,20 @@ const mappings = {
             document.getElementById("events-list").scrollBy(0, -100)
         },
         "<C-E>": () => switchFocus("search"),
+        "<End>": () => {
+            document.getElementById("events-list").scrollTo(
+                0, Number.MAX_SAFE_INTEGER)
+        },
         "<Escape>": () => switchFocus("search"),
+        "<Home>": () => {
+            document.getElementById("events-list").scrollTo(0, 0)
+        },
+        "<PageDown>": () => {
+            document.getElementById("events-list").scrollBy(0, 500)
+        },
+        "<PageUp>": () => {
+            document.getElementById("events-list").scrollBy(0, -500)
+        },
         "j": () => {
             document.getElementById("events-list").scrollBy(0, 100)
         },
