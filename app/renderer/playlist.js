@@ -364,6 +364,12 @@ const playFromPlaylist = async(switchNow = true) => {
             autoPlayOpts()
         }
     }
+    if (next && !current.stopAfter) {
+        document.getElementById("fs-up-next").textContent = `Up Next: ${
+            next.title} by ${next.artist}`
+    } else {
+        document.getElementById("fs-up-next").textContent = ""
+    }
 }
 
 const append = (item, upNext = false) => {

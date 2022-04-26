@@ -161,6 +161,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #fs-volume-slider:hover {border-color: var(--border);}
 #fs-song-cover {display: none;width: 44vw;margin: 3vw;object-fit: contain;flex: none;}
 #fs-lyrics {height: 60vh;white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;margin-top: 1em;}
+#fs-up-next {font-size: 2em;text-align: center;display: block;padding: 1em 0;position: absolute;color: var(--accent);white-space: nowrap;bottom: 0;overflow: hidden;text-overflow: ellipsis;width: 46vw;}
 
 /* events viewer */
 #events {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;z-index: 2;}
