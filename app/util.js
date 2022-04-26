@@ -205,8 +205,16 @@ To specifically toggle the window border removal, use Ctrl-F11 or right-click.
 To toggle only minimal layout, use Shift-F11 or middle-click on the covert art.
 You may also click with any mouse button on empty space in the minimal layout,
 which will exit one stage of fullscreen per click, similar to pressing Escape.
+While inside the fullscreen minimal layout, you also have more keybindings.
+First you can use the arrow keys for seeking in the track,
+or Ctrl-Left and Ctrl-Right to move between tracks themselves.
+Also, not only F9 and F10 scroll the lyrics, but PageDown and PageUp as well.
+You don't have to hold control for muting, changing or resetting the volume,
+just m, -, = and 0 will work fine (= is the unshifted key for +).
+Finally, you can use Space to toggle pause and q to exit fullscreen completely.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
+    document.getElementById("fs-lyrics").scrollTo(0, 0)
     document.getElementById("fs-lyrics").textContent = ""
 }
 

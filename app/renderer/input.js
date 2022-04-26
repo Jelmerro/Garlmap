@@ -221,15 +221,67 @@ const mappings = {
         },
         "k": () => {
             document.getElementById("events-list").scrollBy(0, -100)
-        }
+        },
+        "q": () => switchFocus("search")
     },
     "fullscreen": {
+        " ": () => {
+            const {pause} = require("./player")
+            pause()
+        },
+        "<ArrowDown>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(-60)
+        },
+        "<ArrowLeft>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(-6)
+        },
+        "<ArrowRight>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(6)
+        },
+        "<ArrowUp>": () => {
+            const {relativeSeek} = require("./player")
+            relativeSeek(60)
+        },
+        "<C-ArrowLeft>": () => {
+            const {decrement} = require("./playlist")
+            decrement()
+        },
+        "<C-ArrowRight>": () => {
+            const {increment} = require("./playlist")
+            increment()
+        },
         "<F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 100),
         "<F10>": () => document.getElementById("fs-lyrics").scrollBy(0, -100),
+        "<PageDown>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, 100)
+        },
+        "<PageUp>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, -100)
+        },
         "<S-F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 1000),
         "<S-F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -1000)
-        }
+        },
+        "=": () => {
+            const {volumeUp} = require("./player")
+            volumeUp()
+        },
+        "-": () => {
+            const {volumeDown} = require("./player")
+            volumeDown()
+        },
+        "0": () => {
+            const {volumeSet} = require("./player")
+            volumeSet(100)
+        },
+        "m": () => {
+            const {toggleMute} = require("./player")
+            toggleMute()
+        },
+        "q": () => setFullscreenLayout(false, false)
     },
     "global": {
         "<C-=>": () => {
