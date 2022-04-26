@@ -126,7 +126,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #status-line *:last-child {margin-right: 0;}
 #status-current {color: var(--secondary);}
 #status-folder {color: var(--primary);}
-#status-folder, #status-files {cursor: pointer;}
+#status-folder, #status-files, #status-notify {cursor: pointer;}
 
 
 /* checkbox styling */

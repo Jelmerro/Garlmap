@@ -60,7 +60,6 @@ const init = path => {
         if (info.name === "playlist-pos" && info.data === 1) {
             const {increment} = require("./playlist")
             await increment(false)
-            document.getElementById("status-scan").textContent = ""
             const {showLyrics} = require("./songs")
             const {currentAndNext, autoPlayOpts} = require("./playlist")
             const {current} = currentAndNext()

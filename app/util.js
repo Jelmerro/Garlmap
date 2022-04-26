@@ -205,6 +205,46 @@ which will exit one stage of fullscreen per click, similar to pressing Escape.
     document.getElementById("fs-lyrics").textContent = ""
 }
 
+const notifications = []
+const displayNotificationStack = []
+const getNotificationList = () => notifications
+let notificationReady = true
+
+const notify = (msg, type = "err") => {
+    let color = "var(--tertiary)"
+    if (type.startsWith("info")) {
+        color = "var(--primary)"
+    }
+    if (type.startsWith("warn")) {
+        color = "var(--secondary)"
+    }
+    displayNotificationStack.push({color, msg, "time": new Date(), type})
+    displayNotificationTimer()
+}
+
+const displayNotificationTimer = () => {
+    if (notificationReady) {
+        notificationReady = false
+    } else {
+        return
+    }
+    const currentNotify = displayNotificationStack.shift()
+    if (!currentNotify) {
+        document.getElementById("status-notify").style.color = ""
+        document.getElementById("status-notify").textContent
+            = "No current events"
+        notificationReady = true
+        return
+    }
+    document.getElementById("status-notify").style.color = currentNotify.color
+    document.getElementById("status-notify").textContent = currentNotify.msg
+    notifications.push(currentNotify)
+    setTimeout(() => {
+        notificationReady = true
+        displayNotificationTimer()
+    }, 4000)
+}
+
 const isDirectory = loc => {
     const {statSync} = require("fs")
     try {
@@ -287,14 +327,28 @@ const makeDir = loc => {
     return false
 }
 
+const deleteFile = loc => {
+    try {
+        const {unlinkSync} = require("fs")
+        unlinkSync(loc)
+        return true
+    } catch {
+        // Will return false as it was unsuccessful
+    }
+    return false
+}
+
 module.exports = {
     basePath,
+    deleteFile,
     dirName,
     formatTime,
+    getNotificationList,
     isDirectory,
     isFile,
     joinPath,
     makeDir,
+    notify,
     queryMatch,
     readFile,
     readJSON,

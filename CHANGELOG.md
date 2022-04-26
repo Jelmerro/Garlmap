@@ -25,6 +25,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Selecting different songs in the playlist with keys no longer requires a re-render
 - Refactor keyboard input handling, which is more stable and robust as well as more readable
 - Searchbox input keys now work similar to other focus elements, which makes inputs faster
+- Notifications/events below now appear in order and are readable for a fixed amount of time
 
 ### Fixed
 

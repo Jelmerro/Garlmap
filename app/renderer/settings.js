@@ -18,7 +18,7 @@
 "use strict"
 
 const {ipcRenderer} = require("electron")
-const {deleteFile, joinPath, writeJSON} = require("../util")
+const {deleteFile, notify, joinPath, writeJSON} = require("../util")
 
 let autoLyrics = false
 let startupConfig = {}
@@ -78,6 +78,7 @@ const saveSettings = () => {
     const configFile = joinPath(config.configDir, "settings.json")
     delete config.configDir
     delete config.version
+    delete config.dumpLyrics
     const folder = document.getElementById("status-folder").textContent.trim()
     if (folder !== "No folder selected") {
         config.folder = folder
@@ -120,10 +121,14 @@ const saveSettings = () => {
     if (!config.mpv || config.mpv === defaultMpv) {
         delete config.mpv
     }
+    let success = false
     if (Object.keys(config).length === 0) {
-        deleteFile(configFile)
+        success = deleteFile(configFile)
     } else {
-        writeJSON(configFile, config, 4)
+        success = writeJSON(configFile, config, 4)
+    }
+    if (!success) {
+        notify("Failed to save current settings")
     }
 }
 

@@ -33,7 +33,8 @@ const {
     basePath,
     readFile,
     writeFile,
-    makeDir
+    makeDir,
+    notify
 } = require("../util")
 
 let configDir = null
@@ -112,8 +113,6 @@ const scanner = async(folder, dumpOnly = false) => {
     failures = []
     document.getElementById("status-folder").textContent = folder
     document.getElementById("status-folder").style.color = "var(--primary)"
-    document.getElementById("status-scan").textContent = ""
-    document.getElementById("status-scan").style.color = ""
     document.getElementById("status-current").textContent = `Scanning`
     document.getElementById("status-current").style.color = "var(--primary)"
     const escapedFolder = folder.replace(/\[/g, "\\[")
@@ -143,15 +142,11 @@ const scanner = async(folder, dumpOnly = false) => {
         document.getElementById("status-current").textContent = `Ready`
         document.getElementById("status-current").style.color
             = "var(--secondary)"
+        document.getElementById("status-scan").textContent = ""
         document.getElementById("status-files").textContent
             = `${songs.length} songs`
         if (failures.length) {
-            document.getElementById("status-scan").textContent
-                = `${failures.length} failures`
-            document.getElementById("status-scan").style.color
-                = "var(--tertiary)"
-        } else {
-            document.getElementById("status-scan").textContent = ""
+            notify(`${failures.length} failures`)
         }
         setTimeout(() => updateCache(), 1)
     })
@@ -333,9 +328,8 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     }
     // Fetch it from Genius
     try {
-        document.getElementById("status-scan").textContent
-            = `Connecting to Genius to search for the right song lyrics`
-        document.getElementById("status-scan").style.color = "var(--primary)"
+        notify(`Connecting to Genius to search for the song lyrics of: ${
+            req.title} ${req.artist}`, "info")
         const results = await genius.songs.search(`${req.title} ${req.artist}`)
         results.forEach(s => {
             s.score = compareTwoStrings(low(s.title), low(req.title))
@@ -357,7 +351,6 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
             }
-            document.getElementById("status-scan").textContent = ""
             songs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
             cachedSongs.find(s => s.id === req.id
@@ -365,25 +358,11 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             setTimeout(() => updateCache(), 1)
             return
         }
-        console.warn("No matched song found, needs manual search", results)
-        if (currentAndNext().current?.id === req.id) {
-            document.getElementById("status-scan").textContent
-                = "Failed to find matching song lyrics in results of Genius"
-            document.getElementById("status-scan").style.color
-                = "var(--tertiary)"
-        } else {
-            document.getElementById("status-scan").textContent = ""
-        }
+        notify(`Failed to find matching song lyrics in Genius results for: ${
+            req.title} ${req.artist}`)
     } catch (e) {
-        console.warn(e)
-        if (currentAndNext().current?.id === req.id) {
-            document.getElementById("status-scan").textContent
-                = "Failed to fetch lyrics from Genius"
-            document.getElementById("status-scan").style.color
-                = "var(--tertiary)"
-        } else {
-            document.getElementById("status-scan").textContent = ""
-        }
+        notify(`Failed to fetch lyrics from Genius for: ${
+            req.title} ${req.artist}`)
     }
     // Retry without text between brackets in song title and artist
     if (originalReq) {
@@ -398,8 +377,6 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         } else if (reqWithoutBrackets.title !== req.title) {
             fetchLyrics(reqWithoutBrackets, force, req)
         }
-    } else {
-        document.getElementById("status-scan").textContent = ""
     }
 }
 

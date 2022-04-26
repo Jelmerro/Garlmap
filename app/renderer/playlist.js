@@ -28,7 +28,13 @@ let shouldAutoRemove = false
 
 const {ipcRenderer} = require("electron")
 const {
-    formatTime, queryMatch, writeJSON, readJSON, resetWelcome, isDirectory
+    formatTime,
+    queryMatch,
+    writeJSON,
+    readJSON,
+    resetWelcome,
+    isDirectory,
+    notify
 } = require("../util")
 
 const generatePlaylistView = () => {
@@ -347,7 +353,6 @@ const playFromPlaylist = async(switchNow = true) => {
     if (current) {
         if (switchNow) {
             await load(current.path)
-            document.getElementById("status-scan").textContent = ""
             const {showLyrics} = require("./songs")
             showLyrics(current.id)
         }
@@ -457,26 +462,18 @@ const deleteSelected = () => {
 }
 
 const setFallbackRule = rule => {
-    const scanEl = document.getElementById("status-scan")
     if (!` ${rule} `.includes(" order:shuffle ")
     && !` ${rule} `.includes(" order:albumshuffle ")
     && !` ${rule} `.includes(" order=shuffle ")
     && !` ${rule} `.includes(" order=albumshuffle ")) {
-        scanEl.textContent = "Fallback rule "
-            + "must have a shuffling order so it can continue forever"
-        scanEl.style.color = "var(--tertiary)"
+        notify("Fallback rule must have a shuffling order to play forever")
         return
     }
     const {query} = require("./songs")
     const {length} = query(rule)
     if (length < 2) {
-        scanEl.textContent
-            = "Fallback rule must match at least 2 tracks to work properly"
-        scanEl.style.color = "var(--tertiary)"
+        notify("Fallback rule must match at least 2 tracks to work properly")
         return
-    }
-    if (scanEl.textContent.startsWith("Fallback")) {
-        scanEl.textContent = ""
     }
     document.getElementById("fallback-rule").textContent = rule
 }
@@ -539,9 +536,7 @@ const autoPlayOpts = (singleOpt = false) => {
 const exportList = () => {
     const folder = document.getElementById("status-folder").textContent.trim()
     if (folder === "No folder selected") {
-        document.getElementById("status-scan").textContent
-            = "No folder open yet, nothing to export"
-        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        notify("No folder open yet, nothing to export")
         return
     }
     let file = ipcRenderer.sendSync("dialog-save", {
@@ -563,13 +558,8 @@ const exportList = () => {
         return {"songs": r.songs}
     })
     const success = writeJSON(file, {folder, list}, 4)
-    if (success) {
-        document.getElementById("status-scan").textContent = ""
-        document.getElementById("status-scan").style.color = "var(--primary)"
-    } else {
-        document.getElementById("status-scan").textContent
-            = "Failed to save playlist, write error"
-        document.getElementById("status-scan").style.color = "var(--tertiary)"
+    if (!success) {
+        notify("Failed to save playlist, write error")
     }
 }
 
@@ -586,15 +576,11 @@ const importList = async() => {
     }
     const imported = readJSON(file)
     if (!imported?.list || !imported?.folder) {
-        document.getElementById("status-scan").textContent
-            = "Not a valid Garlmap playlist file"
-        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        notify("Not a valid Garlmap playlist file")
         return
     }
     if (!isDirectory(imported.folder)) {
-        document.getElementById("status-scan").textContent
-            = "Playlist base folder could not be found"
-        document.getElementById("status-scan").style.color = "var(--tertiary)"
+        notify("Playlist base folder could not be found")
         return
     }
     const {scanner} = require("./songs")
