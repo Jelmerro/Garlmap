@@ -104,7 +104,7 @@ const processStartupArgs = () => {
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
         "customTheme": readFile(joinPath(configDir, "theme.css")),
-        "dumpLyrics": false,
+        "dumpLyrics": undefined,
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
         "mpv": process.env.GARLMAP_MPV?.trim()
