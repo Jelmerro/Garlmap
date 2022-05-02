@@ -8,6 +8,17 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Changed
+
+- Fullscreen layout styling related to the "up next" notice and general margins
+
+### Versions
+
+- Electron 18.1.0 (unchanged)
+- Chromium 100.0.4896.127 (unchanged)
+
 ## [0.4.0](https://github.com/Jelmerro/Garlmap/compare/0.3.0...0.4.0) - 2022-04-27
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/0.3.0...0.4.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/0.4.0)

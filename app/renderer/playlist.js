@@ -367,8 +367,10 @@ const playFromPlaylist = async(switchNow = true) => {
     if (next && !current.stopAfter) {
         document.getElementById("fs-up-next").textContent = `Up Next: ${
             next.title} by ${next.artist}`
+        document.getElementById("fullscreen").setAttribute("up-next", "yes")
     } else {
         document.getElementById("fs-up-next").textContent = ""
+        document.getElementById("fullscreen").removeAttribute("up-next")
     }
 }
 
