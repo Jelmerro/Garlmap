@@ -180,8 +180,9 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #lyrics-container {display: flex;height: 100%;}
 #lyrics-tools {flex: 1;margin: 1em;display: flex;flex-direction: column;}
 #lyrics-results {flex: 1;overflow-y: auto;margin-top: 1em;}
-#lyrics-results, #lyrics-results div {padding: .5em;border: .1em solid var(--border);}
-#lyrics-results .selected {color: var(--black);background: var(--primary);}
+#lyrics-results div {padding: .5em;border: .1em solid var(--border);}
+body[focus-el="lyrics"] #lyrics-results .selected {color: var(--black);background: var(--primary);}
+body[focus-el="lyricseditor"] #lyrics-results .selected {border-color: var(--primary);}
 #lyrics-inputs {display: flex;}
 #lyrics-inputs .button {flex: 1;cursor: pointer;padding: .5em;border: .1em solid var(--primary);}
 #lyrics-query {margin: 0 1em;}

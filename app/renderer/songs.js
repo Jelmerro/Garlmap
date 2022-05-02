@@ -292,6 +292,35 @@ const coverArt = async p => {
 
 let lyricsSearchCache = []
 
+const decrementSelectedLyrics = () => {
+    const selected = document.querySelector("#lyrics-results .selected")
+    const {switchFocus} = require("./dom")
+    if (!selected) {
+        switchFocus("lyricssearch")
+    }
+    if (selected.previousSibling) {
+        selected.classList.remove("selected")
+        selected.previousSibling.classList.add("selected")
+    } else {
+        switchFocus("lyricssearch")
+    }
+}
+
+const incrementSelectedLyrics = () => {
+    const selected = document.querySelector("#lyrics-results .selected")
+    if (selected) {
+        if (selected.nextSibling) {
+            selected.classList.remove("selected")
+            selected.nextSibling.classList.add("selected")
+        }
+    } else {
+        document.querySelector("#lyrics-results > *")
+            ?.classList.add("selected")
+    }
+    const {switchFocus} = require("./dom")
+    switchFocus("lyrics")
+}
+
 const searchLyrics = async searchString => {
     if (!searchString.trim()) {
         return
@@ -351,6 +380,7 @@ const selectLyricsFromResults = async() => {
                 cacheEntry.title} ${cacheEntry.artist.name}`)
             editor.value = previousLyrics
         }
+        editor.scrollTo(0, 0)
     }
 }
 
@@ -487,7 +517,9 @@ const songById = id => JSON.parse(JSON.stringify(
 
 module.exports = {
     coverArt,
+    decrementSelectedLyrics,
     fetchLyrics,
+    incrementSelectedLyrics,
     query,
     saveLyrics,
     scanner,

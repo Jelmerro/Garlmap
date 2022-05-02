@@ -435,8 +435,24 @@ const mappings = {
         "<Tab>": () => switchFocus("searchbox")
     },
     "lyrics": {
+        "<ArrowDown>": () => {
+            const {incrementSelectedLyrics} = require("./songs")
+            incrementSelectedLyrics()
+        },
+        "<ArrowUp>": () => {
+            const {decrementSelectedLyrics} = require("./songs")
+            decrementSelectedLyrics()
+        },
         "<C-F4>": () => switchFocus("search"),
         "<C-Tab>": () => switchFocus("lyricseditor"),
+        "<C-n>": () => {
+            const {incrementSelectedLyrics} = require("./songs")
+            incrementSelectedLyrics()
+        },
+        "<C-p>": () => {
+            const {decrementSelectedLyrics} = require("./songs")
+            decrementSelectedLyrics()
+        },
         "<C-s>": () => {
             const {saveLyrics} = require("./songs")
             saveLyrics()
@@ -463,8 +479,18 @@ const mappings = {
         "<Tab>": () => switchFocus("lyricssearch")
     },
     "lyricssearch": {
+        "<ArrowDown>": () => {
+            document.querySelector("#lyrics-results > *")
+                ?.classList.add("selected")
+            switchFocus("lyrics")
+        },
         "<C-F4>": () => switchFocus("search"),
         "<C-Tab>": () => switchFocus("lyricseditor"),
+        "<C-n>": () => {
+            document.querySelector("#lyrics-results > *")
+                ?.classList.add("selected")
+            switchFocus("lyrics")
+        },
         "<C-s>": () => {
             const {saveLyrics} = require("./songs")
             saveLyrics()

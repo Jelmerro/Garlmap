@@ -215,6 +215,7 @@ Finally, you can use Space to toggle pause and q to exit fullscreen completely.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
     document.getElementById("fs-lyrics").scrollTo(0, 0)
+    document.getElementById("lyrics-edit-field").scrollTo(0, 0)
     document.getElementById("fs-lyrics").textContent = ""
 }
 
