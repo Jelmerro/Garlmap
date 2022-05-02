@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Added
 
 - Lyrics editor dialog with manual Genius search and textarea to edit the text
+- Buttons for switching between help and various lyrics options and the editor
 
 ### Changed
 

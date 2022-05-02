@@ -111,10 +111,11 @@ const scanner = async(folder, dumpOnly = false) => {
     processedFiles = 0
     songs = []
     failures = []
+    document.getElementById("status-current").textContent = `Scanning`
+    document.getElementById("status-current").style.display = "initial"
     document.getElementById("status-folder").textContent = folder
     document.getElementById("status-folder").style.color = "var(--primary)"
-    document.getElementById("status-current").textContent = `Scanning`
-    document.getElementById("status-current").style.color = "var(--primary)"
+    document.getElementById("status-files").textContent = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     const {stopPlayback} = require("./player")
     await stopPlayback()
@@ -140,11 +141,10 @@ const scanner = async(folder, dumpOnly = false) => {
             return
         }
         document.getElementById("status-current").textContent = `Ready`
-        document.getElementById("status-current").style.color
-            = "var(--secondary)"
-        document.getElementById("status-scan").textContent = ""
+        document.getElementById("status-current").style.display = ""
         document.getElementById("status-files").textContent
             = `${songs.length} songs`
+        document.getElementById("status-scan").textContent = ""
         if (failures.length) {
             notify(`${failures.length} failures`)
         }
@@ -493,6 +493,18 @@ const showLyrics = async p => {
     }
 }
 
+const switchToLyrics = async(forceFetch = false) => {
+    const {isAlive} = require("./player")
+    if (isAlive()) {
+        const {currentAndNext} = require("./playlist")
+        const {current} = currentAndNext()
+        if (current) {
+            await fetchLyrics(current, forceFetch)
+            document.getElementById("song-info").scrollTo(0, 0)
+        }
+    }
+}
+
 const setCachePolicy = (dir, policy, removeMissing) => {
     configDir = dir
     cache = policy
@@ -527,5 +539,6 @@ module.exports = {
     selectLyricsFromResults,
     setCachePolicy,
     showLyrics,
-    songById
+    songById,
+    switchToLyrics
 }

@@ -121,12 +121,16 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 
 /* status line */
 #status-line {overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
-#status-line * {margin: 0 .5em;}
+#status-line > * {margin: auto .5em;}
+#status-line > *:empty {margin: 0;}
 #status-line *:first-child {margin-left: 0;}
 #status-line *:last-child {margin-right: 0;}
-#status-current {color: var(--secondary);}
+#status-current {color: var(--secondary);display: none;}
 #status-folder {color: var(--primary);}
 #status-folder, #status-notify {cursor: pointer;}
+#status-notify {flex: 1;overflow: hidden;text-overflow: ellipsis;}
+#status-line .button {display: flex;cursor: pointer;border: .1em solid var(--primary);}
+#status-line .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 
 
 /* checkbox styling */

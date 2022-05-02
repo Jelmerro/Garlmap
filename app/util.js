@@ -60,6 +60,7 @@ You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
 or you can bring back this help at any time with F1.
 With Shift-F4 you can refetch the lyrics in case the cached ones are outdated.
+For more lyrics options, see the dedicated paragraph or the buttons below it.
 You can toggle automatic fetching with "t" in the playlist or with the checkbox.
 F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
@@ -211,7 +212,31 @@ or Ctrl-Left and Ctrl-Right to move between tracks themselves.
 Also, not only F9 and F10 scroll the lyrics, but PageDown and PageUp as well.
 You don't have to hold control for muting, changing or resetting the volume,
 just m, -, = and 0 will work fine (= is the unshifted key for +).
+You can also use s to toggle stopping after the current track.
 Finally, you can use Space to toggle pause and q to exit fullscreen completely.
+
+Lyrics editor
+
+Besides automatically showing the lyrics using the Autolyrics option,
+you can also edit them yourself and save them to the cache.
+To open the editor, either press Ctrl-F4 or use the buttons right below.
+Once in the editor, you can focus mainly on two sections, the search and editor.
+To toggle between the sections, use Ctrl-Tab, or just Tab to jump to searching.
+Like the event dialog, you can close it by clicking outside or with Escape,
+as well as by pressing the same shortcut you used to open it: Ctrl-F4.
+In the search section, you can type a query, and search on Genius for songs.
+You can do so with the search button or Enter, it will NOT search while typing.
+The last query is always remembered for ease of use even after typing again.
+The other section is the lyrics editor itself, where you can edit the lyrics.
+Your changes are not saved automatically, and you can safely close the dialog,
+if you reopen it without changing the song, your changes are still there.
+If you do not save your changes before a song change, they will be removed.
+You can save with Ctrl-s, the save button or with Ctrl-Enter in the text editor.
+The search results can also be used to fill the lyrics editor with it's text.
+After a search, highlight the right song with the arrow keys or the mouse,
+then press Enter or double-click on the song to use it's lyrics in the editor.
+You can then edit them further, or save them with the button or the keys,
+you will need to save your changes manually for them to be stored to the cache.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
     document.getElementById("fs-lyrics").scrollTo(0, 0)

@@ -378,17 +378,9 @@ const mappings = {
         "<F1>": () => resetWelcome(),
         "<F2>": () => switchFocus("search"),
         "<F3>": () => switchFocus("playlist"),
-        "<F4>": async() => {
-            const {isAlive} = require("./player")
-            if (isAlive()) {
-                const {currentAndNext} = require("./playlist")
-                const {fetchLyrics} = require("./songs")
-                const {current} = currentAndNext()
-                if (current) {
-                    await fetchLyrics(current)
-                    document.getElementById("song-info").scrollTo(0, 0)
-                }
-            }
+        "<F4>": () => {
+            const {switchToLyrics} = require("./songs")
+            switchToLyrics()
         },
         "<F5>": () => {
             const {pause} = require("./player")
@@ -414,17 +406,9 @@ const mappings = {
             setFullscreenLayout(!isFullscreened, !isFullscreened)
         },
         "<F12>": () => ipcRenderer.invoke("toggle-devtools"),
-        "<S-F4>": async() => {
-            const {isAlive} = require("./player")
-            if (isAlive()) {
-                const {currentAndNext} = require("./playlist")
-                const {fetchLyrics} = require("./songs")
-                const {current} = currentAndNext()
-                if (current) {
-                    await fetchLyrics(current, true)
-                    document.getElementById("song-info").scrollTo(0, 0)
-                }
-            }
+        "<S-F4>": () => {
+            const {switchToLyrics} = require("./songs")
+            switchToLyrics(true)
         },
         "<S-F9>": () => document.getElementById("song-info").scrollBy(0, 1000),
         "<S-F10>": () => {
@@ -765,12 +749,8 @@ const handleMouse = e => {
     if (queryMatch(e, "#status-notify")) {
         switchFocus("events")
     }
-    if (queryMatch(e, "#song-info")) {
-        if (e.button === 2) {
-            switchFocus("lyricseditor")
-        } else if (!window.getSelection().toString()) {
-            switchFocus(document.body.getAttribute("focus-el"))
-        }
+    if (queryMatch(e, "#song-info") && !window.getSelection().toString()) {
+        switchFocus(document.body.getAttribute("focus-el"))
     }
     if (queryMatch(e, "#export-playlist")) {
         const {exportList} = require("./playlist")
@@ -786,19 +766,37 @@ const handleMouse = e => {
         const {saveSettings} = require("./settings")
         saveSettings()
     }
-    if (queryMatch(e, "#prev") || queryMatch(e, "#fs-prev")) {
+    if (queryMatch(e, "#prev, #fs-prev")) {
         const {decrement} = require("./playlist")
         decrement()
         return
     }
-    if (queryMatch(e, "#pause") || queryMatch(e, "#fs-pause")) {
+    if (queryMatch(e, "#pause, #fs-pause")) {
         const {pause} = require("./player")
         pause()
         return
     }
-    if (queryMatch(e, "#next") || queryMatch(e, "#fs-next")) {
+    if (queryMatch(e, "#next, #fs-next")) {
         const {increment} = require("./playlist")
         increment()
+        return
+    }
+    if (queryMatch(e, "#show-help")) {
+        resetWelcome()
+        return
+    }
+    if (queryMatch(e, "#show-lyrics")) {
+        const {switchToLyrics} = require("./songs")
+        switchToLyrics()
+        return
+    }
+    if (queryMatch(e, "#fetch-lyrics")) {
+        const {switchToLyrics} = require("./songs")
+        switchToLyrics(true)
+        return
+    }
+    if (queryMatch(e, "#edit-lyrics")) {
+        switchFocus("lyricseditor")
         return
     }
     if (queryMatch(e, "#rule-search")) {
@@ -844,7 +842,7 @@ const handleMouse = e => {
         }
     }
     if (document.body.getAttribute("focus-el").startsWith("lyrics")) {
-        if (!queryMatch(e, "#lyrics-editor")) {
+        if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
             if (!queryMatch(e, "#song-info") || e.button !== 2) {
                 switchFocus("search")
             }
