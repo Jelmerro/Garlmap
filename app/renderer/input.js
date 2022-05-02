@@ -98,6 +98,14 @@ const init = () => {
             const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         })
+    document.getElementById("toggle-genius").parentNode
+        .addEventListener("click", () => {
+            if (!isReady()) {
+                return
+            }
+            const {toggleGenius} = require("./songs")
+            toggleGenius()
+        })
     document.getElementById("rule-search").addEventListener("input", () => {
         if (!isReady()) {
             return
@@ -742,25 +750,40 @@ const handleMouse = e => {
     if (!queryMatch(e, ok)) {
         e.preventDefault()
     }
+    if (document.body.getAttribute("focus-el") === "events") {
+        if (!queryMatch(e, "#events, #status-notify")) {
+            switchFocus("search")
+        }
+    }
+    if (document.body.getAttribute("focus-el").startsWith("lyrics")) {
+        if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
+            switchFocus("search")
+        }
+    }
     if (queryMatch(e, "#status-folder, #open-folder")) {
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => openFolder(), 100)
+        return
     }
     if (queryMatch(e, "#status-notify")) {
         switchFocus("events")
+        return
     }
     if (queryMatch(e, "#song-info") && !window.getSelection().toString()) {
         switchFocus(document.body.getAttribute("focus-el"))
+        return
     }
     if (queryMatch(e, "#export-playlist")) {
         const {exportList} = require("./playlist")
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => exportList(), 100)
+        return
     }
     if (queryMatch(e, "#import-playlist")) {
         const {importList} = require("./playlist")
         // #bug Electron will freeze the mouse if this is not called on a delay
         setTimeout(() => importList(), 100)
+        return
     }
     if (queryMatch(e, "#save-settings")) {
         const {saveSettings} = require("./settings")
@@ -814,6 +837,7 @@ const handleMouse = e => {
     if (queryMatch(e, "#lyrics-query")) {
         const {searchLyrics} = require("./songs")
         searchLyrics(document.getElementById("lyrics-search").value)
+        return
     }
     if (queryMatch(e, "#lyrics-save")) {
         const {saveLyrics} = require("./songs")
@@ -834,19 +858,6 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#lyrics-editor")) {
         switchFocus("lyrics")
-        return
-    }
-    if (document.body.getAttribute("focus-el") === "events") {
-        if (!queryMatch(e, "#events, #status-notify")) {
-            switchFocus("search")
-        }
-    }
-    if (document.body.getAttribute("focus-el").startsWith("lyrics")) {
-        if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
-            if (!queryMatch(e, "#song-info") || e.button !== 2) {
-                switchFocus("search")
-            }
-        }
     }
 }
 

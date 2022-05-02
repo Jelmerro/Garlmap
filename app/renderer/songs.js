@@ -43,6 +43,7 @@ let cachedSongs = []
 let songs = []
 let failures = []
 let processedFiles = 0
+let shouldUseGenius = true
 const low = s => s.toLowerCase()
 
 const processFile = async(folder, file, total, lyrics = null) => {
@@ -425,6 +426,9 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         }
     }
     // Fetch it from Genius
+    if (!shouldUseGenius) {
+        return
+    }
     try {
         notify(`Connecting to Genius to search for the song lyrics of: ${
             req.title} ${req.artist}`, "info")
@@ -527,6 +531,11 @@ const setCachePolicy = (dir, policy, removeMissing) => {
 const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
+const toggleGenius = () => {
+    shouldUseGenius = !shouldUseGenius
+    document.getElementById("toggle-genius").checked = shouldUseGenius
+}
+
 module.exports = {
     coverArt,
     decrementSelectedLyrics,
@@ -536,6 +545,7 @@ module.exports = {
     saveLyrics,
     scanner,
     searchLyrics,
+    toggleGenius,
     selectLyricsFromResults,
     setCachePolicy,
     showLyrics,

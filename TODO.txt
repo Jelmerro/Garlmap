@@ -1,3 +1,2 @@
-- lyrics editor help section
+- add startup/config option for disabling/toggling genius
 - try to strip featuring artists as an attempt to fetch lyrics better
-- after having an in-app editor and search, maybe add an option to skip genius

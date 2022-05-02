@@ -38,6 +38,7 @@ body::backdrop {background: var(--bg);}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
 .button:hover {background: var(--border);}
+::selection {color: var(--primary);background: var(--black);}
 
 
 /* general column alignment */
@@ -117,6 +118,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 /* info column with help & lyrics */
 #song-cover {display: none;width: 100%;height: 33vh;object-fit: contain;flex: none;}
 #song-info {white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;}
+#song-info::selection {background: var(--bg);}
 
 
 /* status line */
@@ -131,6 +133,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #status-notify {flex: 1;overflow: hidden;text-overflow: ellipsis;}
 #status-line .button {display: flex;cursor: pointer;border: .1em solid var(--primary);}
 #status-line .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
+#status-line input:not(:checked) ~ .checkbox-mark {background: var(--accent);}
 
 
 /* checkbox styling */
