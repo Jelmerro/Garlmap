@@ -173,3 +173,20 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #events-list {overflow: auto;user-select: text;}
 #events .event {margin: 1em .5em;}
 #events .date {margin-right: 1em;}
+
+/* lyrics editor */
+#lyrics-editor {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;}
+#lyrics-editor h1 {line-height: 1em;margin: .5em .2em;}
+#lyrics-container {display: flex;height: 100%;}
+#lyrics-tools {flex: 1;margin: 1em;display: flex;flex-direction: column;}
+#lyrics-results {flex: 1;overflow-y: auto;margin-top: 1em;}
+#lyrics-results, #lyrics-results div {padding: .5em;border: .1em solid var(--border);}
+#lyrics-results .selected {color: var(--black);background: var(--primary);}
+#lyrics-inputs {display: flex;}
+#lyrics-inputs .button {flex: 1;cursor: pointer;padding: .5em;border: .1em solid var(--primary);}
+#lyrics-query {margin: 0 1em;}
+#lyrics-search {flex: 2;min-width: 0; width: 100%;color: var(--fg);background: var(--accent);border: .1em solid var(--fg);box-sizing: border-box;outline: none;font: inherit;}
+#lyrics-edit-field {flex: 1;margin: 1em 1em 1em 0;min-width: 0;width: 100%;color: var(--fg);background: var(--accent);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: none;}
+#lyrics-edit-field:focus, #lyrics-search:focus {color: var(--fg);background: var(--bg);font-weight:bold;border-color: var(--primary);}
+#lyrics-edit-field:hover, #lyrics-search:hover {background: var(--bg);}
+#lyrics-edit-field:focus:hover, #lyrics-search:focus:hover {background: var(--accent);}

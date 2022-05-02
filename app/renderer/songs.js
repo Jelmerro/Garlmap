@@ -148,6 +148,8 @@ const scanner = async(folder, dumpOnly = false) => {
         if (failures.length) {
             notify(`${failures.length} failures`)
         }
+        const {currentAndNext} = require("./playlist")
+        currentAndNext()
         setTimeout(() => updateCache(), 1)
     })
 }
@@ -288,6 +290,70 @@ const coverArt = async p => {
     }
 }
 
+let lyricsSearchCache = []
+
+const searchLyrics = async searchString => {
+    if (!searchString.trim()) {
+        return
+    }
+    const resultsContainer = document.getElementById("lyrics-results")
+    resultsContainer.textContent = "Searching Genius..."
+    const results = await genius.songs.search(searchString.trim()).catch(() => {
+        notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
+    })
+    lyricsSearchCache = results || []
+    resultsContainer.textContent = ""
+    results?.forEach(result => {
+        const el = document.createElement("div")
+        el.textContent = `${result.title} - ${result.artist.name}`
+        resultsContainer.appendChild(el)
+        el.addEventListener("click", () => {
+            resultsContainer.querySelector(".selected")
+                ?.classList.remove("selected")
+            el.classList.add("selected")
+            const {switchFocus} = require("./dom")
+            switchFocus("lyrics")
+        })
+        el.addEventListener("dblclick", () => selectLyricsFromResults())
+    })
+}
+
+const saveLyrics = () => {
+    const {currentAndNext} = require("./playlist")
+    const {current} = currentAndNext()
+    if (!current) {
+        return
+    }
+    const editor = document.getElementById("lyrics-edit-field")
+    songs.find(s => s.id === current.id
+        || s.path === current.path).lyrics = editor.value
+    cachedSongs.find(s => s.id === current.id
+        || s.path === current.path).lyrics = editor.value
+    setTimeout(() => {
+        updateCache()
+        showLyrics(current.id)
+    }, 1)
+}
+
+const selectLyricsFromResults = async() => {
+    const resultsContainer = document.getElementById("lyrics-results")
+    const selected = resultsContainer.querySelector(".selected")
+    const index = [...resultsContainer.children].indexOf(selected)
+    if (lyricsSearchCache[index]) {
+        const editor = document.getElementById("lyrics-edit-field")
+        const previousLyrics = editor.value
+        editor.value = "Fetching lyrics..."
+        const cacheEntry = lyricsSearchCache[index]
+        try {
+            editor.value = await cacheEntry.lyrics()
+        } catch {
+            notify(`Failed to fetch lyrics from Genius for: ${
+                cacheEntry.title} ${cacheEntry.artist.name}`)
+            editor.value = previousLyrics
+        }
+    }
+}
+
 const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache
     const cachedLyrics = songs.find(s => s.id === req.id
@@ -295,6 +361,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (cachedLyrics && !force) {
         document.getElementById("song-info").textContent = cachedLyrics
         document.getElementById("fs-lyrics").textContent = cachedLyrics
+        document.getElementById("lyrics-edit-field").textContent = cachedLyrics
         return
     }
     if (!req.artist || !req.title) {
@@ -317,6 +384,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
+                document.getElementById("lyrics-edit-field").value = lyrics
             }
             songs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
@@ -350,6 +418,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
+                document.getElementById("lyrics-edit-field").value = lyrics
             }
             songs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
@@ -387,7 +456,9 @@ const showLyrics = async p => {
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
         document.getElementById("fs-lyrics").textContent = song.lyrics
+        document.getElementById("lyrics-edit-field").value = song.lyrics
     } else if (shouldAutoFetchLyrics()) {
+        document.getElementById("lyrics-edit-field").value = ""
         await fetchLyrics(song)
     }
 }
@@ -418,7 +489,10 @@ module.exports = {
     coverArt,
     fetchLyrics,
     query,
+    saveLyrics,
     scanner,
+    searchLyrics,
+    selectLyricsFromResults,
     setCachePolicy,
     showLyrics,
     songById

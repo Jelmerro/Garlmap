@@ -25,14 +25,26 @@ const init = () => {
     window.addEventListener("keydown", e => handleKeyboard(e))
     window.addEventListener("keypress", e => {
         const id = toIdentifier(e)
-        if (["Tab", "Enter"].includes(e.key) || id.length > 1) {
-            e.preventDefault()
+        if (e.key === "Tab" || id.length > 1) {
+            if (e.key === "Enter") {
+                if (!queryMatch(e, "#lyrics-edit-field")) {
+                    e.preventDefault()
+                }
+            } else {
+                e.preventDefault()
+            }
         }
     })
     window.addEventListener("keyup", e => {
         const id = toIdentifier(e)
-        if (["Tab", "Enter"].includes(e.key) || id.length > 1) {
-            e.preventDefault()
+        if (e.key === "Tab" || id.length > 1) {
+            if (e.key === "Enter") {
+                if (!queryMatch(e, "#lyrics-edit-field")) {
+                    e.preventDefault()
+                }
+            } else {
+                e.preventDefault()
+            }
         }
     })
     window.addEventListener("click", e => {
@@ -294,7 +306,11 @@ const mappings = {
             const {toggleMute} = require("./player")
             toggleMute()
         },
-        "q": () => setFullscreenLayout(false, false)
+        "q": () => setFullscreenLayout(false, false),
+        "s": () => {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack()
+        }
     },
     "global": {
         "<C-=>": () => {
@@ -326,6 +342,7 @@ const mappings = {
             volumeSet(100)
         },
         "<C-E>": () => switchFocus("events"),
+        "<C-F4>": () => switchFocus("lyricseditor"),
         "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
             document.body.getAttribute("focus-el") === "fullscreen"),
         "<C-c>": () => {
@@ -416,6 +433,48 @@ const mappings = {
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
             document.body.getAttribute("focus-el") !== "fullscreen"),
         "<Tab>": () => switchFocus("searchbox")
+    },
+    "lyrics": {
+        "<C-F4>": () => switchFocus("search"),
+        "<C-Tab>": () => switchFocus("lyricseditor"),
+        "<C-s>": () => {
+            const {saveLyrics} = require("./songs")
+            saveLyrics()
+        },
+        "<Enter>": () => {
+            const {selectLyricsFromResults} = require("./songs")
+            selectLyricsFromResults()
+        },
+        "<Escape>": () => switchFocus("search"),
+        "<Tab>": () => switchFocus("lyricssearch")
+    },
+    "lyricseditor": {
+        "<C-Enter>": () => {
+            const {saveLyrics} = require("./songs")
+            saveLyrics()
+        },
+        "<C-F4>": () => switchFocus("search"),
+        "<C-Tab>": () => switchFocus("lyrics"),
+        "<C-s>": () => {
+            const {saveLyrics} = require("./songs")
+            saveLyrics()
+        },
+        "<Escape>": () => switchFocus("search"),
+        "<Tab>": () => switchFocus("lyricssearch")
+    },
+    "lyricssearch": {
+        "<C-F4>": () => switchFocus("search"),
+        "<C-Tab>": () => switchFocus("lyricseditor"),
+        "<C-s>": () => {
+            const {saveLyrics} = require("./songs")
+            saveLyrics()
+        },
+        "<Enter>": () => {
+            const {searchLyrics} = require("./songs")
+            searchLyrics(document.getElementById("lyrics-search").value)
+        },
+        "<Escape>": () => switchFocus("search"),
+        "<Tab>": () => null
     },
     "playlist": {
         "<ArrowDown>": () => {
@@ -644,7 +703,7 @@ const mappings = {
 }
 
 const handleKeyboard = async e => {
-    if (e.key === "Tab" || !queryMatch(e, "textarea")) {
+    if (e.key === "Tab" || !queryMatch(e, "textarea, input[type='text']")) {
         e.preventDefault()
     }
     if (!isReady()) {
@@ -679,6 +738,13 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#status-notify")) {
         switchFocus("events")
+    }
+    if (queryMatch(e, "#song-info")) {
+        if (e.button === 2) {
+            switchFocus("lyricseditor")
+        } else if (!window.getSelection().toString()) {
+            switchFocus(document.body.getAttribute("focus-el"))
+        }
     }
     if (queryMatch(e, "#export-playlist")) {
         const {exportList} = require("./playlist")
@@ -721,9 +787,41 @@ const handleMouse = e => {
         switchFocus("playlist")
         return
     }
+    if (queryMatch(e, "#lyrics-query")) {
+        const {searchLyrics} = require("./songs")
+        searchLyrics(document.getElementById("lyrics-search").value)
+    }
+    if (queryMatch(e, "#lyrics-save")) {
+        const {saveLyrics} = require("./songs")
+        saveLyrics()
+        return
+    }
+    if (queryMatch(e, "#lyrics-edit-field")) {
+        switchFocus("lyricseditor")
+        return
+    }
+    if (queryMatch(e, "#lyrics-search")) {
+        switchFocus("lyricssearch")
+        return
+    }
+    if (queryMatch(e, "#lyrics-results")) {
+        switchFocus("lyrics")
+        return
+    }
+    if (queryMatch(e, "#lyrics-editor")) {
+        switchFocus("lyrics")
+        return
+    }
     if (document.body.getAttribute("focus-el") === "events") {
         if (!queryMatch(e, "#events, #status-notify")) {
             switchFocus("search")
+        }
+    }
+    if (document.body.getAttribute("focus-el").startsWith("lyrics")) {
+        if (!queryMatch(e, "#lyrics-editor")) {
+            if (!queryMatch(e, "#song-info") || e.button !== 2) {
+                switchFocus("search")
+            }
         }
     }
 }

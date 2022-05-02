@@ -149,12 +149,19 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
 }
 
 const switchFocus = async newFocus => {
-    // Focus can be: playlist, fullscreen, events, search or searchbox
+    // Valid focus points for the entire app are:
+    // - playlist (playlist section to highlight songs/rules to play or remove)
+    // - search (search section results, not the search box itself)
+    // - searchbox (search box for looking up new songs to play)
+    // - fullscreen (only for the fullscreen layout, not the browser fullscreen)
+    // - events (event history dialog, not the status bar in the main view)
+    // - lyrics (lyrics editor dialog, not the lyrics pane in the main view)
+    //   - Also the focus when inside the dialog but not searching or editing
+    //   - Also the focus when selecting search results after searching Genius
+    // - lyricssearch (lyrics search box in the dialog for searching Genius api)
+    // - lyricsseditor (manual lyrics edit box inside the lyrics dialog)
     const currentFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
-    if (newFocus !== "searchbox") {
-        document.getElementById("rule-search").blur()
-    }
     if (newFocus === "playlist") {
         document.getElementById("playlist-container").focus()
     }
@@ -162,6 +169,23 @@ const switchFocus = async newFocus => {
         document.getElementById("events").style.display = "flex"
     } else {
         document.getElementById("events").style.display = "none"
+    }
+    if (newFocus.startsWith("lyrics")) {
+        document.getElementById("lyrics-editor").style.display = "flex"
+        const selected = document.querySelector("#lyrics-results .selected")
+        if (newFocus === "lyricseditor") {
+            document.getElementById("lyrics-edit-field").focus()
+        } else if (!selected || newFocus.endsWith("search")) {
+            selected?.classList.remove("selected")
+            document.body.setAttribute("focus-el", "lyricssearch")
+            document.getElementById("lyrics-search").focus()
+        } else {
+            selected.scrollIntoView({"block": "nearest"})
+            document.getElementById("lyrics-edit-field").blur()
+            document.getElementById("lyrics-search").blur()
+        }
+    } else {
+        document.getElementById("lyrics-editor").style.display = "none"
     }
     if (newFocus === "fullscreen") {
         document.getElementById("fullscreen").style.display = "flex"
@@ -185,6 +209,8 @@ const switchFocus = async newFocus => {
         } else {
             selected.scrollIntoView({"block": "nearest"})
         }
+    } else {
+        document.getElementById("rule-search").blur()
     }
 }
 

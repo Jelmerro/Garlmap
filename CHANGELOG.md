@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Lyrics editor dialog with manual Genius search and textarea to edit the text
+
 ### Changed
 
 - Fullscreen layout styling related to the "up next" notice and general margins

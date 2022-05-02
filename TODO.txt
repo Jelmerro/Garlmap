@@ -1,4 +1,2 @@
-- make ctrl-f4 open a text editor for the lyrics
-- have a search box to do a custom search on the genius api
 - try to strip featuring artists as an attempt to fetch lyrics better
 - after having an in-app editor and search, maybe add an option to skip genius
