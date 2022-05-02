@@ -84,6 +84,9 @@ Your playlist is not part of the settings, but you can import/export it instead.
 Importing and exporting can also be done using Ctrl-i and Ctrl-x respectively.
 You can view the list of events (such as lyrics fetching) with Ctrl-Shift-E,
 or by clicking the current event in the status bar at the bottom.
+If you don't want lyrics to be fetched from Genius at all, you can disable it,
+either at runtime with the checkbox right below or using Ctrl-g,
+or otherwise using env vars, the config file or the startup arguments.
 
 Syntax for queueing and searching
 
@@ -181,6 +184,8 @@ but after startup there shouldn't be too many moments that freeze the app.
 You can use local lyrics, by making a ".txt" that has the same path as a song,
 or do so in a "Lyrics" folder at the base music folder and then the same path.
 For example: "Lyrics/Weezer/Blue/Undone.txt" for "Weezer/Blue/Undone.mp3".
+These will always work regardless of whether Genius is enabled via the checkbox,
+as is the case for the built-in lyrics editor (including the manual searching).
 
 Volume control
 
@@ -220,11 +225,14 @@ Lyrics editor
 Besides automatically showing the lyrics using the Autolyrics option,
 you can also edit them yourself and save them to the cache.
 To open the editor, either press Ctrl-F4 or use the buttons right below.
+These buttons can also be used to switch between the help and showing lyrics,
+fetching the lyrics fresh from Genius or disabling the Genius API entirely.
 Once in the editor, you can focus mainly on two sections, the search and editor.
 To toggle between the sections, use Ctrl-Tab, or just Tab to jump to searching.
 Like the event dialog, you can close it by clicking outside or with Escape,
 as well as by pressing the same shortcut you used to open it: Ctrl-F4.
 In the search section, you can type a query, and search on Genius for songs.
+This will continue to work, even if you have disabled the automatic fetching.
 You can do so with the search button or Enter, it will NOT search while typing.
 The last query is always remembered for ease of use even after typing again.
 The other section is the lyrics editor itself, where you can edit the lyrics.

@@ -99,7 +99,7 @@ const displayCurrentSong = async song => {
         // There is no fallback for workarounds
     }
     const audio = document.createElement("audio")
-    audio.src = "../static/empty.mp3"
+    audio.src = "./empty.mp3"
     document.body.appendChild(audio)
     audio.loop = true
     await audio.play().catch(() => null)

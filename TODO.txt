@@ -1,2 +1,4 @@
-- add startup/config option for disabling/toggling genius
+- fix mp3-only glob and make it work for more formats
+- actually add the startup/config option for disabling/toggling genius
 - try to strip featuring artists as an attempt to fetch lyrics better
+- check if #bug TODO labels can be moved and/or are still relevant

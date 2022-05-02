@@ -360,6 +360,10 @@ const mappings = {
             }
         },
         "<C-f>": () => switchFocus("search"),
+        "<C-g>": () => {
+            const {toggleGenius} = require("./songs")
+            toggleGenius()
+        },
         "<C-i>": () => {
             const {importList} = require("./playlist")
             // #bug Electron will freeze the mouse if this is not called later
