@@ -14,6 +14,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Fullscreen layout styling related to the "up next" notice and general margins
 
+### Fixed
+
+- Broken fullscreen layout after switching directly to focus elements from within fullscreen (e.g. with Tab)
+
 ### Versions
 
 - Electron 18.1.0 (unchanged)

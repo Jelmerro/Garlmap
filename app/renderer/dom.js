@@ -134,22 +134,23 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
         await document.exitFullscreen()
     }
     if (layoutFS) {
-        switchFocus("fullscreen")
+        await switchFocus("fullscreen")
         if (browserFS) {
             document.getElementById("fullscreen").requestFullscreen()
         }
         return
     }
     if (currentFocus === "fullscreen") {
-        switchFocus("search")
+        await switchFocus("search")
     }
     if (browserFS) {
         document.body.requestFullscreen()
     }
 }
 
-const switchFocus = newFocus => {
+const switchFocus = async newFocus => {
     // Focus can be: playlist, fullscreen, events, search or searchbox
+    const currentFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus !== "searchbox") {
         document.getElementById("rule-search").blur()
@@ -164,8 +165,16 @@ const switchFocus = newFocus => {
     }
     if (newFocus === "fullscreen") {
         document.getElementById("fullscreen").style.display = "flex"
-    } else {
+        if (document.fullscreenElement) {
+            await document.exitFullscreen()
+            document.getElementById("fullscreen").requestFullscreen()
+        }
+    } else if (currentFocus === "fullscreen") {
         document.getElementById("fullscreen").style.display = "none"
+        if (document.fullscreenElement) {
+            await document.exitFullscreen()
+            document.body.requestFullscreen()
+        }
     }
     if (newFocus.startsWith("search")) {
         const selected = document.querySelector("#search-results .selected")
