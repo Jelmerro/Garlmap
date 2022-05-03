@@ -147,7 +147,6 @@ const scanner = async(folder, dumpOnly = false) => {
     document.getElementById("status-folder").style.color = "var(--primary)"
     document.getElementById("status-files").textContent = ""
     document.getElementById("status-notify").textContent = ""
-    const escapedFolder = folder.replace(/\[/g, "\\[")
     const {stopPlayback} = require("./player")
     await stopPlayback()
     const {clearPlaylist} = require("./playlist")
@@ -186,24 +185,26 @@ const scanner = async(folder, dumpOnly = false) => {
         "wmv",
         "wv"
     ]
+    const normFolder = joinPath(folder)
+    const escapedFolder = normFolder.replace(/\[/g, "\\[")
     glob(joinPath(escapedFolder, "**/*"), async(_e, all) => {
         const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
         const useCache = ["all", "songs"].includes(cache)
         if (useCache !== "none") {
-            songs = cachedSongs.filter(s => s.path?.startsWith(folder))
+            songs = cachedSongs.filter(s => s.path?.startsWith(normFolder))
                 .filter(s => isFile(s.path))
         }
         for (const f of files) {
             const match = songs.find(s => f.endsWith(s.id) || f === s.path)
             if (useCache && match) {
-                match.id = f.replace(folder, "").replace(/^[/\\]+/g, "")
+                match.id = f.replace(normFolder, "").replace(/^[/\\]+/g, "")
                 match.path = f
                 continue
             }
-            await processFile(folder, f, files.length, match?.lyrics)
+            await processFile(normFolder, f, files.length, match?.lyrics)
         }
         if (dumpOnly) {
-            dumpLyrics(folder)
+            dumpLyrics(normFolder)
             return
         }
         document.getElementById("status-current").textContent = `Ready`
@@ -220,7 +221,8 @@ const scanner = async(folder, dumpOnly = false) => {
     })
 }
 
-const updateCache = () => writeJSON(joinPath(configDir, "cache"), cachedSongs)
+const updateCache = () => writeJSON(joinPath(
+    configDir, "cache.json"), cachedSongs)
 
 const query = search => {
     if (!search.trim()) {
@@ -605,7 +607,7 @@ const setStartupSettings = (dir, policy, removeMissing, enableGenius) => {
     cache = policy
     shouldUseGenius = enableGenius
     if (cache !== "none") {
-        cachedSongs = readJSON(joinPath(configDir, "cache")) || []
+        cachedSongs = readJSON(joinPath(configDir, "cache.json")) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
         if (removeMissing) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))

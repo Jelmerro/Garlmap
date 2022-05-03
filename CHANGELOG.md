@@ -24,11 +24,14 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Layout of the status line and selection colors
 - Show an event for each failed file so you know that to do about it
 - Use dedicated MPRIS D-bus API when available instead of Chromium's MediaSession API
+- Cache file is now named "cache.json" instead of just "cache" to prevent case insensitive file clash on Windows
 
 ### Fixed
 
 - Broken fullscreen layout after switching directly to focus elements from within fullscreen (e.g. with Tab)
 - File load error file songs without cover art, src attribute is now removed instead of set to "null"
+- Close button of the app not working on Windows
+- Glob search for music files not resolving on Windows
 
 ### Versions
 

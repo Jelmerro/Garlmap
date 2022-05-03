@@ -373,8 +373,6 @@ app.on("ready", () => {
         mainWindow.focus()
     })
     const windowData = {
-        "closable": false,
-        "frame": true,
         "height": 700,
         "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
         "show": false,
@@ -425,6 +423,7 @@ ipcMain.on("destroy-window", (_, error) => {
         console.error(error)
     }
     mainWindow.destroy()
+    process.exit(0)
 })
 ipcMain.on("show-window", () => {
     if (mainWindow.isMinimized()) {

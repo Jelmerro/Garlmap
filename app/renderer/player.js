@@ -111,7 +111,11 @@ const init = path => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", async() => {
-        await mpv.command("quit").catch(() => null)
+        if (process.platform === "win32") {
+            mpv.command("quit").catch(() => null)
+        } else {
+            await mpv.command("quit").catch(() => null)
+        }
         ipcRenderer.send("destroy-window")
     })
     if (customMediaSesion) {

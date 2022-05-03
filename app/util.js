@@ -183,12 +183,12 @@ or toggle automatic removal of old rules and songs using "r".
 
 Caching
 
-All song data and lyrics are cached for the next startup in a "cache" file,
+All song data and lyrics are cached for the next startup in a "cache.json" file,
 either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.
 You can control if the cache should be read on startup using --cache,
 or with the GARLMAP_CACHE ENV var set to one of: all, songs, lyrics, none.
-Obviously you are free to delete the cache at any time if you want to,
-just know that cache greatly speeds up parsing of large folders,
+Obviously you are free to delete the "cache.json" at any time if you want to,
+just know that cache file greatly speeds up parsing of large folders,
 and greatly reduces the amount of requests to Genius if you want auto lyrics.
 Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
 but after startup there shouldn't be too many moments that freeze the app.
@@ -197,6 +197,7 @@ or do so in a "Lyrics" folder at the base music folder and then the same path.
 For example: "Lyrics/Weezer/Blue/Undone.txt" for "Weezer/Blue/Undone.mp3".
 These will always work regardless of whether Genius is enabled via the checkbox,
 as is the case for the built-in lyrics editor (including the manual searching).
+You can generate these files based on the cache file using "--dump-lyrics".
 
 Volume control
 
@@ -344,6 +345,9 @@ const isFile = loc => {
 
 const joinPath = (...args) => {
     const {join, resolve} = require("path")
+    if (process.platform === "win32") {
+        return resolve(join(...args)).replace(/\\/g, "/")
+    }
     return resolve(join(...args))
 }
 
