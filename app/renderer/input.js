@@ -193,12 +193,13 @@ const isReady = () => document.getElementById(
 
 const openFolder = () => {
     const {scanner} = require("./songs")
-    const folder = ipcRenderer.sendSync("dialog-open", {
+    ipcRenderer.invoke("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
-    })?.[0]
-    if (folder) {
-        scanner(folder)
-    }
+    }).then(info => {
+        if (!info.canceled) {
+            scanner(info.filePaths[0])
+        }
+    })
 }
 
 const toIdentifier = e => {
@@ -366,25 +367,21 @@ const mappings = {
         },
         "<C-i>": () => {
             const {importList} = require("./playlist")
-            // #bug Electron will freeze the mouse if this is not called later
-            setTimeout(() => importList(), 100)
+            importList()
         },
         "<C-l>": () => switchFocus("playlist"),
         "<C-m>": () => {
             const {toggleMute} = require("./player")
             toggleMute()
         },
-        "<C-o>": () => {
-            openFolder()
-        },
+        "<C-o>": () => openFolder(),
         "<C-s>": () => {
             const {saveSettings} = require("./settings")
             saveSettings()
         },
         "<C-x>": () => {
             const {exportList} = require("./playlist")
-            // #bug Electron will freeze the mouse if this is not called later
-            setTimeout(() => exportList(), 100)
+            exportList()
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => resetWelcome(),
@@ -765,8 +762,7 @@ const handleMouse = e => {
         }
     }
     if (queryMatch(e, "#status-folder, #open-folder")) {
-        // #bug Electron will freeze the mouse if this is not called on a delay
-        setTimeout(() => openFolder(), 100)
+        openFolder()
         return
     }
     if (queryMatch(e, "#status-notify")) {
@@ -779,14 +775,12 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#export-playlist")) {
         const {exportList} = require("./playlist")
-        // #bug Electron will freeze the mouse if this is not called on a delay
-        setTimeout(() => exportList(), 100)
+        exportList()
         return
     }
     if (queryMatch(e, "#import-playlist")) {
         const {importList} = require("./playlist")
-        // #bug Electron will freeze the mouse if this is not called on a delay
-        setTimeout(() => importList(), 100)
+        importList()
         return
     }
     if (queryMatch(e, "#save-settings")) {

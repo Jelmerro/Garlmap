@@ -1,3 +1,2 @@
 - try to strip featuring artists as an attempt to fetch lyrics better
-- check if #bug TODO labels can be moved and/or are still relevant
 - check if title/artist empty, then show just the filename

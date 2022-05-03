@@ -547,53 +547,56 @@ const exportList = () => {
         notify("No folder open yet, nothing to export")
         return
     }
-    let file = ipcRenderer.sendSync("dialog-save", {
+    ipcRenderer.invoke("dialog-save", {
         "filters": [{
             "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
         }],
         "title": "Export playlist"
-    })
-    if (!file) {
-        return
-    }
-    if (!file.endsWith(".garlmap.json")) {
-        file += ".garlmap.json"
-    }
-    const list = rulelist.map(r => {
-        if (r.rule) {
-            return {"rule": r.rule}
+    }).then(info => {
+        if (info.canceled) {
+            return
         }
-        return {"songs": r.songs}
+        let file = String(info.filePath)
+        if (!file.endsWith(".garlmap.json")) {
+            file += ".garlmap.json"
+        }
+        const list = rulelist.map(r => {
+            if (r.rule) {
+                return {"rule": r.rule}
+            }
+            return {"songs": r.songs}
+        })
+        const success = writeJSON(file, {folder, list}, 4)
+        if (!success) {
+            notify("Failed to save playlist, write error")
+        }
     })
-    const success = writeJSON(file, {folder, list}, 4)
-    if (!success) {
-        notify("Failed to save playlist, write error")
-    }
 }
 
-const importList = async() => {
-    const file = ipcRenderer.sendSync("dialog-open", {
+const importList = () => {
+    ipcRenderer.invoke("dialog-open", {
         "filters": [{
             "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
         }],
         "properties": ["openFile"],
         "title": "Import playlist"
-    })?.[0]
-    if (!file) {
-        return
-    }
-    const imported = readJSON(file)
-    if (!imported?.list || !imported?.folder) {
-        notify("Not a valid Garlmap playlist file")
-        return
-    }
-    if (!isDirectory(imported.folder)) {
-        notify("Playlist base folder could not be found")
-        return
-    }
-    const {scanner} = require("./songs")
-    await scanner(imported.folder)
-    imported.list.filter(r => r?.rule || r?.songs).forEach(append)
+    }).then(async info => {
+        if (info.canceled) {
+            return
+        }
+        const imported = readJSON(info.filePaths[0])
+        if (!imported?.list || !imported?.folder) {
+            notify("Not a valid Garlmap playlist file")
+            return
+        }
+        if (!isDirectory(imported.folder)) {
+            notify("Playlist base folder could not be found")
+            return
+        }
+        const {scanner} = require("./songs")
+        await scanner(imported.folder)
+        imported.list.filter(r => r?.rule || r?.songs).forEach(append)
+    })
 }
 
 const clearPlaylist = async() => {

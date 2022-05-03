@@ -167,7 +167,6 @@ const scanner = async(folder, dumpOnly = false) => {
         "m4b",
         "m4p",
         "m4r",
-        "m4v",
         "mka",
         "mkv",
         "mogg",

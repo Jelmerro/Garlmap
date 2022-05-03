@@ -412,12 +412,13 @@ app.on("ready", () => {
 })
 
 ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
-ipcMain.on("dialog-open", (e, options) => {
-    e.returnValue = dialog.showOpenDialogSync(mainWindow, options)
-})
-ipcMain.on("dialog-save", (e, options) => {
-    e.returnValue = dialog.showSaveDialogSync(mainWindow, options)
-})
+// #bug Setting the mainWindow will block interaction completely on second open,
+// therefor we set it to null instead for now to at least not break the app.
+// The modal position is incorrect as well, no workarounds known yet.
+// See this issue for more details:
+// https://github.com/electron/electron/issues/32857
+ipcMain.handle("dialog-open", (_, op) => dialog.showOpenDialog(null, op))
+ipcMain.handle("dialog-save", (_, op) => dialog.showSaveDialog(null, op))
 ipcMain.on("destroy-window", (_, error) => {
     if (error) {
         console.error("Mpv failed to start with error:")

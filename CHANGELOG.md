@@ -27,6 +27,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Fixed
 
 - Broken fullscreen layout after switching directly to focus elements from within fullscreen (e.g. with Tab)
+- File load error file songs without cover art, src attribute is now removed instead of set to "null"
 
 ### Versions
 

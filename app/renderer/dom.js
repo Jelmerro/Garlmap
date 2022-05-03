@@ -106,7 +106,6 @@ const displayCurrentSong = async song => {
     const {updatePlayButton} = require("./player")
     updatePlayButton()
     // MediaSession details
-    navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     const {coverArt} = require("./songs")
     const cover = await coverArt(song.path)
     if (cover) {
@@ -115,16 +114,14 @@ const displayCurrentSong = async song => {
         document.getElementById("fs-song-cover").src = cover
         document.getElementById("fs-song-cover").style.display = "initial"
         // #bug Cover does not work due to Electron bug
-        const resp = await fetch(cover)
-        const blob = await resp.blob()
-        navigator.mediaSession.metadata.artwork = [
-            {"src": URL.createObjectURL(blob)}
-        ]
+        navigator.mediaSession.metadata = new window.MediaMetadata(
+            {...song, "artwork": [{"src": cover}]})
     } else {
-        document.getElementById("song-cover").src = null
+        document.getElementById("song-cover").removeAttribute("src")
         document.getElementById("song-cover").style.display = "none"
-        document.getElementById("fs-song-cover").src = null
+        document.getElementById("fs-song-cover").removeAttribute("src")
         document.getElementById("fs-song-cover").style.display = "none"
+        navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     }
 }
 

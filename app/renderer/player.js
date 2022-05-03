@@ -43,7 +43,6 @@ const init = path => {
             const {current} = currentAndNext()
             const {duration} = current
             navigator.mediaSession.setPositionState({
-                // #bug Position not recognized by Electron
                 duration, "playbackRate": 1, position
             })
             const played = `&nbsp;${formatTime(position)}/${
