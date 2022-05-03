@@ -99,10 +99,14 @@ You could also just search for "weezer pinker" or something and find it,
 but the above is much more accurate if you have a large library.
 There are many fields that can be used to search for songs based on their tags,
 while others are specific to Garlmap for ordering or counting the query.
-The full list is: "title", "artist", "album", "disc", "disc_total", "track",
-"track_total", "lyrics", "duration", "date", "order" and "limit".
-Feel free to add a lot more to Garlmap with a PR or make an issue for it.
-You can search for text in a field based on regex, separated with ":" or "=".
+These properties are always present, though sometimes empty:
+"title", "artist", "album", "disc", "disc_total", "track", "track_total",
+"lyrics", "duration", "date", "order" and "limit".
+On some files that support them, you can also search for the following fields:
+"genre", "composer", "lyricist", "writer", "conductor", "remixer", "arranger",
+"engineer", "producer", "technician", "djmixer", "mixer", "label", "grouping",
+"subtitle", "rating", "bpm", "mood", "releasetype", "originalalbum" and
+"originalartist". Feel free to expand this list via PRs if you need more.
 Even spaces are allowed: "album=dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields:
 "dark side" will match any song that has any field with "dark" and "side" in it,
@@ -112,6 +116,13 @@ it's also possible to specify a range like so: "date:1960-1975".
 You can also use upercase letters in a field name to make it case sensitive,
 as all searches are by default case insensitive: "Album=Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
+For fields that support multiple values, each value is searched to find a match,
+for example: "genre=rock" will look for any song with the rock genre,
+but not necessarily songs for which it's the only genre of the entire song.
+Excluding values from appearing is a bit more involved due to the Regex syntax,
+but to excluse electronic music use "genre=^(?!.*electro)" in your search.
+If in your search you use optional fields such as genre, mood or composer,
+songs that do not have them will be filtered from the results entirely.
 The default sort order "disk", which means it's sorted on path alphabetically,
 is used for all queries, unless a custom "order" field is provided.
 For example, you can change to order to "shuffle", to play the tracks randomly.

@@ -1,5 +1,3 @@
-- fix mp3-only glob and make it work for more formats
 - try to strip featuring artists as an attempt to fetch lyrics better
 - check if #bug TODO labels can be moved and/or are still relevant
-- allow searching by genre
-- make searching songs that have a full date instead of just the year work
+- check if title/artist empty, then show just the filename

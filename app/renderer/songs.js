@@ -54,9 +54,10 @@ const processFile = async(folder, file, total, lyrics = null) => {
         details = await musicMetadata.parseFile(
             file, {"duration": true, "skipCovers": true}).catch(() => null)
     }
-    if (!details) {
+    if (!details?.format?.duration) {
         failures.push(file)
         processedFiles += 1
+        notify(`Failed to scan: ${file.replace(folder, "")}`)
         document.getElementById("status-files").textContent
             = `${processedFiles}/${total} songs`
         return
@@ -75,6 +76,34 @@ const processFile = async(folder, file, total, lyrics = null) => {
         "title": details.common.title,
         "track": details.common.track.no,
         "track_total": details.common.track.of
+    }
+    const extraProps = [
+        "genre",
+        "composer",
+        "lyricist",
+        "writer",
+        "conductor",
+        "remixer",
+        "arranger",
+        "engineer",
+        "producer",
+        "technician",
+        "djmixer",
+        "mixer",
+        "label",
+        "grouping",
+        "subtitle",
+        "rating",
+        "bpm",
+        "mood",
+        "releasetype",
+        "originalalbum",
+        "originalartist"
+    ]
+    for (const prop of extraProps) {
+        if (details.common[prop]) {
+            song[prop] = details.common[prop]
+        }
     }
     const existingCache = cachedSongs.find(
         s => s.id === song.id || s.path === song.path)
@@ -117,12 +146,49 @@ const scanner = async(folder, dumpOnly = false) => {
     document.getElementById("status-folder").textContent = folder
     document.getElementById("status-folder").style.color = "var(--primary)"
     document.getElementById("status-files").textContent = ""
+    document.getElementById("status-notify").textContent = ""
     const escapedFolder = folder.replace(/\[/g, "\\[")
     const {stopPlayback} = require("./player")
     await stopPlayback()
     const {clearPlaylist} = require("./playlist")
     await clearPlaylist()
-    glob(joinPath(escapedFolder, "**/*.mp3"), async(_e, files) => {
+    const fileExts = [
+        "3gp",
+        "aac",
+        "aif",
+        "aifc",
+        "aiff",
+        "alac",
+        "ape",
+        "asf",
+        "bwf",
+        "flac",
+        "m4a",
+        "m4b",
+        "m4p",
+        "m4r",
+        "m4v",
+        "mka",
+        "mkv",
+        "mogg",
+        "mp2",
+        "mp3",
+        "mp4",
+        "mpc",
+        "mpp",
+        "mp+",
+        "oga",
+        "ogg",
+        "opus",
+        "wav",
+        "wave",
+        "webm",
+        "wma",
+        "wmv",
+        "wv"
+    ]
+    glob(joinPath(escapedFolder, "**/*"), async(_e, all) => {
+        const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
         const useCache = ["all", "songs"].includes(cache)
         if (useCache !== "none") {
             songs = cachedSongs.filter(s => s.path?.startsWith(folder))
@@ -147,7 +213,7 @@ const scanner = async(folder, dumpOnly = false) => {
             = `${songs.length} songs`
         document.getElementById("status-scan").textContent = ""
         if (failures.length) {
-            notify(`${failures.length} failures`)
+            notify(`Total of ${failures.length} scan failures`)
         }
         const {currentAndNext} = require("./playlist")
         currentAndNext()
@@ -180,6 +246,32 @@ const query = search => {
             if (typeof s[filter.name] === "number" && filter.value.match(/\d+-\d/g)) {
                 if (s[filter.name] < Number(filter.value.split("-")[0])
                 || s[filter.name] > Number(filter.value.split("-")[1])) {
+                    return false
+                }
+            } else if (Array.isArray(s[filter.name])) {
+                const presentInArray = s[filter.name].find(field => {
+                    let flags = "gi"
+                    if (filter.cased) {
+                        flags = "g"
+                    }
+                    try {
+                        const regex = RegExp(filter.value, flags)
+                        if (!String(field).match(regex)) {
+                            return false
+                        }
+                    } catch {
+                        if (filter.cased
+                        && !String(field).includes(filter.value)) {
+                            return false
+                        }
+                        if (!filter.cased && !String(low(field))
+                            .includes(low(filter.value))) {
+                            return false
+                        }
+                    }
+                    return true
+                })
+                if (!presentInArray) {
                     return false
                 }
             } else {
