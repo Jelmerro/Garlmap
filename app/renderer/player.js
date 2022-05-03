@@ -99,13 +99,7 @@ const init = path => {
     navigator.mediaSession.setActionHandler("play", pause)
     navigator.mediaSession.setActionHandler("pause", pause)
     navigator.mediaSession.setActionHandler("stop", () => {
-        // #bug Workaround for Electron stopping audio element playback
-        const {
-            currentAndNext, stopAfterTrack
-        } = require("./playlist")
-        const {displayCurrentSong} = require("./dom")
-        const {current} = currentAndNext()
-        displayCurrentSong(current)
+        const {stopAfterTrack} = require("./playlist")
         stopAfterTrack()
     })
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
