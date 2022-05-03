@@ -88,6 +88,7 @@ const saveSettings = () => {
     config.autoClose = document.getElementById("toggle-autoclose").checked
     config.autoRemove = document.getElementById("toggle-autoremove").checked
     config.autoLyrics = document.getElementById("toggle-autolyrics").checked
+    config.useGenius = document.getElementById("toggle-genius").checked
     if (!config.autoScroll) {
         delete config.autoScroll
     }
@@ -99,6 +100,9 @@ const saveSettings = () => {
     }
     if (!config.autoLyrics) {
         delete config.autoLyrics
+    }
+    if (config.useGenius) {
+        delete config.useGenius
     }
     if (config.cache === "all") {
         delete config.cache

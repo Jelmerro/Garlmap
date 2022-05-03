@@ -110,20 +110,16 @@ const init = path => {
         const {stopAfterTrack} = require("./playlist")
         stopAfterTrack()
     })
-    ipcRenderer.on("window-close", async() => {
-        if (process.platform === "win32") {
-            mpv.command("quit").catch(() => null)
-        } else {
-            await mpv.command("quit").catch(() => null)
-        }
+    ipcRenderer.on("window-close", () => {
+        mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })
     if (customMediaSesion) {
         customMediaSesion.canEditTracks = false
         customMediaSesion.getPosition = () => lastPos
         customMediaSesion.on("raise", () => ipcRenderer.send("show-window"))
-        customMediaSesion.on("quit", async() => {
-            await mpv.command("quit").catch(() => null)
+        customMediaSesion.on("quit", () => {
+            mpv.command("quit").catch(() => null)
             ipcRenderer.send("destroy-window")
         })
         customMediaSesion.on("play", () => pause())
