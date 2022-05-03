@@ -25,6 +25,12 @@ const generateSongElement = song => {
     songContainer.className = "song"
     const mainInfo = document.createElement("span")
     mainInfo.className = "main-info"
+    if (!song.title || !song.artist) {
+        mainInfo.textContent = song.id
+        mainInfo.classList.add("id-only")
+        songContainer.appendChild(mainInfo)
+        return songContainer
+    }
     const titleEl = document.createElement("span")
     titleEl.textContent = song.title
     mainInfo.appendChild(titleEl)

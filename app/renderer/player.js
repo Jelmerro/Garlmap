@@ -299,13 +299,17 @@ const displayCurrentSong = async song => {
     for (const songContainer of els) {
         if (!song) {
             songContainer.textContent = "Welcome to Garlmap"
-            return
+            continue
         }
         songContainer.textContent = ""
         const titleEl = document.createElement("span")
         titleEl.className = "title"
         titleEl.textContent = song.title
         songContainer.appendChild(titleEl)
+        if (!song.title || !song.artist) {
+            titleEl.textContent = song.id
+            continue
+        }
         if (songContainer === document.getElementById("current-song")) {
             songContainer.appendChild(document.createTextNode(" - "))
         }
@@ -329,6 +333,9 @@ const displayCurrentSong = async song => {
         }
         otherInfo.appendChild(bundledInfo)
         songContainer.appendChild(otherInfo)
+    }
+    if (!song) {
+        return
     }
     if (!customMediaSesion) {
         // #bug Workaround for playback state, using a fake audio element

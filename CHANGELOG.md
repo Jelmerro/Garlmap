@@ -25,6 +25,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Show an event for each failed file so you know that to do about it
 - Use dedicated MPRIS D-bus API when available instead of Chromium's MediaSession API
 - Cache file is now named "cache.json" instead of just "cache" to prevent case insensitive file clash on Windows
+- Files without title or artist will now use the song id (last part of the path) as display value
 
 ### Fixed
 

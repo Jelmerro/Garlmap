@@ -1,2 +1,1 @@
 - try to strip featuring artists as an attempt to fetch lyrics better
-- check if title/artist empty, then show just the filename
