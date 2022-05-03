@@ -509,9 +509,10 @@ const switchToLyrics = async(forceFetch = false) => {
     }
 }
 
-const setCachePolicy = (dir, policy, removeMissing) => {
+const setStartupSettings = (dir, policy, removeMissing, enableGenius) => {
     configDir = dir
     cache = policy
+    shouldUseGenius = enableGenius
     if (cache !== "none") {
         cachedSongs = readJSON(joinPath(configDir, "cache")) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
@@ -545,10 +546,10 @@ module.exports = {
     saveLyrics,
     scanner,
     searchLyrics,
-    toggleGenius,
     selectLyricsFromResults,
-    setCachePolicy,
+    setStartupSettings,
     showLyrics,
     songById,
-    switchToLyrics
+    switchToLyrics,
+    toggleGenius
 }

@@ -71,7 +71,9 @@ const registerMediaKeys = () => {
 const logCustomSettings = config => {
     let hasCustom = false
     for (const [key, val] of Object.entries(config)) {
-        if (val !== null && val !== undefined) {
+        const modifiedSetting = key === "useGenius" && val !== true
+            || val !== null && val !== undefined && key !== "useGenius"
+        if (modifiedSetting) {
             if (!hasCustom) {
                 console.info("Current custom settings:")
                 hasCustom = true
@@ -107,7 +109,9 @@ const processStartupArgs = () => {
         "dumpLyrics": undefined,
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
-        "mpv": process.env.GARLMAP_MPV?.trim()
+        "mpv": process.env.GARLMAP_MPV?.trim(),
+        "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS)
+            || !process.env.GARLMAP_USE_GENIUS
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
     if (configFile) {
@@ -141,6 +145,8 @@ const processStartupArgs = () => {
                     || arg === "--auto-scroll"
             } else if (name === "--auto-close") {
                 config.autoClose = isTruthyArg(value) || arg === "--auto-close"
+            } else if (name === "--use-genius") {
+                config.useGenius = isTruthyArg(value) || arg === "--use-genius"
             } else if (name === "--auto-remove") {
                 config.autoRemove = isTruthyArg(value)
                     || arg === "--auto-remove"
@@ -258,6 +264,21 @@ Garlmap can be started without any arguments, but it supports the following:
                    If also absent, the GARLMAP_AUTO_REMOVE env will be read,
                    or this setting will by default be disabled.
                    Change this setting in the playlist with "r" or the mouse.
+
+    --use-genius   Toggle the use of the Genius API for fetching lyrics.
+                   Enabled by default, used to find lyrics for the current song,
+                   first does a search, then looks up the lyrics for the match.
+                   If disabled, only local and cached lyrics will be used,
+                   and the lyrics buttons will not connect to the Genius API.
+                   You can still search manually inside the lyrics editor.
+                   The argument should be provided with value to disable it:
+                   "--use-genius=false", "--use-genius=0, "--use-genius=no",
+                   but setting it to true can also be done to override env vars.
+                   If no arg is found, it will read the "useGenius" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_USE_GENIUS env will be read,
+                   or this setting will by default be enabled and use the API.
+                   Change this setting with Ctrl-g or the bottom right checkbox.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
                    Accepted values are between 8-100, and the unit is in pixels.

@@ -26,15 +26,16 @@ let startupConfig = {}
 const init = () => {
     ipcRenderer.on("config", (_, config) => {
         startupConfig = config
-        const {setCachePolicy} = require("./songs")
-        setCachePolicy(config.configDir,
-            config.cache || "all", config.cacheClean)
+        const {setStartupSettings} = require("./songs")
+        setStartupSettings(config.configDir,
+            config.cache || "all", config.cacheClean, config.useGenius)
         if (config.folder) {
             const {scanner} = require("./songs")
             scanner(config.folder, config.dumpLyrics)
         }
         autoLyrics = !!config.autoLyrics
         document.getElementById("toggle-autolyrics").checked = autoLyrics
+        document.getElementById("toggle-genius").checked = config.useGenius
         document.getElementById("toggle-autolyrics").parentNode
             .addEventListener("click", () => toggleAutoLyrics())
         if (config.fontSize) {
