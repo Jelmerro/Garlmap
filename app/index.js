@@ -419,6 +419,16 @@ ipcMain.handle("dialog-open", (_, op) => dialog.showOpenDialog(null, op))
 ipcMain.handle("dialog-save", (_, op) => dialog.showSaveDialog(null, op))
 ipcMain.on("destroy-window", (_, error) => {
     if (error) {
+        try {
+            dialog.showMessageBoxSync(mainWindow, {
+                "buttons": ["Exit"],
+                "message": String(error),
+                "title": "Mpv failed to start",
+                "type": "error"
+            })
+        } catch {
+            // Error dialog shouldn't be a reason to fail to quit
+        }
         console.error("Mpv failed to start with error:")
         console.error(error)
     }
