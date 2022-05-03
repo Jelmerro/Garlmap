@@ -23,6 +23,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Fullscreen layout styling related to the "up next" notice and general margins
 - Layout of the status line and selection colors
 - Show an event for each failed file so you know that to do about it
+- Use dedicated MPRIS D-bus API when available instead of Chromium's MediaSession API
 
 ### Fixed
 

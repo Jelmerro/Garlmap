@@ -426,3 +426,9 @@ ipcMain.on("destroy-window", (_, error) => {
     }
     mainWindow.destroy()
 })
+ipcMain.on("show-window", () => {
+    if (mainWindow.isMinimized()) {
+        mainWindow.restore()
+    }
+    mainWindow.focus()
+})

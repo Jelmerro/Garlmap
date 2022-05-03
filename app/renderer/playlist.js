@@ -349,7 +349,7 @@ const openSelectedRule = () => {
 
 const playFromPlaylist = async(switchNow = true) => {
     const {current, next} = currentAndNext()
-    const {load, queue} = require("./player")
+    const {load, queue, displayCurrentSong} = require("./player")
     if (current) {
         if (switchNow) {
             await load(current.path)
@@ -357,7 +357,6 @@ const playFromPlaylist = async(switchNow = true) => {
             showLyrics(current.id)
         }
         await queue(next?.path)
-        const {displayCurrentSong} = require("./dom")
         await displayCurrentSong(current)
         generatePlaylistView()
         if (switchNow) {
@@ -606,7 +605,7 @@ const clearPlaylist = async() => {
     selectedPathIdx = null
     pathIdx = 0
     generatePlaylistView()
-    const {displayCurrentSong} = require("./dom")
+    const {displayCurrentSong} = require("./player")
     await displayCurrentSong(null)
     resetWelcome()
 }

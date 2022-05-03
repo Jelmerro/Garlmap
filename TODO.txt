@@ -1,2 +1,5 @@
 - try to strip featuring artists as an attempt to fetch lyrics better
 - check if title/artist empty, then show just the filename
+- windows glob not working
+- genius toggle not remembered correctly on save
+- window not closable on windows

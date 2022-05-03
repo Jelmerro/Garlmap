@@ -22,13 +22,28 @@ const {ipcRenderer} = require("electron")
 const {formatTime} = require("../util")
 
 let mpv = null
+let customMediaSesion = null
 let volume = 100
+let lastPos = 0
 let hasAnySong = false
 let stoppedAfterTrack = false
 
 const init = path => {
     mpv = new mpvAPI({"args": ["--no-video", "--no-audio-display"], path})
         .on("error", e => ipcRenderer.send("destroy-window", e))
+    try {
+        // This package takes care of connecting to the MPRIS D-Bus interface,
+        // if provided by the OS, else the regular MediaSession API is used.
+        const MPRIS = require("mpris-service")
+        customMediaSesion = MPRIS({
+            "desktopEntry": "garlmap",
+            "identity": "Garlmap",
+            "name": "garlmap"
+        })
+    } catch (e) {
+        console.warn("Using Chromium's broken MediaSession API, be warned:")
+        console.warn(e)
+    }
     mpv.command("observe_property", 1, "playlist-pos")
     mpv.command("observe_property", 2, "playback-time")
     mpv.command("observe_property", 3, "playback-count")
@@ -42,9 +57,12 @@ const init = path => {
             const {currentAndNext} = require("./playlist")
             const {current} = currentAndNext()
             const {duration} = current
-            navigator.mediaSession.setPositionState({
-                duration, "playbackRate": 1, position
-            })
+            lastPos = Math.floor(position * 1000000)
+            if (!customMediaSesion) {
+                navigator.mediaSession.setPositionState({
+                    duration, "playbackRate": 1, position
+                })
+            }
             const played = `&nbsp;${formatTime(position)}/${
                 formatTime(duration)}&nbsp;`
             const perc = `${position / duration * 100}%`
@@ -96,24 +114,54 @@ const init = path => {
         await mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })
-    navigator.mediaSession.setActionHandler("play", pause)
-    navigator.mediaSession.setActionHandler("pause", pause)
-    navigator.mediaSession.setActionHandler("stop", () => {
-        const {stopAfterTrack} = require("./playlist")
-        stopAfterTrack()
-    })
-    navigator.mediaSession.setActionHandler("seekbackward", () => null)
-    navigator.mediaSession.setActionHandler("seekforward", () => null)
-    navigator.mediaSession.setActionHandler(
-        "seekto", details => mpv.command("seek", details.seekTime, "absolute"))
-    navigator.mediaSession.setActionHandler("previoustrack", () => {
-        const {decrement} = require("./playlist")
-        decrement()
-    })
-    navigator.mediaSession.setActionHandler("nexttrack", () => {
-        const {increment} = require("./playlist")
-        increment()
-    })
+    if (customMediaSesion) {
+        customMediaSesion.canEditTracks = false
+        customMediaSesion.getPosition = () => lastPos
+        customMediaSesion.on("raise", () => ipcRenderer.send("show-window"))
+        customMediaSesion.on("quit", async() => {
+            await mpv.command("quit").catch(() => null)
+            ipcRenderer.send("destroy-window")
+        })
+        customMediaSesion.on("play", () => pause())
+        customMediaSesion.on("pause", () => pause())
+        customMediaSesion.on("playpause", () => pause())
+        customMediaSesion.on("stop", () => {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack()
+        })
+        customMediaSesion.on("position", details => {
+            mpv.command("seek", details.position / 1000000, "absolute")
+            customMediaSesion.seeked(details.position)
+        })
+        customMediaSesion.on("previous", () => {
+            const {decrement} = require("./playlist")
+            decrement()
+        })
+        customMediaSesion.on("next", () => {
+            const {increment} = require("./playlist")
+            increment()
+        })
+        customMediaSesion.playbackStatus = "Paused"
+    } else {
+        navigator.mediaSession.setActionHandler("play", pause)
+        navigator.mediaSession.setActionHandler("pause", pause)
+        navigator.mediaSession.setActionHandler("stop", () => {
+            const {stopAfterTrack} = require("./playlist")
+            stopAfterTrack()
+        })
+        navigator.mediaSession.setActionHandler("seekbackward", () => null)
+        navigator.mediaSession.setActionHandler("seekforward", () => null)
+        navigator.mediaSession.setActionHandler("seekto",
+            details => mpv.command("seek", details.seekTime, "absolute"))
+        navigator.mediaSession.setActionHandler("previoustrack", () => {
+            const {decrement} = require("./playlist")
+            decrement()
+        })
+        navigator.mediaSession.setActionHandler("nexttrack", () => {
+            const {increment} = require("./playlist")
+            increment()
+        })
+    }
 }
 
 const isAlive = () => hasAnySong && mpv
@@ -124,24 +172,32 @@ const updatePlayButton = async() => {
             = "../img/play.png"
         document.getElementById("fs-pause").querySelector("img").src
             = "../img/play.png"
-        navigator.mediaSession.playbackState = "paused"
-        // #bug Workaround for (you guessed it) another Electron bug
-        try {
-            document.querySelector("audio").pause().catch(() => null)
-        } catch {
-            // There is no fallback for workarounds
+        if (customMediaSesion) {
+            customMediaSesion.playbackStatus = "Paused"
+        } else {
+            navigator.mediaSession.playbackState = "paused"
+            // #bug Workaround for playback state, using a fake audio element
+            try {
+                document.querySelector("audio").pause().catch(() => null)
+            } catch {
+                // There is no fallback for workarounds
+            }
         }
     } else {
         document.getElementById("pause").querySelector("img").src
             = "../img/pause.png"
         document.getElementById("fs-pause").querySelector("img").src
             = "../img/pause.png"
-        navigator.mediaSession.playbackState = "playing"
-        // #bug Workaround for (you guessed it) another Electron bug
-        try {
-            document.querySelector("audio").play().catch(() => null)
-        } catch {
-            // There is no fallback for workarounds
+        if (customMediaSesion) {
+            customMediaSesion.playbackStatus = "Playing"
+        } else {
+            navigator.mediaSession.playbackState = "playing"
+            // #bug Workaround for playback state, using a fake audio element
+            try {
+                document.querySelector("audio").play().catch(() => null)
+            } catch {
+                // There is no fallback for workarounds
+            }
         }
     }
 }
@@ -168,6 +224,9 @@ const seek = async percent => {
         const {current} = currentAndNext()
         const {duration} = current
         await mpv.command("seek", percent * duration, "absolute")
+        if (customMediaSesion) {
+            customMediaSesion.seeked(percent * duration * 1000000)
+        }
     }
 }
 
@@ -232,7 +291,104 @@ const stopPlayback = async() => {
     }
 }
 
+const displayCurrentSong = async song => {
+    const els = [
+        document.getElementById("current-song"),
+        document.getElementById("fs-current-song")
+    ]
+    for (const songContainer of els) {
+        if (!song) {
+            songContainer.textContent = "Welcome to Garlmap"
+            return
+        }
+        songContainer.textContent = ""
+        const titleEl = document.createElement("span")
+        titleEl.className = "title"
+        titleEl.textContent = song.title
+        songContainer.appendChild(titleEl)
+        if (songContainer === document.getElementById("current-song")) {
+            songContainer.appendChild(document.createTextNode(" - "))
+        }
+        const artistEl = document.createElement("span")
+        artistEl.className = "artist"
+        artistEl.textContent = song.artist
+        songContainer.appendChild(artistEl)
+        const otherInfo = document.createElement("span")
+        otherInfo.className = "other-info"
+        const albumEl = document.createElement("span")
+        albumEl.className = "album"
+        albumEl.textContent = song.album
+        otherInfo.appendChild(albumEl)
+        const bundledInfo = document.createElement("span")
+        if (song.track || song.disc) {
+            bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
+                || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
+        }
+        if (song.date) {
+            bundledInfo.textContent += ` from ${song.date}`
+        }
+        otherInfo.appendChild(bundledInfo)
+        songContainer.appendChild(otherInfo)
+    }
+    if (!customMediaSesion) {
+        // #bug Workaround for playback state, using a fake audio element
+        try {
+            document.body.removeChild(document.querySelector("audio"))
+        } catch {
+            // There is no fallback for workarounds
+        }
+        const audio = document.createElement("audio")
+        audio.src = "./empty.mp3"
+        document.body.appendChild(audio)
+        audio.loop = true
+        await audio.play().catch(() => null)
+    }
+    updatePlayButton()
+    // MediaSession details
+    const {coverArt} = require("./songs")
+    const cover = await coverArt(song.path)
+    if (cover) {
+        document.getElementById("song-cover").src = cover
+        document.getElementById("song-cover").style.display = "initial"
+        document.getElementById("fs-song-cover").src = cover
+        document.getElementById("fs-song-cover").style.display = "initial"
+        if (customMediaSesion) {
+            customMediaSesion.metadata = {
+                "mpris:artUrl": cover,
+                "mpris:length": Math.floor(song.duration * 1000000),
+                "mpris:trackid": customMediaSesion.objectPath("track/0"),
+                "xesam:album": song.album,
+                "xesam:artist": [song.artist],
+                "xesam:title": song.title
+            }
+        } else {
+            // #bug Cover art does not work due to Chromium bug
+            navigator.mediaSession.metadata = new window.MediaMetadata(
+                {...song, "artwork": [{"src": cover}]})
+        }
+    } else {
+        document.getElementById("song-cover").removeAttribute("src")
+        document.getElementById("song-cover").style.display = "none"
+        document.getElementById("fs-song-cover").removeAttribute("src")
+        document.getElementById("fs-song-cover").style.display = "none"
+        if (customMediaSesion) {
+            customMediaSesion.metadata = {
+                "mpris:artUrl": cover,
+                "mpris:length": Math.floor(song.duration * 1000000),
+                "mpris:trackid": customMediaSesion.objectPath("track/0"),
+                "xesam:album": song.album,
+                "xesam:artist": [song.artist],
+                "xesam:title": song.title
+            }
+        } else {
+            navigator.mediaSession.metadata = new window.MediaMetadata(
+                {...song})
+        }
+    }
+}
+
 module.exports = {
+    displayCurrentSong,
     init,
     isAlive,
     load,

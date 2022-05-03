@@ -53,78 +53,6 @@ const generateSongElement = song => {
     return songContainer
 }
 
-const displayCurrentSong = async song => {
-    const els = [
-        document.getElementById("current-song"),
-        document.getElementById("fs-current-song")
-    ]
-    for (const songContainer of els) {
-        if (!song) {
-            songContainer.textContent = "Welcome to Garlmap"
-            return
-        }
-        songContainer.textContent = ""
-        const titleEl = document.createElement("span")
-        titleEl.className = "title"
-        titleEl.textContent = song.title
-        songContainer.appendChild(titleEl)
-        if (songContainer === document.getElementById("current-song")) {
-            songContainer.appendChild(document.createTextNode(" - "))
-        }
-        const artistEl = document.createElement("span")
-        artistEl.className = "artist"
-        artistEl.textContent = song.artist
-        songContainer.appendChild(artistEl)
-        const otherInfo = document.createElement("span")
-        otherInfo.className = "other-info"
-        const albumEl = document.createElement("span")
-        albumEl.className = "album"
-        albumEl.textContent = song.album
-        otherInfo.appendChild(albumEl)
-        const bundledInfo = document.createElement("span")
-        if (song.track || song.disc) {
-            bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
-                || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
-        }
-        if (song.date) {
-            bundledInfo.textContent += ` from ${song.date}`
-        }
-        otherInfo.appendChild(bundledInfo)
-        songContainer.appendChild(otherInfo)
-    }
-    // #bug Workaround to allow mediaSession to work with Electron, sigh
-    try {
-        document.body.removeChild(document.querySelector("audio"))
-    } catch {
-        // There is no fallback for workarounds
-    }
-    const audio = document.createElement("audio")
-    audio.src = "./empty.mp3"
-    document.body.appendChild(audio)
-    audio.loop = true
-    await audio.play().catch(() => null)
-    const {updatePlayButton} = require("./player")
-    updatePlayButton()
-    // MediaSession details
-    const {coverArt} = require("./songs")
-    const cover = await coverArt(song.path)
-    if (cover) {
-        document.getElementById("song-cover").src = cover
-        document.getElementById("song-cover").style.display = "initial"
-        document.getElementById("fs-song-cover").src = cover
-        document.getElementById("fs-song-cover").style.display = "initial"
-        // #bug Cover does not work due to Electron bug
-        navigator.mediaSession.metadata = new window.MediaMetadata(
-            {...song, "artwork": [{"src": cover}]})
-    } else {
-        document.getElementById("song-cover").removeAttribute("src")
-        document.getElementById("song-cover").style.display = "none"
-        document.getElementById("fs-song-cover").removeAttribute("src")
-        document.getElementById("fs-song-cover").style.display = "none"
-        navigator.mediaSession.metadata = new window.MediaMetadata({...song})
-    }
-}
-
 const setFullscreenLayout = async(browserFS, layoutFS) => {
     const currentFocus = document.body.getAttribute("focus-el")
     if (document.fullscreenElement) {
@@ -255,7 +183,6 @@ const appendSelectedSong = (upNext = false) => {
 module.exports = {
     appendSelectedSong,
     decrementSelected,
-    displayCurrentSong,
     generateSongElement,
     incrementSelected,
     setFullscreenLayout,
