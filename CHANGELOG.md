@@ -22,7 +22,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Fullscreen layout styling related to the "up next" notice and general margins
 - Layout of the status line and selection colors
-- Show an event for each failed file so you know that to do about it
+- Show an event for each failed file so you know that to do about it (only in the event panel, summary in the bar)
 - Use dedicated MPRIS D-bus API when available instead of Chromium's MediaSession API
 - Cache file is now named "cache.json" instead of just "cache" to prevent case insensitive file clash on Windows
 - Files without title or artist will now use the song id (last part of the path) as display value

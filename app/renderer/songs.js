@@ -57,7 +57,7 @@ const processFile = async(folder, file, total, lyrics = null) => {
     if (!details?.format?.duration) {
         failures.push(file)
         processedFiles += 1
-        notify(`Failed to scan: ${file.replace(folder, "")}`)
+        notify(`Failed to scan: ${file.replace(folder, "")}`, "err", false)
         document.getElementById("status-files").textContent
             = `${processedFiles}/${total} songs`
         return

@@ -267,7 +267,7 @@ you will need to save your changes manually for them to be stored to the cache.
 const displayNotificationStack = []
 let notificationReady = true
 
-const notify = (msg, type = "err") => {
+const notify = (msg, type = "err", linger = true) => {
     let color = "var(--tertiary)"
     if (type.startsWith("info")) {
         color = "var(--primary)"
@@ -275,8 +275,13 @@ const notify = (msg, type = "err") => {
     if (type.startsWith("warn")) {
         color = "var(--secondary)"
     }
-    displayNotificationStack.push({color, msg, "time": new Date(), type})
-    displayNotificationTimer()
+    const event = {color, msg, "time": new Date(), type}
+    if (linger) {
+        displayNotificationStack.push(event)
+        displayNotificationTimer()
+    } else {
+        appendEventToHistory(event)
+    }
 }
 
 const displayNotificationTimer = () => {
@@ -299,17 +304,20 @@ const displayNotificationTimer = () => {
         notificationReady = true
         displayNotificationTimer()
     }, 4000)
-    // Append entry to event list
+    appendEventToHistory(currentNotify)
+}
+
+const appendEventToHistory = ev => {
     const event = document.createElement("div")
     event.classList.add("event")
     const eventDate = document.createElement("span")
     eventDate.classList.add("date")
-    eventDate.textContent = formatDate(currentNotify.time)
+    eventDate.textContent = formatDate(ev.time)
     event.appendChild(eventDate)
     const eventTitle = document.createElement("span")
     eventTitle.classList.add("title")
-    eventTitle.style.color = currentNotify.color
-    eventTitle.textContent = currentNotify.msg
+    eventTitle.style.color = ev.color
+    eventTitle.textContent = ev.msg
     event.appendChild(eventTitle)
     document.getElementById("events-list").appendChild(event)
 }
