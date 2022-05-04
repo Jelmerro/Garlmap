@@ -1,1 +1,0 @@
-- try to strip featuring artists as an attempt to fetch lyrics better

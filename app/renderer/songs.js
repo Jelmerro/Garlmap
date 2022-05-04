@@ -189,6 +189,7 @@ const scanner = async(folder, dumpOnly = false) => {
     const escapedFolder = normFolder.replace(/\[/g, "\\[")
     glob(joinPath(escapedFolder, "**/*"), async(_e, all) => {
         const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
+            .filter(f => isFile(f))
         const useCache = ["all", "songs"].includes(cache)
         if (useCache !== "none") {
             songs = cachedSongs.filter(s => s.path?.startsWith(normFolder))
@@ -523,7 +524,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         return
     }
     try {
-        notify(`Connecting to Genius to search for the song lyrics of: ${
+        notify(`Searching Genius for the song lyrics of: ${
             req.title} ${req.artist}`, "info")
         const results = await genius.songs.search(`${req.title} ${req.artist}`)
         results.forEach(s => {
@@ -552,6 +553,8 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             cachedSongs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
             setTimeout(() => updateCache(), 1)
+            notify(`Found matching lyrics for: ${req.title} ${
+                req.artist}`, "success", false)
             return
         }
         notify(`Failed to find matching song lyrics in Genius results for: ${
@@ -560,18 +563,19 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         notify(`Failed to fetch lyrics from Genius for: ${
             req.title} ${req.artist}`)
     }
-    // Retry without text between brackets in song title and artist
+    // Retry without text between brackets in song title and single artist
     if (originalReq) {
         return
     }
     if (currentAndNext().current?.id === req.id) {
-        const reqWithoutBrackets = JSON.parse(JSON.stringify(req))
-        reqWithoutBrackets.artist = req.artist.replace(/\(.*\)/g, "").trim()
-        reqWithoutBrackets.title = req.title.replace(/\(.*\)/g, "").trim()
-        if (reqWithoutBrackets.artist !== req.artist) {
-            fetchLyrics(reqWithoutBrackets, force, req)
-        } else if (reqWithoutBrackets.title !== req.title) {
-            fetchLyrics(reqWithoutBrackets, force, req)
+        const reqWithoutExtraText = JSON.parse(JSON.stringify(req))
+        reqWithoutExtraText.artist = req.artist.replace(/\(.*\)/g, "")
+            .split("feat. ")[0].split("ft. ")[0].split(" & ")[0].trim()
+        reqWithoutExtraText.title = req.title.replace(/\(.*\)/g, "").trim()
+        if (reqWithoutExtraText.artist !== req.artist) {
+            fetchLyrics(reqWithoutExtraText, force, req)
+        } else if (reqWithoutExtraText.title !== req.title) {
+            fetchLyrics(reqWithoutExtraText, force, req)
         }
     }
 }

@@ -17,16 +17,18 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Toggle for enabling or disabling Genius API requests (if disabled, folder and cache only)
 - Support for other files besides mp3, most audio files and media containers are now supported
 - Many additional fields to search for and filter on when queueing songs
+- Silent success event for fetching the lyrics from Genius (only in event panel, start and failures still in bar)
 
 ### Changed
 
 - Fullscreen layout styling related to the "up next" notice and general margins
 - Layout of the status line and selection colors
-- Show an event for each failed file so you know that to do about it (only in the event panel, summary in the bar)
+- Log an event for each failed file so you know that to do about it (only in the event panel, summary in the bar)
 - Use dedicated MPRIS D-bus API when available instead of Chromium's MediaSession API
 - Cache file is now named "cache.json" instead of just "cache" to prevent case insensitive file clash on Windows
 - Files without title or artist will now use the song id (last part of the path) as display value
 - Show a dialog before quitting for failed mpv startup
+- Second try of lyrics fetching now also removes featuring/additional artists (as well as extras between brackets as before)
 
 ### Fixed
 
@@ -34,6 +36,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - File load error file songs without cover art, src attribute is now removed instead of set to "null"
 - Close button of the app not working on Windows
 - Glob search for music files not resolving on Windows
+- Directories ending in a valid file extension being moved to parsing stage instead of being filtered
 
 ### Versions
 

@@ -272,7 +272,7 @@ const notify = (msg, type = "err", linger = true) => {
     if (type.startsWith("info")) {
         color = "var(--primary)"
     }
-    if (type.startsWith("warn")) {
+    if (type.startsWith("success")) {
         color = "var(--secondary)"
     }
     const event = {color, msg, "time": new Date(), type}
