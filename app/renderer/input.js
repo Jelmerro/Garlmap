@@ -379,7 +379,7 @@ const mappings = {
             const {saveSettings} = require("./settings")
             saveSettings()
         },
-        "<C-x>": () => {
+        "<C-t>": () => {
             const {exportList} = require("./playlist")
             exportList()
         },

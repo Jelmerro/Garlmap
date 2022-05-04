@@ -81,7 +81,7 @@ It's recommended to read both this help and the startup help at least once.
 You can save all your settings with the button or using Ctrl-s at any time,
 a list of custom settings currently in use is always displayed on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
-Importing and exporting can also be done using Ctrl-i and Ctrl-x respectively.
+Importing and exporting can also be done using Ctrl-i and Ctrl-t respectively.
 You can view the list of events (such as lyrics fetching) with Ctrl-Shift-E,
 or by clicking the current event in the status bar at the bottom.
 If you don't want lyrics to be fetched from Genius at all, you can disable it,

@@ -30,6 +30,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Show a dialog before quitting for failed mpv startup
 - Second try of lyrics fetching now also removes featuring/additional artists (as well as extras between brackets as before)
 - Events are now directly visible in the event viewer, even if they are shown in the status bar later
+- Shortcut for exporting the playlist is now Ctrl-t instead of the weird Ctrl-x that prevented "cut"
 
 ### Fixed
 
