@@ -29,6 +29,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Files without title or artist will now use the song id (last part of the path) as display value
 - Show a dialog before quitting for failed mpv startup
 - Second try of lyrics fetching now also removes featuring/additional artists (as well as extras between brackets as before)
+- Events are now directly visible in the event viewer, even if they are shown in the status bar later
 
 ### Fixed
 

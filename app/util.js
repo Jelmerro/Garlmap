@@ -276,11 +276,10 @@ const notify = (msg, type = "err", linger = true) => {
         color = "var(--secondary)"
     }
     const event = {color, msg, "time": new Date(), type}
+    appendEventToHistory(event)
     if (linger) {
         displayNotificationStack.push(event)
         displayNotificationTimer()
-    } else {
-        appendEventToHistory(event)
     }
 }
 
@@ -304,7 +303,6 @@ const displayNotificationTimer = () => {
         notificationReady = true
         displayNotificationTimer()
     }, 4000)
-    appendEventToHistory(currentNotify)
 }
 
 const appendEventToHistory = ev => {
