@@ -182,6 +182,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 #events-list {overflow: auto;user-select: text;}
 #events .event {margin: 1em .5em;}
 #events .date {margin-right: 1em;}
+#events *::selection {color: unset;}
 
 /* lyrics editor */
 #lyrics-editor {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;}
