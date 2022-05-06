@@ -537,6 +537,18 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 if (originalScore > s.score) {
                     s.score = originalScore
                 }
+                const originalNameScore = compareTwoStrings(
+                    low(s.title), low(originalReq.title))
+                + compareTwoStrings(low(s.artist.name), low(req.artist))
+                if (originalNameScore > s.score) {
+                    s.score = originalNameScore
+                }
+                const originalArtistScore = compareTwoStrings(
+                    low(s.title), low(req.title))
+                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
+                if (originalArtistScore > s.score) {
+                    s.score = originalArtistScore
+                }
             }
         })
         results.sort((a, b) => b.score - a.score)

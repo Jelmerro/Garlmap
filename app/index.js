@@ -411,12 +411,22 @@ app.on("ready", () => {
 
 ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
 // #bug Setting the mainWindow will block interaction completely on second open,
-// therefor we set it to null instead for now to at least not break the app.
-// The modal position is incorrect as well, no workarounds known yet.
+// but only when using Linux and GNOME (and forks like Cinnamon),
+// therefor we set it to null on linux to at least not break the app.
+// The modal position is incorrect as well on all systems, no workarounds known.
 // See this issue for more details:
 // https://github.com/electron/electron/issues/32857
-ipcMain.handle("dialog-open", (_, op) => dialog.showOpenDialog(null, op))
-ipcMain.handle("dialog-save", (_, op) => dialog.showSaveDialog(null, op))
+if (process.platform === "linux") {
+    ipcMain.handle("dialog-open", (_, options) => dialog.showOpenDialog(
+        null, options))
+    ipcMain.handle("dialog-save", (_, options) => dialog.showSaveDialog(
+        null, options))
+} else {
+    ipcMain.handle("dialog-open", (_, options) => dialog.showOpenDialog(
+        mainWindow, options))
+    ipcMain.handle("dialog-save", (_, options) => dialog.showSaveDialog(
+        mainWindow, options))
+}
 ipcMain.on("destroy-window", (_, error) => {
     if (error) {
         try {
