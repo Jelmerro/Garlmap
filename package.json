@@ -26,15 +26,15 @@
   "email": "Jelmerro@users.noreply.github.com",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "18.2.0",
+    "electron": "19.0.0",
     "electron-builder": "23.0.3",
-    "eslint": "8.14.0",
+    "eslint": "8.16.0",
     "eslint-plugin-sort-keys": "2.3.5",
     "rimraf": "3.0.2"
   },
   "dependencies": {
     "genius-lyrics": "4.3.8",
-    "glob": "8.0.1",
+    "glob": "8.0.3",
     "mpris-service": "2.1.2",
     "mpv": "1.0.0",
     "music-metadata": "7.12.3",
