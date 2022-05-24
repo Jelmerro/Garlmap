@@ -39,6 +39,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Close button of the app not working on Windows
 - Glob search for music files not resolving on Windows
 - Directories ending in a valid file extension being moved to parsing stage instead of being filtered
+- Sporadic newline issues in lyrics due to Genius response changes (by auto updating them)
 
 ### Versions
 

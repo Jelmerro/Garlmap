@@ -46,6 +46,9 @@ let processedFiles = 0
 let shouldUseGenius = true
 const low = s => s.toLowerCase()
 
+const sanitizeLyrics = lyrics => lyrics?.trim()
+    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
+
 const processFile = async(folder, file, total, lyrics = null) => {
     document.getElementById("status-scan").textContent = `Reading ${file}`
     let details = await musicMetadata.parseFile(file, {"skipCovers": true})
@@ -71,7 +74,7 @@ const processFile = async(folder, file, total, lyrics = null) => {
         "disc_total": details.common.disk.of,
         "duration": details.format.duration,
         "id": file.replace(folder, "").replace(/^[/\\]+/g, ""),
-        lyrics,
+        "lyrics": sanitizeLyrics(lyrics),
         "path": file,
         "title": details.common.title,
         "track": details.common.track.no,
@@ -200,6 +203,7 @@ const scanner = async(folder, dumpOnly = false) => {
             if (useCache && match) {
                 match.id = f.replace(normFolder, "").replace(/^[/\\]+/g, "")
                 match.path = f
+                match.lyrics = sanitizeLyrics(match.lyrics)
                 continue
             }
             await processFile(normFolder, f, files.length, match?.lyrics)
@@ -469,7 +473,7 @@ const selectLyricsFromResults = async() => {
         editor.value = "Fetching lyrics..."
         const cacheEntry = lyricsSearchCache[index]
         try {
-            editor.value = await cacheEntry.lyrics()
+            editor.value = sanitizeLyrics(await cacheEntry.lyrics())
         } catch {
             notify(`Failed to fetch lyrics from Genius for: ${
                 cacheEntry.title} ${cacheEntry.artist.name}`)
@@ -504,7 +508,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     ]
     const {currentAndNext} = require("./playlist")
     for (const file of files) {
-        const lyrics = readFile(file)
+        const lyrics = sanitizeLyrics(readFile(file))
         if (lyrics) {
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
@@ -554,7 +558,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         results.sort((a, b) => b.score - a.score)
         const [song] = results
         if (song && song.score > 1.6) {
-            const lyrics = await song.lyrics()
+            const lyrics = sanitizeLyrics(await song.lyrics())
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
