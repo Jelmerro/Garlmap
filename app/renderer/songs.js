@@ -41,7 +41,7 @@ let configDir = null
 let cache = "all"
 let cachedSongs = []
 let songs = []
-let failures = []
+let failureCount = 0
 let processedFiles = 0
 let shouldUseGenius = true
 const low = s => s.toLowerCase()
@@ -49,82 +49,78 @@ const low = s => s.toLowerCase()
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
-const processFile = async(folder, file, total, lyrics = null) => {
-    document.getElementById("status-scan").textContent = `Reading ${file}`
-    let details = await musicMetadata.parseFile(file, {"skipCovers": true})
-        .catch(() => null)
-    if (!details?.format?.duration) {
-        details = await musicMetadata.parseFile(
-            file, {"duration": true, "skipCovers": true}).catch(() => null)
+const processFile = async(path, id) => {
+    let song = null
+    let cacheIndex = null
+    if (cache !== "none") {
+        song = cachedSongs.find(s => path === s.path)
+            || cachedSongs.find(s => id.endsWith(s.id))
+            || cachedSongs.find(s => s.id.endsWith(id))
+        cacheIndex = cachedSongs.indexOf(song)
     }
-    if (!details?.format?.duration) {
-        failures.push(file)
-        processedFiles += 1
-        notify(`Failed to scan: ${file.replace(folder, "")}`, "err", false)
-        document.getElementById("status-files").textContent
-            = `${processedFiles}/${total} songs`
-        return
-    }
-    const song = {
-        "album": details.common.album,
-        "artist": details.common.artist,
-        "bitrate": details.format.bitrate,
-        "date": details.common.year,
-        "disc": details.common.disk.no,
-        "disc_total": details.common.disk.of,
-        "duration": details.format.duration,
-        "id": file.replace(folder, "").replace(/^[/\\]+/g, ""),
-        "lyrics": sanitizeLyrics(lyrics),
-        "path": file,
-        "title": details.common.title,
-        "track": details.common.track.no,
-        "track_total": details.common.track.of
-    }
-    const extraProps = [
-        "genre",
-        "composer",
-        "lyricist",
-        "writer",
-        "conductor",
-        "remixer",
-        "arranger",
-        "engineer",
-        "producer",
-        "technician",
-        "djmixer",
-        "mixer",
-        "label",
-        "grouping",
-        "subtitle",
-        "rating",
-        "bpm",
-        "mood",
-        "releasetype",
-        "originalalbum",
-        "originalartist"
-    ]
-    for (const prop of extraProps) {
-        if (details.common[prop]) {
-            song[prop] = details.common[prop]
+    if (cache === "lyrics" || !song) {
+        document.getElementById("status-scan").textContent = `Reading ${path}`
+        let details = await musicMetadata.parseFile(path, {"skipCovers": true})
+            .catch(() => null)
+        if (!details?.format?.duration) {
+            details = await musicMetadata.parseFile(
+                path, {"duration": true, "skipCovers": true}).catch(() => null)
+        }
+        if (!details?.format?.duration) {
+            failureCount += 1
+            notify(`Failed to scan: ${id}`, "err", false)
+            return
+        }
+        song = {
+            "album": details.common.album,
+            "artist": details.common.artist,
+            "bitrate": details.format.bitrate,
+            "date": details.common.year,
+            "disc": details.common.disk.no,
+            "disc_total": details.common.disk.of,
+            "duration": details.format.duration,
+            id,
+            "lyrics": sanitizeLyrics(song?.lyrics),
+            path,
+            "title": details.common.title,
+            "track": details.common.track.no,
+            "track_total": details.common.track.of
+        }
+        const extraProps = [
+            "genre",
+            "composer",
+            "lyricist",
+            "writer",
+            "conductor",
+            "remixer",
+            "arranger",
+            "engineer",
+            "producer",
+            "technician",
+            "djmixer",
+            "mixer",
+            "label",
+            "grouping",
+            "subtitle",
+            "rating",
+            "bpm",
+            "mood",
+            "releasetype",
+            "originalalbum",
+            "originalartist"
+        ]
+        for (const prop of extraProps) {
+            if (details.common[prop]) {
+                song[prop] = details.common[prop]
+            }
         }
     }
-    const existingCache = cachedSongs.find(
-        s => s.id === song.id || s.path === song.path)
-    if (existingCache) {
-        cachedSongs[cachedSongs.indexOf(existingCache)] = song
+    if (cacheIndex >= 0) {
+        cachedSongs[cacheIndex] = song
     } else {
         cachedSongs.push(song)
     }
-    const existingCurrent = songs.find(
-        s => s.id === song.id || s.path === song.path)
-    if (existingCurrent) {
-        songs[songs.indexOf(existingCurrent)] = song
-    } else {
-        songs.push(song)
-    }
-    processedFiles += 1
-    document.getElementById("status-files").textContent
-        = `${processedFiles}/${total} songs`
+    songs.push(song)
 }
 
 const dumpLyrics = folder => {
@@ -140,10 +136,11 @@ const dumpLyrics = folder => {
     ipcRenderer.send("destroy-window")
 }
 
-const scanner = async(folder, dumpOnly = false) => {
+const scanner = async(rawFolder, dumpOnly = false) => {
+    const folder = joinPath(rawFolder)
     processedFiles = 0
     songs = []
-    failures = []
+    failureCount = 0
     document.getElementById("status-current").textContent = `Scanning`
     document.getElementById("status-current").style.display = "initial"
     document.getElementById("status-folder").textContent = folder
@@ -188,28 +185,19 @@ const scanner = async(folder, dumpOnly = false) => {
         "wmv",
         "wv"
     ]
-    const normFolder = joinPath(folder)
-    const escapedFolder = normFolder.replace(/\[/g, "\\[")
+    const escapedFolder = folder.replace(/\[/g, "\\[")
     glob(joinPath(escapedFolder, "**/*"), async(_e, all) => {
         const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
             .filter(f => isFile(f))
-        const useCache = ["all", "songs"].includes(cache)
-        if (useCache !== "none") {
-            songs = cachedSongs.filter(s => s.path?.startsWith(normFolder))
-                .filter(s => isFile(s.path))
-        }
         for (const f of files) {
-            const match = songs.find(s => f.endsWith(s.id) || f === s.path)
-            if (useCache && match) {
-                match.id = f.replace(normFolder, "").replace(/^[/\\]+/g, "")
-                match.path = f
-                match.lyrics = sanitizeLyrics(match.lyrics)
-                continue
-            }
-            await processFile(normFolder, f, files.length, match?.lyrics)
+            const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
+            await processFile(f, id)
+            processedFiles += 1
+            document.getElementById("status-files").textContent
+                = `${processedFiles}/${files.length} songs`
         }
         if (dumpOnly) {
-            dumpLyrics(normFolder)
+            dumpLyrics(folder)
             return
         }
         document.getElementById("status-current").textContent = `Ready`
@@ -217,11 +205,9 @@ const scanner = async(folder, dumpOnly = false) => {
         document.getElementById("status-files").textContent
             = `${songs.length} songs`
         document.getElementById("status-scan").textContent = ""
-        if (failures.length) {
-            notify(`Total of ${failures.length} scan failures`)
+        if (failureCount) {
+            notify(`Total of ${failureCount} scan failures`)
         }
-        const {currentAndNext} = require("./playlist")
-        currentAndNext()
         setTimeout(() => updateCache(), 1)
     })
 }
@@ -636,8 +622,8 @@ const setStartupSettings = (dir, policy, removeMissing, enableGenius) => {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
         }
         if (cache === "lyrics") {
-            cachedSongs = cachedSongs.filter(s => s.id && s.lyrics).map(
-                s => ({"id": s.id, "lyrics": s.lyrics}))
+            cachedSongs = cachedSongs.filter(s => s.lyrics)
+                .map(s => ({"id": s.id, "lyrics": s.lyrics, "path": s.path}))
         }
     }
 }

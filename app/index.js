@@ -158,13 +158,13 @@ const processStartupArgs = () => {
             config.folder = arg
         }
     })
-    if (!["all", "song", "lyrics", "none", undefined].includes(config.cache)) {
+    if (!["all", "songs", "lyrics", "none", undefined].includes(config.cache)) {
         console.warn("Error, cache arg only accepts one of:")
-        console.warn("- all, song, lyrics, none")
+        console.warn("- all, songs, lyrics, none")
         app.exit(1)
     }
-    if (["song", "none"].includes(config.cache) && config.dumpLyrics) {
-        console.warn("Error, cache is set to song only or none,")
+    if (["songs", "none"].includes(config.cache) && config.dumpLyrics) {
+        console.warn("Error, cache is set to songs only or none,")
         console.warn("therefor there are no lyrics to be dumped.")
         app.exit(1)
     }
@@ -185,9 +185,9 @@ const processStartupArgs = () => {
 
 const outputHelp = () => {
     console.info(`${`
-> garlmap --cache=<ALL,song,lyrics,none> --cache-clean --auto-lyrics \\
-    --auto-scroll --auto-close --auto-remove --font-size=<int> --mpv=<loc> \\
-    --dump-lyrics folder
+> garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \\
+    --auto-scroll --auto-close --auto-remove --use-genius --font-size=<int> \\
+    --mpv=<loc> --dump-lyrics folder
 
 For help with app usage, see the built-in help on the right.
 Garlmap can be started without any arguments, but it supports the following:
