@@ -419,6 +419,10 @@ const mappings = {
             const {switchToLyrics} = require("./songs")
             switchToLyrics(true)
         },
+        "<S-F6>": () => {
+            const {stopAfterLastTrackOfRule} = require("./playlist")
+            stopAfterLastTrackOfRule()
+        },
         "<S-F9>": () => document.getElementById("song-info").scrollBy(0, 1000),
         "<S-F10>": () => {
             document.getElementById("song-info").scrollBy(0, -1000)
@@ -588,6 +592,10 @@ const mappings = {
         },
         "<PageUp>": () => {
             document.getElementById("main-playlist").scrollBy(0, -300)
+        },
+        "S": () => {
+            const {stopAfterLastTrackOfRule} = require("./playlist")
+            stopAfterLastTrackOfRule()
         },
         "a": () => {
             const {toggleAutoScroll} = require("./playlist")

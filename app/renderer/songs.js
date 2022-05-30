@@ -77,14 +77,14 @@ const processFile = async(path, id) => {
             "bitrate": details.format.bitrate,
             "date": details.common.year,
             "disc": details.common.disk.no,
-            "disc_total": details.common.disk.of,
+            "disctotal": details.common.disk.of,
             "duration": details.format.duration,
             id,
             "lyrics": sanitizeLyrics(song?.lyrics),
             path,
             "title": details.common.title,
             "track": details.common.track.no,
-            "track_total": details.common.track.of
+            "tracktotal": details.common.track.of
         }
         const extraProps = [
             "genre",

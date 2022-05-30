@@ -48,8 +48,8 @@ const generateSongElement = song => {
     bundledInfo.className = "bundled-info"
     bundledInfo.textContent = formatTime(song.duration)
     if (song.track || song.disc) {
-        bundledInfo.textContent += ` ${song.track || "?"}/${song.track_total
-            || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
+        bundledInfo.textContent += ` ${song.track || "?"}/${song.tracktotal
+            || "?"} on CD ${song.disc || "?"}/${song.disctotal || "?"}`
     }
     if (song.date) {
         bundledInfo.textContent += ` from ${song.date}`

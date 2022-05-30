@@ -325,8 +325,8 @@ const displayCurrentSong = async song => {
         otherInfo.appendChild(albumEl)
         const bundledInfo = document.createElement("span")
         if (song.track || song.disc) {
-            bundledInfo.textContent = ` ${song.track || "?"}/${song.track_total
-                || "?"} on CD ${song.disc || "?"}/${song.disc_total || "?"}`
+            bundledInfo.textContent = ` ${song.track || "?"}/${song.tracktotal
+                || "?"} on CD ${song.disc || "?"}/${song.disctotal || "?"}`
         }
         if (song.date) {
             bundledInfo.textContent += ` from ${song.date}`

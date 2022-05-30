@@ -422,6 +422,14 @@ const stopAfterTrack = (track = null) => {
     playFromPlaylist(false)
 }
 
+const stopAfterLastTrackOfRule = () => {
+    if (rulelist[ruleIdx]) {
+        rulelist[ruleIdx].songs.at(-1).stopAfter
+            = !rulelist[ruleIdx].songs.at(-1).stopAfter
+    }
+    playFromPlaylist(false)
+}
+
 const deleteSelected = () => {
     if (selectedRuleIdx === null) {
         return
@@ -629,6 +637,7 @@ module.exports = {
     playFromPlaylist,
     playSelectedSong,
     setFallbackRule,
+    stopAfterLastTrackOfRule,
     stopAfterTrack,
     toggleAutoClose,
     toggleAutoRemove,

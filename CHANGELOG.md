@@ -18,6 +18,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Support for other files besides mp3, most audio files and media containers are now supported
 - Many additional fields to search for and filter on when queueing songs
 - Silent success event for fetching the lyrics from Genius (only in event panel, start and failures still in bar)
+- Shortcut to stop after the last song of the current rule, either with "S" in the playlist or "Shift-F6" globally
 
 ### Changed
 
@@ -31,6 +32,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Second try of lyrics fetching now also removes featuring/additional artists (as well as extras between brackets as before)
 - Events are now directly visible in the event viewer, even if they are shown in the status bar later
 - Shortcut for exporting the playlist is now Ctrl-t instead of the weird Ctrl-x that prevented "cut"
+- Fields "disc_total" and "track_total" are now named "disctotal" and "tracktotal"
 
 ### Fixed
 

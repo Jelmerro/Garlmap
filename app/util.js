@@ -55,13 +55,13 @@ Alternatively you can use Ctrl-f or Ctrl-l for the search and playlist sections.
 No other sections are focusable in the traditional sense,
 but they can be controlled with other shortcuts.
 Toggling between the two sections can also be done using Ctrl-Tab.
-This section can be scrolled with F9 and F10, for example.
+The lyrics section can be scrolled with F9 and F10, without needing focus.
 You can also display song lyrics here, by pressing F4,
 which will happen automatically if they are available offline,
 or you can bring back this help at any time with F1.
 With Shift-F4 you can refetch the lyrics in case the cached ones are outdated.
 For more lyrics options, see the dedicated paragraph or the buttons below it.
-You can toggle automatic fetching with "t" in the playlist or with the checkbox.
+You can toggle automatic fetching with t in the playlist or with the checkbox.
 F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 You can seek by clicking the progress bar with any mouse button,
@@ -79,13 +79,13 @@ There are many ways to do so, with env vars, a config file, or with arguments,
 all of which are explained if you start Garlmap with the "--help" argument.
 It's recommended to read both this help and the startup help at least once.
 You can save all your settings with the button or using Ctrl-s at any time,
-a list of custom settings currently in use is always displayed on startup.
+a list of custom settings currently in use is always logged on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
 Importing and exporting can also be done using Ctrl-i and Ctrl-t respectively.
 You can view the list of events (such as lyrics fetching) with Ctrl-Shift-E,
 or by clicking the current event in the status bar at the bottom.
-If you don't want lyrics to be fetched from Genius at all, you can disable it,
-either at runtime with the checkbox right below or using Ctrl-g,
+If you don't want lyrics to be fetched from Genius at all, you can disable it:
+at runtime with the checkbox right below the lyrics, using Ctrl-g to toggle it,
 or otherwise using env vars, the config file or the startup arguments.
 
 Syntax for queueing and searching
@@ -94,13 +94,13 @@ You can search for songs using the search section on the left.
 These can be queued in the playlist individually, or as what is called a rule.
 Rules are filters with a specific order and/or limit that can queue in bulk.
 For example, "album:pinkerton artist:weezer" can be added to the playlist,
-this rule which will play the entire Pinkerton album by Weezer.
+this rule which will play the entire Pinkerton album by artist Weezer.
 You could also just search for "weezer pinker" or something and find it,
 but the above is much more accurate if you have a large library.
 There are many fields that can be used to search for songs based on their tags,
 while others are specific to Garlmap for ordering or counting the query.
 These properties are always present, though sometimes empty:
-"title", "artist", "album", "disc", "disc_total", "track", "track_total",
+"title", "artist", "album", "disc", "disctotal", "track", "tracktotal",
 "lyrics", "duration", "date", "order" and "limit".
 On some files that support them, you can also search for the following fields:
 "genre", "composer", "lyricist", "writer", "conductor", "remixer", "arranger",
@@ -120,11 +120,11 @@ For fields that support multiple values, each value is searched to find a match,
 for example: "genre=rock" will look for any song with the rock genre,
 but not necessarily songs for which it's the only genre of the entire song.
 Excluding values from appearing is a bit more involved due to the Regex syntax,
-but to excluse electronic music use "genre=^(?!.*electro)" in your search.
+but to exclude electronic music add "genre=^(?!.*electro)" to your search.
 If in your search you use optional fields such as genre, mood or composer,
 songs that do not have them will be filtered from the results entirely.
 The default sort order "disk", which means it's sorted on path alphabetically,
-is used for all queries, unless a custom "order" field is provided.
+and it's used for all queries, unless a custom "order" field is provided.
 For example, you can change to order to "shuffle", to play the tracks randomly.
 Another valid order is "alpha" which will sort by song title alphabetically.
 Finally there is "albumshuffle", which will play albums shuffled,
@@ -135,23 +135,23 @@ Search usage
 
 You can focus the search section with either F3 or Ctrl-f,
 and then type in any query as described in the paragraph above.
-You can always jump to the search box with "Tab", regardless of current focus.
+You can always jump to the search box with Tab, regardless of current focus.
 F3/Ctrl-f merely switch to this section, which might still have a song selected,
 instead of immediately bringing the focus to the search box.
 After entering a search, you can add the rule to the playlist in 3 ways:
-1. At the end of the playlist with "Enter".
-2. Immediately after the current rule/song with "Shift-Enter".
-3. As a fallback rule (if it has a shuffling order) with "Ctrl-Enter".
+1. At the end of the playlist with Enter.
+2. Immediately after the current rule/song with Shift-Enter.
+3. As a fallback rule (if it has a shuffling order) with Ctrl-Enter.
 The entire query can be added as a rule to the playlist with these shortcuts,
 which will automatically queue all matching tracks based on the rule.
 Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
 or simply with the Arrow up and down keys to select individual songs.
 While in the list, you can also use PageUp, PageDown, Home and End to navigate.
-Once you have found the right track, you can add this single song with "Enter".
-With "Shift-Enter" you can queue it immediately after the current rule.
+Once you have found the right track, you can add this single song with Enter.
+With Shift-Enter you can queue it immediately after the current rule.
 You can also select tracks with the left mouse button,
-middle-click it to add it to the playlist immediately after the current rule,
-and finally right-click to add it at the end of the playlist.
+double-click or right-click to add them to the playlist at the end,
+or middle-click it to add it to the playlist immediately after the current rule.
 
 Playlist usage
 
@@ -169,17 +169,20 @@ You can navigate the playlist view with the Arrow keys or hjkl,
 or select a rule or track directly by clicking with the left mouse button on it.
 On hover, a play icon will appear, which can be used to play a song right away.
 Right-clicking will open/close a rule, or toggle stop after track on a song.
-Stop after selected song can be toggled with "s", for which an icon will appear.
-Middle-clicking on a song or rule will remove it from the playlist.
+Stop after selected song can be toggled with s, for which an icon will appear.
+Stop after the last song of the current rule can be toggled with Shift-s,
+or globally using the app shortcut for it: Shift-F6.
+Middle-clicking on a song or rule will remove it from the playlist,
+you can do the same for songs inside existing rules, also using Delete or d.
 While in the playlist, you can also use PageUp, PageDown, Home and End,
 which scrolls the view, or use the same keys with Ctrl to move the selection.
 Ctrl-up and Ctrl-down are the same as Ctrl-PageUp and Ctrl-PageDown,
 but without control the arrows move the selection, while Page keys move a page.
-You can also play the selected track right away with "Enter".
-Using "a" you can toggle auto scrolling the playlist to the current song,
+You can also play the selected track right away with Enter.
+With a you can toggle auto scrolling the playlist to the current song,
 though it will not move the selection, similar to scrolling with Ctrl-e/Ctrl-y.
-You can also toggle automatic opening and closing of the rules with "c",
-or toggle automatic removal of old rules and songs using "r".
+You can also toggle automatic opening and closing of the rules with c,
+or toggle automatic removal of old rules and songs using r.
 
 Caching
 
@@ -188,7 +191,7 @@ either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.
 You can control if the cache should be read on startup using --cache,
 or with the GARLMAP_CACHE ENV var set to one of: all, songs, lyrics, none.
 Obviously you are free to delete the "cache.json" at any time if you want to,
-just know that cache file greatly speeds up parsing of large folders,
+just know that the cache file greatly speeds up parsing of large folders,
 and greatly reduces the amount of requests to Genius if you want auto lyrics.
 Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
 but after startup there shouldn't be too many moments that freeze the app.
@@ -226,7 +229,7 @@ which will exit one stage of fullscreen per click, similar to pressing Escape.
 While inside the fullscreen minimal layout, you also have more keybindings.
 First you can use the arrow keys for seeking in the track,
 or Ctrl-Left and Ctrl-Right to move between tracks themselves.
-Also, not only F9 and F10 scroll the lyrics, but PageDown and PageUp as well.
+Also, not only do F9 and F10 scroll the lyrics, but PageDown and PageUp as well.
 You don't have to hold control for muting, changing or resetting the volume,
 just m, -, = and 0 will work fine (= is the unshifted key for +).
 You can also use s to toggle stopping after the current track.
@@ -236,12 +239,12 @@ Lyrics editor
 
 Besides automatically showing the lyrics using the Autolyrics option,
 you can also edit them yourself and save them to the cache.
-To open the editor, either press Ctrl-F4 or use the buttons right below.
+To open the editor, either press Ctrl-F4 or use the buttons below the help.
 These buttons can also be used to switch between the help and showing lyrics,
 fetching the lyrics fresh from Genius or disabling the Genius API entirely.
 Once in the editor, you can focus mainly on two sections, the search and editor.
 To toggle between the sections, use Ctrl-Tab, or just Tab to jump to searching.
-Like the event dialog, you can close it by clicking outside or with Escape,
+Like the event dialog, you can close it by clicking outside or using Escape,
 as well as by pressing the same shortcut you used to open it: Ctrl-F4.
 In the search section, you can type a query, and search on Genius for songs.
 This will continue to work, even if you have disabled the automatic fetching.
@@ -255,8 +258,15 @@ You can save with Ctrl-s, the save button or with Ctrl-Enter in the text editor.
 The search results can also be used to fill the lyrics editor with it's text.
 After a search, highlight the right song with the arrow keys or the mouse,
 then press Enter or double-click on the song to use it's lyrics in the editor.
-You can then edit them further, or save them with the button or the keys,
-you will need to save your changes manually for them to be stored to the cache.
+You can then edit them further, or save them with the button or Ctrl-Enter,
+You must save your changes manually for them to be stored to the cache.
+
+More info
+
+If you want more information, or still have questions,
+even after reading this entire section and the startup help using "--help",
+you are more than welcome to reach out on Github.
+Please visit Jelmerro/Garlmap and make an issue with your question or request.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
     document.getElementById("fs-lyrics").scrollTo(0, 0)
