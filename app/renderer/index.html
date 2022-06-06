@@ -40,6 +40,11 @@
     </div>
     <div id="column-container">
         <div id="search-container">
+            <div id="search-controls">
+                <div class="button" id="switch-to-playlist">To playlist</div>
+                <div class="button" id="add-songs">Add rule</div>
+                <div class="button" id="make-fallback">Make fallback</div>
+            </div>
             <textarea id="rule-search" autofocus="autofocus"></textarea>
             <div id="search-results"></div>
         </div>
@@ -61,13 +66,14 @@
                     <input type="checkbox" id="toggle-autolyrics">
                     <span class="checkbox-mark" />
                 </label>
+                <div class="button" id="switch-to-search">To search</div>
                 <div class="button" id="open-folder">Open folder</div>
                 <div class="button" id="import-playlist">Import</div>
                 <div class="button" id="export-playlist">Export</div>
                 <div class="button" id="save-settings">Save settings</div>
             </div>
             <div id="main-playlist"></div>
-            <div id="fallback-rule">order:shuffle</div>
+            <div id="fallback-rule">order=shuffle</div>
         </div>
         <div id="info-container">
             <img id="song-cover" />

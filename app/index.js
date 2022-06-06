@@ -110,6 +110,7 @@ const processStartupArgs = () => {
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
         "mpv": process.env.GARLMAP_MPV?.trim(),
+        "twoColumn": process.env.GARLMAP_TWO_COLUMN?.trim().toLowerCase(),
         "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS)
             || !process.env.GARLMAP_USE_GENIUS
     }
@@ -135,6 +136,8 @@ const processStartupArgs = () => {
                     || arg === "--dump-lyrics"
             } else if (name === "--mpv") {
                 config.mpv = value
+            } else if (name === "--two-column") {
+                config.twoColumn = value
             } else if (name === "--font-size") {
                 config.fontSize = value
             } else if (name === "--auto-lyrics") {
@@ -161,6 +164,11 @@ const processStartupArgs = () => {
     if (!["all", "songs", "lyrics", "none", undefined].includes(config.cache)) {
         console.warn("Error, cache arg only accepts one of:")
         console.warn("- all, songs, lyrics, none")
+        app.exit(1)
+    }
+    if (!["never", "mobile", "always", undefined].includes(config.twoColumn)) {
+        console.warn("Error, twoColumn arg only accepts one of:")
+        console.warn("- never, mobile, always")
         app.exit(1)
     }
     if (["songs", "none"].includes(config.cache) && config.dumpLyrics) {
@@ -279,6 +287,25 @@ Garlmap can be started without any arguments, but it supports the following:
                    If also absent, the GARLMAP_USE_GENIUS env will be read,
                    or this setting will by default be enabled and use the API.
                    Change this setting with Ctrl-g or the bottom right checkbox.
+
+    --two-column=* Define the policy for using the two column layout.
+                   When enabled, only the lyrics with cover are always visible.
+                   The playlist/search section will be hidden/shown on switch,
+                   with only the currently focused section being visible.
+                   This results in only two columns being visible at a time.
+                   This layout is mainly intended to be used on smaller screens,
+                   which is why the default value is set to "mobile",
+                   as this will only activate this layout on smaller windows.
+                   When on, buttons will be shown to switch between sections,
+                   but this can also be done with the keyboard if available.
+                   You can set to use the two column layout "always" or "never".
+                   The argument should be provided with value like so:
+                   "--two-column=never", "--two-column=mobile" or with "always".
+                   If no arg is found, it will read the "twoColumn" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_TWO_COLUMN env will be read,
+                   or this setting will by default fallback to using "mobile".
+                   This setting cannot be changed once Garlmap is started.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
                    Accepted values are between 8-100, and the unit is in pixels.

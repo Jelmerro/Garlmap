@@ -29,6 +29,7 @@ const init = () => {
         const {setStartupSettings} = require("./songs")
         setStartupSettings(config.configDir,
             config.cache || "all", config.cacheClean, config.useGenius)
+        document.body.setAttribute("two-column", config.twoColumn || "mobile")
         if (config.folder) {
             const {scanner} = require("./songs")
             scanner(config.folder, config.dumpLyrics)

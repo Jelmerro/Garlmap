@@ -143,6 +143,15 @@ const switchFocus = async newFocus => {
     } else {
         document.getElementById("rule-search").blur()
     }
+    updateAddSongsButton()
+}
+
+const updateAddSongsButton = () => {
+    if (document.querySelector("#search-results .selected")) {
+        document.getElementById("add-songs").textContent = "Add song"
+    } else {
+        document.getElementById("add-songs").textContent = "Add rule"
+    }
 }
 
 const decrementSelected = () => {
@@ -157,6 +166,7 @@ const decrementSelected = () => {
     }
     document.querySelector("#search-results .selected")
         ?.scrollIntoView({"block": "nearest"})
+    updateAddSongsButton()
 }
 
 const incrementSelected = () => {
@@ -175,6 +185,7 @@ const incrementSelected = () => {
     }
     document.querySelector("#search-results .selected")
         ?.scrollIntoView({"block": "nearest"})
+    updateAddSongsButton()
 }
 
 const appendSelectedSong = (upNext = false) => {

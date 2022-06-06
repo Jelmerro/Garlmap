@@ -759,14 +759,44 @@ const handleMouse = e => {
     if (!queryMatch(e, ok)) {
         e.preventDefault()
     }
-    if (document.body.getAttribute("focus-el") === "events") {
+    let mode = document.body.getAttribute("focus-el")
+    const searchbox = document.getElementById("rule-search")
+    if (mode === "search" && document.activeElement === searchbox) {
+        mode = "searchbox"
+    }
+    if (mode === "events") {
         if (!queryMatch(e, "#events, #status-notify")) {
             switchFocus("search")
         }
     }
-    if (document.body.getAttribute("focus-el").startsWith("lyrics")) {
+    if (mode.startsWith("lyrics")) {
         if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
             switchFocus("search")
+        }
+    }
+    if (queryMatch(e, "#switch-to-playlist")) {
+        switchFocus("playlist")
+        return
+    }
+    if (queryMatch(e, "#switch-to-search")) {
+        switchFocus("search")
+        return
+    }
+    if (queryMatch(e, "#make-fallback")) {
+        const search = document.getElementById("rule-search").value
+        const {setFallbackRule} = require("./playlist")
+        setFallbackRule(search)
+        return
+    }
+    if (queryMatch(e, "#add-songs")) {
+        const search = document.getElementById("rule-search").value
+        if (mode === "searchbox") {
+            const {append} = require("./playlist")
+            append({"rule": search})
+        }
+        if (mode === "search") {
+            const {appendSelectedSong} = require("./dom")
+            appendSelectedSong()
         }
     }
     if (queryMatch(e, "#status-folder, #open-folder")) {
@@ -778,7 +808,7 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#song-info") && !window.getSelection().toString()) {
-        switchFocus(document.body.getAttribute("focus-el"))
+        switchFocus(mode)
         return
     }
     if (queryMatch(e, "#export-playlist")) {

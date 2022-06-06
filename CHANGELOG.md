@@ -19,6 +19,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Many additional fields to search for and filter on when queueing songs
 - Silent success event for fetching the lyrics from Genius (only in event panel, start and failures still in bar)
 - Shortcut to stop after the last song of the current rule, either with "S" in the playlist or "Shift-F6" globally
+- Two column layout option for small screens with buttons to switch between sections
+- Button to append selected song or the query as a rule and a button to make a query the fallback
 
 ### Changed
 
