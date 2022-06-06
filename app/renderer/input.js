@@ -53,6 +53,11 @@ const init = () => {
         }
     })
     window.addEventListener("mousedown", handleMouse)
+    window.addEventListener("mouseup", e => {
+        if (!queryMatch(e, "input, textarea")) {
+            e.preventDefault()
+        }
+    })
     for (const vol of [...document.querySelectorAll("input[type='range']")]) {
         vol.addEventListener("input", () => {
             if (!isReady()) {
@@ -808,7 +813,9 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#song-info") && !window.getSelection().toString()) {
-        switchFocus(mode)
+        if (["search", "searchbox", "playlist"].includes(mode)) {
+            switchFocus(mode)
+        }
         return
     }
     if (queryMatch(e, "#export-playlist")) {

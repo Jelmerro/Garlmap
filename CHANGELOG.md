@@ -45,6 +45,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Glob search for music files not resolving on Windows
 - Directories ending in a valid file extension being moved to parsing stage instead of being filtered
 - Sporadic newline issues in lyrics due to Genius response changes (by auto updating them)
+- Incorrect middle mouse paste on fullscreen leave with the middle mouse
+- Modals not being closed when clicking on the song lyrics in the background
 
 ### Versions
 

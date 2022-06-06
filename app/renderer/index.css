@@ -144,7 +144,7 @@ body[two-column="always"] #switch-to-playlist, body[two-column="always"] #switch
 
 
 /* info column with help & lyrics */
-#song-cover {display: none;width: 100%;max-height: 40%;object-fit: contain;flex: none;}
+#song-cover {display: none;width: 100%;max-height: min(50%, 30vh);object-fit: contain;flex: none;}
 #song-info {white-space: pre-line;overflow: auto;overflow-wrap: anywhere;user-select: text;}
 #song-info::selection {background: var(--bg);}
 
