@@ -105,6 +105,9 @@ const saveSettings = () => {
     if (config.cache === "all") {
         delete config.cache
     }
+    if (config.twoColumn === "mobile") {
+        delete config.twoColumn
+    }
     if (!config.cacheClean) {
         delete config.cacheClean
     }
