@@ -124,6 +124,9 @@ const generatePlaylistView = () => {
                         playFromPlaylist(false)
                     } else if (queryMatch(e, "img:first-child")) {
                         switchFocus("playlist")
+                        if (index === ruleIdx && pathIdx === songIdx) {
+                            return
+                        }
                         ruleIdx = index
                         pathIdx = songIdx
                         playFromPlaylist(true)
@@ -137,6 +140,9 @@ const generatePlaylistView = () => {
                     }
                 })
                 songInfo.addEventListener("dblclick", () => {
+                    if (index === ruleIdx && pathIdx === songIdx) {
+                        return
+                    }
                     ruleIdx = index
                     pathIdx = songIdx
                     playFromPlaylist(true)
