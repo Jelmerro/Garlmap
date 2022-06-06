@@ -33,6 +33,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Events are now directly visible in the event viewer, even if they are shown in the status bar later
 - Shortcut for exporting the playlist is now Ctrl-t instead of the weird Ctrl-x that prevented "cut"
 - Fields "disc_total" and "track_total" are now named "disctotal" and "tracktotal"
+- Minimum window size is now 320 instead of 700, because window resizing is improved
 
 ### Fixed
 
@@ -45,8 +46,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ### Versions
 
-- Electron 19.0.0 (was 18.1.0)
-- Chromium 102.0.5005.61 (was 100.0.4896.127)
+- Electron 19.0.3 (was 18.1.0)
+- Chromium 102.0.5005.63 (was 100.0.4896.127)
 
 ## [0.4.0](https://github.com/Jelmerro/Garlmap/compare/0.3.0...0.4.0) - 2022-04-27
 

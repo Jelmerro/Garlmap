@@ -387,7 +387,7 @@ app.on("ready", () => {
     }
     mainWindow = new BrowserWindow(windowData)
     mainWindow.removeMenu()
-    mainWindow.setMinimumSize(700, 700)
+    mainWindow.setMinimumSize(320, 320)
     mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
     mainWindow.on("close", e => {
         e.preventDefault()
