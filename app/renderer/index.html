@@ -25,17 +25,17 @@
 <body focus-el="search">
     <div id="player-container">
         <div id="player-status">
-            <div class="button" id="prev"><img src="../img/prev.png" /></div>
-            <div class="button" id="pause"><img src="../img/play.png" /></div>
-            <div class="button" id="next"><img src="../img/next.png" /></div>
+            <div id="player-controls">
+                <div class="button" id="prev"><img src="../img/prev.png" /></div>
+                <div class="button" id="pause"><img src="../img/play.png" /></div>
+                <div class="button" id="next"><img src="../img/next.png" /></div>
+                <input id="volume-slider" type="range" min="0" max="130" value="100" disabled="disabled" />
+            </div>
             <span id="current-song"><span class="title">Welcome to Garlmap</span></span>
         </div>
-        <div>
-            <input id="volume-slider" type="range" min="0" max="130" value="100" disabled="disabled" />
-            <div id="progress-container">
-                <div id="progress-played" style="width: 0%">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
-                <div id="progress-string">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
-            </div>
+        <div id="progress-container">
+            <div id="progress-played" style="width: 0%">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
+            <div id="progress-string">&nbsp;00:00&nbsp;/&nbsp;00:00&nbsp;</div>
         </div>
     </div>
     <div id="column-container">

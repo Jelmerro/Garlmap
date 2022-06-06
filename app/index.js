@@ -405,6 +405,8 @@ app.on("ready", () => {
         "show": false,
         "title": app.getName(),
         "webPreferences": {
+            "defaultFontSize": Number(config.fontSize) || 14,
+            "defaultMonospaceFontSize": Number(config.fontSize) || 14,
             "disableBlinkFeatures": "Auxclick",
             "preload": joinPath(__dirname, "renderer/index.js"),
             "sandbox": false,

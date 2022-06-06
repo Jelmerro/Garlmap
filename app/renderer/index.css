@@ -32,7 +32,7 @@
 
 /* generic */
 * {margin: 0;padding: 0;}
-body {color: var(--fg);font: 14px "DejaVu Sans Mono", "Courier", monospace;}
+body {color: var(--fg);font-family: "DejaVu Sans Mono", "Courier", monospace;}
 body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
 body::backdrop {background: var(--bg);}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}
@@ -50,15 +50,14 @@ body::backdrop {background: var(--bg);}
 
 /* current song info bar */
 #player-container > * {display: flex;}
-#player-status {margin-bottom: .5em;}
-#player-status .button {display: flex;height: 2em;width: 2em;margin-right: .5em;border: .1em solid var(--primary);cursor: pointer;}
+#player-status {margin-bottom: .5em;align-items: center;}
+#player-status .button {display: flex;height: 2em;width: 2em;border: .1em solid var(--primary);cursor: pointer;}
 #player-status .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
-#current-song {line-height: 2.4em;flex: 1;color: var(--primary);overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: flex;}
-#current-song .title, #current-song .artist {font-size: 2em;overflow: hidden;text-overflow: ellipsis;}
-#current-song .title {margin-right: .5em;}
-#current-song .artist {margin-left: .5em;}
-#current-song .album {color: var(--secondary);}
-#current-song .other-info {display: flex;flex-direction: column;line-height: 1;margin-left: auto;}
+#current-song {flex: 1;color: var(--primary);overflow: hidden auto;white-space: pre-wrap;text-overflow: ellipsis;display: flex;max-height: 5em;line-height: initial;align-items: center;gap: .5em;}
+#current-song * {line-height: initial;align-items: center;text-align: center;}
+#current-song .title, #current-song .artist {font-size: 2em;display: flex;}
+#current-song .album, #current-song .title {color: var(--secondary);}
+#current-song .other-info {display: flex;flex-direction: column;margin-left: auto;gap: .5em;}
 #progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
 #progress-container:hover {background: var(--accent);}
 #progress-played {background: var(--primary);color: var(--bg);z-index: 1;}
@@ -69,12 +68,12 @@ body::backdrop {background: var(--bg);}
 #volume-slider.muted {background: var(--tertiary);}
 #volume-slider:hover {border-color: var(--border);}
 /* responsive design */
-@media screen and (max-width: 64em) {
-    #current-song, #current-song .title, #current-song .artist, #current-song * {font-size: 1em;white-space: pre-wrap;overflow-wrap: anywhere;}
-}
 @media screen and (max-width: 50em) {
+    #current-song, #current-song .title, #current-song .artist, #current-song * {font-size: 1em;overflow-wrap: anywhere;}
     #player-status {flex-wrap: wrap;}
-    #current-song {display: block;flex-direction: column;min-width: 100%;}
+    #current-song {flex-direction: column;}
+    #current-song .other-info {margin-left: initial;}
+    #current-song, #current-song .other-info {gap: 0;}
 }
 
 
@@ -93,6 +92,7 @@ body::backdrop {background: var(--bg);}
 #playlist-controls {display: grid;grid-template-columns: repeat(2, 1fr);padding: .5em;gap: .5em;overflow: hidden auto;max-height: 20vh;}
 #search-controls {display: grid;grid-template-columns: repeat(2, 1fr);padding: .5em;gap: .5em;overflow: hidden auto;max-height: 20vh;min-height: 2.5em;}
 #playlist-controls .button, #search-controls .button {cursor: pointer;padding: .5em;border: .1em solid var(--primary);}
+#player-controls {display: flex;flex-wrap: wrap;width: 8em;gap: .5em;}
 #main-playlist {flex: 1;overflow: auto;}
 #main-playlist * {flex: 1;}
 .rule {display: flex;border: .2em solid var(--fg);}

@@ -39,9 +39,6 @@ const init = () => {
         document.getElementById("toggle-genius").checked = config.useGenius
         document.getElementById("toggle-autolyrics").parentNode
             .addEventListener("click", () => toggleAutoLyrics())
-        if (config.fontSize) {
-            document.body.style.fontSize = `${config.fontSize}px`
-        }
         if (config.customTheme) {
             const styleEl = document.createElement("style")
             styleEl.textContent = config.customTheme
