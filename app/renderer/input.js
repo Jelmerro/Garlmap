@@ -54,7 +54,7 @@ const init = () => {
     })
     window.addEventListener("mousedown", handleMouse)
     window.addEventListener("mouseup", e => {
-        if (!queryMatch(e, "input, textarea")) {
+        if (!queryMatch(e, "input, textarea, #song-info")) {
             e.preventDefault()
         }
     })
