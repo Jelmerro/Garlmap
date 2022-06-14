@@ -572,7 +572,8 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (currentAndNext().current?.id === req.id) {
         const reqWithoutExtraText = JSON.parse(JSON.stringify(req))
         reqWithoutExtraText.artist = req.artist.replace(/\(.*\)/g, "")
-            .split("feat. ")[0].split("ft. ")[0].split(" & ")[0].trim()
+            .split(" featuring ")[0].split(" feat. ")[0]
+            .split(" ft. ")[0].split(" & ")[0].trim()
         reqWithoutExtraText.title = req.title.replace(/\(.*\)/g, "").trim()
         if (reqWithoutExtraText.artist !== req.artist) {
             fetchLyrics(reqWithoutExtraText, force, req)
