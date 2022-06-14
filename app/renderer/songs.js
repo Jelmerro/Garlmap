@@ -75,7 +75,7 @@ const processFile = async(path, id) => {
             "album": details.common.album,
             "artist": details.common.artist,
             "bitrate": details.format.bitrate,
-            "date": details.common.year,
+            "date": details.common.date || details.common.year,
             "disc": details.common.disk.no,
             "disctotal": details.common.disk.of,
             "duration": details.format.duration,
@@ -113,6 +113,11 @@ const processFile = async(path, id) => {
             if (details.common[prop]) {
                 song[prop] = details.common[prop]
             }
+        }
+        if (details.common.originaldate) {
+            song.originaldate = details.common.originaldate
+        } else if (details.common.originalyear) {
+            song.originaldate = details.common.originalyear
         }
     }
     if (cacheIndex >= 0) {
@@ -229,15 +234,22 @@ const query = search => {
         globalSearch = filters.shift()
     }
     const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
-        .filter(f => !["order", "limit"].includes(f.name))
+        .filter(f => !["order", "limit", "asc"].includes(f.name))
     let filtered = songs.filter(s => {
         for (const filter of searchableFilters) {
             if (!s[filter.name]) {
                 return false
             }
-            if (typeof s[filter.name] === "number" && filter.value.match(/\d+-\d/g)) {
+            if (typeof s[filter.name] === "number" && filter.value.match(/^\d+-\d+$/g)) {
                 if (s[filter.name] < Number(filter.value.split("-")[0])
                 || s[filter.name] > Number(filter.value.split("-")[1])) {
+                    return false
+                }
+            } else if (filter.name.endsWith("date") && filter.value.match(/^\d+-\d+$/g)) {
+                const year = new Date(s[filter.name]
+                    ?.toString?.() || "").getFullYear()
+                if (year < Number(filter.value.split("-")[0])
+                || year > Number(filter.value.split("-")[1]) || isNaN(year)) {
                     return false
                 }
             } else if (Array.isArray(s[filter.name])) {
@@ -314,24 +326,65 @@ const query = search => {
         }
         return true
     })
-    const order = filters.find(f => low(f.name) === "order")?.value || "disk"
+    let order = filters.find(f => low(f.name) === "order")?.value || "disk"
+    if (!["shuffle", "albumshuffle", "disk", "alpha", "date"].includes(order)) {
+        order = "disk"
+    }
     if (order.endsWith("shuffle")) {
         filtered.sort(() => Math.random() - 0.5)
+    }
+    let asc = filters.find(f => low(f.name) === "asc")?.value
+    if (["true", "1", "yes", "0", "false", "no"].includes(asc)) {
+        asc = asc === "true" || asc === "1" || asc === "yes"
+    } else {
+        asc = true
     }
     const albums = Array.from(new Set(filtered.map(s => s.album))).sort(
         () => Math.random() - 0.5)
     filtered.sort((a, b) => {
         if (order === "disk") {
-            if (a.id > b.id) {
+            if (asc) {
+                if (a.id > b.id) {
+                    return 1
+                }
+                return -1
+            }
+            if (a.id < b.id) {
                 return 1
             }
             return -1
         }
-        if (order === "alpha") {
-            if (a.title > b.title) {
+        if (order === "date") {
+            if (a.date && !b.date) {
+                return -1
+            }
+            if (!a.date && b.date) {
                 return 1
             }
+            const dateA = new Date(String(a.date))
+            const dateB = new Date(String(b.date))
+            const diff = dateA.getTime() - dateB.getTime()
+            if (isNaN(diff)) {
+                return 0
+            }
+            if (asc) {
+                return diff
+            }
+            return -diff
+        }
+        if (order === "alpha") {
+            if (asc) {
+                if (a.title > b.title) {
+                    return 1
+                }
+                if (a.title < b.title) {
+                    return -1
+                }
+            }
             if (a.title < b.title) {
+                return 1
+            }
+            if (a.title > b.title) {
                 return -1
             }
             return 0

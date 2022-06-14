@@ -21,6 +21,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Shortcut to stop after the last song of the current rule, either with "S" in the playlist or "Shift-F6" globally
 - Two column layout option for small screens with buttons to switch between sections
 - Button to append selected song or the query as a rule and a button to make a query the fallback
+- Date ordering to the query syntax using "order=date", which will sort songs on release date
+- Ascending toggle to the query syntax using "asc=true" or "asc=no" etc., to enable/disable ascending order
+- Date field now reads the song date and uses the song year as the fallback for it
+- Originaldate field to parse and query, also uses a similar fallback on the originalyear
 
 ### Changed
 

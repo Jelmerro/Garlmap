@@ -105,14 +105,16 @@ These properties are always present, though sometimes empty:
 On some files that support them, you can also search for the following fields:
 "genre", "composer", "lyricist", "writer", "conductor", "remixer", "arranger",
 "engineer", "producer", "technician", "djmixer", "mixer", "label", "grouping",
-"subtitle", "rating", "bpm", "mood", "releasetype", "originalalbum" and
-"originalartist". Feel free to expand this list via PRs if you need more.
+"subtitle", "rating", "bpm", "mood", "releasetype", "originalalbum",
+"originalartist" and "originaldate".
+The original year and regular year are used as fallbacks for the date fields.
+Feel free to expand this list via PRs if you need more.
 Even spaces are allowed: "album=dark side of the moon" is an album name search.
 Any text that is listed before any of these fields, will search in all fields:
 "dark side" will match any song that has any field with "dark" and "side" in it,
 even the lyrics are searched, if they are cached for a specific song.
-For the number fields, such as "date", "duration" or "track",
-it's also possible to specify a range like so: "date:1960-1975".
+For the number fields, such as "date", "duration", "originaldate" or "track",
+it's also possible to specify a number range like so: "date:1960-1975".
 You can also use upercase letters in a field name to make it case sensitive,
 as all searches are by default case insensitive: "Album=Dark Side" for example.
 For the general search, if there are capital letters in it, it's case sensitive.
@@ -127,8 +129,14 @@ The default sort order "disk", which means it's sorted on path alphabetically,
 and it's used for all queries, unless a custom "order" field is provided.
 For example, you can change to order to "shuffle", to play the tracks randomly.
 Another valid order is "alpha" which will sort by song title alphabetically.
+You can also order on release date with "order=date".
 Finally there is "albumshuffle", which will play albums shuffled,
 while keeping the disc and track order intact for each album.
+When ordering, you might want to reverse the order,
+which can be done by setting "asc=false" (or with "asc=0" and "asc=no").
+By default, ascending order is always used and the default is true (or yes/1).
+Songs without a valid date are always ordered at the end of the list,
+you can exclude them entirely by setting an empty filter on date with "date=".
 The "limit" field can be set to any number and will limit the amount of songs.
 
 Search usage
