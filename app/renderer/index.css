@@ -79,7 +79,7 @@ body::backdrop {background: var(--bg);}
 
 /* search & playlist column with song info */
 #search-results {overflow-y: auto;}
-#rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--accent);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: none;min-height: 2.5em;font: inherit;}
+#rule-search {min-width: 0;width: 100%;color: var(--fg);background: var(--accent);border: .1em solid var(--fg);box-sizing: border-box;outline: none;resize: vertical;min-height: 2.5em;font: inherit;}
 #rule-search:focus {color: var(--primary);background: var(--bg);font-weight:bold;border-color: var(--primary);}
 #rule-search:hover {background: var(--bg);}
 #rule-search:focus:hover {background: var(--accent);}

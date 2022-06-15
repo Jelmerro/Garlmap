@@ -116,6 +116,10 @@ const init = () => {
             return
         }
         const search = document.getElementById("rule-search").value
+            .replace(/\n/g, "\\n")
+        if (search !== document.getElementById("rule-search").value) {
+            document.getElementById("rule-search").value = search
+        }
         const {query} = require("./songs")
         document.getElementById("search-results").textContent = ""
         const {generateSongElement} = require("./dom")
