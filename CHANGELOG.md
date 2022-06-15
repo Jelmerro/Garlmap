@@ -44,6 +44,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Fields "disc_total" and "track_total" are now named "disctotal" and "tracktotal"
 - Minimum window size is now 320 instead of 700, because window resizing is improved
 - Rule input field is now resizable and handles pasted newlines correctly
+- Previous mode (search/playlist) is now restored when closing a panel, modal or the fullscreen layout
 
 ### Fixed
 

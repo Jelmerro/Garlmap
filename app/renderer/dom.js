@@ -72,7 +72,7 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
         return
     }
     if (currentFocus === "fullscreen") {
-        await switchFocus("search")
+        await closeSpecialMode()
     }
     if (browserFS) {
         document.body.requestFullscreen()
@@ -97,13 +97,17 @@ const showSongInfo = position => {
     if (position === "current") {
         const {currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
-        song = songById(current.id)
+        song = songById(current?.id)
     }
     if (song) {
         document.getElementById("infopanel-details").textContent
             = JSON.stringify(song, null, 4)
         switchFocus("infopanel")
     }
+}
+
+const closeSpecialMode = async() => {
+    await switchFocus(document.body.getAttribute("last-main-focus") || "search")
 }
 
 const switchFocus = async newFocus => {
@@ -122,6 +126,7 @@ const switchFocus = async newFocus => {
     const currentFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {
+        document.body.setAttribute("last-main-focus", "playlist")
         document.getElementById("playlist-container").focus()
     }
     if (newFocus === "events") {
@@ -165,6 +170,7 @@ const switchFocus = async newFocus => {
         }
     }
     if (newFocus.startsWith("search")) {
+        document.body.setAttribute("last-main-focus", newFocus)
         const selected = document.querySelector("#search-results .selected")
         if (!selected || newFocus.endsWith("box")) {
             selected?.classList.remove("selected")
@@ -232,6 +238,7 @@ const appendSelectedSong = (upNext = false) => {
 
 module.exports = {
     appendSelectedSong,
+    closeSpecialMode,
     decrementSelected,
     generateSongElement,
     incrementSelected,

@@ -81,7 +81,7 @@ It's recommended to read both this help and the startup help at least once.
 You can save all your settings with the button or using Ctrl-s at any time,
 a list of custom settings currently in use is always logged on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
-Importing and exporting can also be done using Ctrl-i and Ctrl-t respectively.
+Importing and exporting can also be done using Ctrl-r and Ctrl-t respectively.
 You can view the list of events (such as lyrics fetching) with Ctrl-Shift-E,
 or by clicking the current event in the status bar at the bottom.
 If you don't want lyrics to be fetched from Genius at all, you can disable it:
@@ -155,6 +155,8 @@ which will automatically queue all matching tracks based on the rule.
 Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
 or simply with the Arrow up and down keys to select individual songs.
 While in the list, you can also use PageUp, PageDown, Home and End to navigate.
+You can view the internal song info of the selected song using i,
+or show the song info for the current song with Ctrl-i.
 Once you have found the right track, you can add this single song with Enter.
 With Shift-Enter you can queue it immediately after the current rule.
 You can also select tracks with the left mouse button,
@@ -191,6 +193,8 @@ With a you can toggle auto scrolling the playlist to the current song,
 though it will not move the selection, similar to scrolling with Ctrl-e/Ctrl-y.
 You can also toggle automatic opening and closing of the rules with c,
 or toggle automatic removal of old rules and songs using r.
+You can view the internal song info of the selected song using i,
+or show the song info for the current song with Ctrl-i.
 
 Caching
 

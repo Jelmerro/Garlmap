@@ -19,7 +19,7 @@
 
 const {ipcRenderer, clipboard} = require("electron")
 const {queryMatch, resetWelcome} = require("../util")
-const {switchFocus, setFullscreenLayout} = require("./dom")
+const {switchFocus, setFullscreenLayout, closeSpecialMode} = require("./dom")
 
 const init = () => {
     window.addEventListener("keydown", e => handleKeyboard(e))
@@ -190,7 +190,7 @@ const init = () => {
     document.getElementById("fullscreen").addEventListener("mousedown", e => {
         if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
             if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
-                document.exitFullscreen().catch(() => switchFocus("search"))
+                document.exitFullscreen().catch(() => closeSpecialMode())
             }
         }
     })
@@ -244,12 +244,12 @@ const mappings = {
         "<ArrowUp>": () => {
             document.getElementById("events-list").scrollBy(0, -100)
         },
-        "<C-E>": () => switchFocus("search"),
+        "<C-E>": () => closeSpecialMode(),
         "<End>": () => {
             document.getElementById("events-list").scrollTo(
                 0, Number.MAX_SAFE_INTEGER)
         },
-        "<Escape>": () => switchFocus("search"),
+        "<Escape>": () => closeSpecialMode(),
         "<Home>": () => {
             document.getElementById("events-list").scrollTo(0, 0)
         },
@@ -265,7 +265,7 @@ const mappings = {
         "k": () => {
             document.getElementById("events-list").scrollBy(0, -100)
         },
-        "q": () => switchFocus("search")
+        "q": () => closeSpecialMode()
     },
     "fullscreen": {
         " ": () => {
@@ -384,6 +384,10 @@ const mappings = {
             toggleMute()
         },
         "<C-o>": () => openFolder(),
+        "<C-r>": () => {
+            const {importList} = require("./playlist")
+            importList()
+        },
         "<C-s>": () => {
             const {saveSettings} = require("./settings")
             saveSettings()
@@ -391,10 +395,6 @@ const mappings = {
         "<C-t>": () => {
             const {exportList} = require("./playlist")
             exportList()
-        },
-        "<C-y>": () => {
-            const {importList} = require("./playlist")
-            importList()
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => resetWelcome(),
@@ -446,35 +446,34 @@ const mappings = {
     },
     "infopanel": {
         "<ArrowDown>": () => {
-            document.getElementById("infopanel").scrollBy(0, 100)
+            document.getElementById("infopanel-details").scrollBy(0, 100)
         },
         "<ArrowUp>": () => {
-            document.getElementById("infopanel").scrollBy(0, -100)
+            document.getElementById("infopanel-details").scrollBy(0, -100)
         },
-        "<C-E>": () => switchFocus("search"),
+        "<C-i>": () => closeSpecialMode(),
         "<End>": () => {
-            document.getElementById("infopanel").scrollTo(
+            document.getElementById("infopanel-details").scrollTo(
                 0, Number.MAX_SAFE_INTEGER)
         },
-        "<Escape>": () => switchFocus("search"),
+        "<Escape>": () => closeSpecialMode(),
         "<Home>": () => {
-            document.getElementById("infopanel").scrollTo(0, 0)
+            document.getElementById("infopanel-details").scrollTo(0, 0)
         },
         "<PageDown>": () => {
-            document.getElementById("infopanel").scrollBy(0, 500)
+            document.getElementById("infopanel-details").scrollBy(0, 500)
         },
         "<PageUp>": () => {
-            document.getElementById("infopanel").scrollBy(0, -500)
+            document.getElementById("infopanel-details").scrollBy(0, -500)
         },
-        "<Tab>": () => switchFocus("lyricssearch"),
-        "i": () => switchFocus("search"),
+        "i": () => closeSpecialMode(),
         "j": () => {
-            document.getElementById("infopanel").scrollBy(0, 100)
+            document.getElementById("infopanel-details").scrollBy(0, 100)
         },
         "k": () => {
-            document.getElementById("infopanel").scrollBy(0, -100)
+            document.getElementById("infopanel-details").scrollBy(0, -100)
         },
-        "q": () => switchFocus("search")
+        "q": () => closeSpecialMode()
     },
     "lyrics": {
         "<ArrowDown>": () => {
@@ -485,7 +484,7 @@ const mappings = {
             const {decrementSelectedLyrics} = require("./songs")
             decrementSelectedLyrics()
         },
-        "<C-F4>": () => switchFocus("search"),
+        "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
             const {incrementSelectedLyrics} = require("./songs")
@@ -503,7 +502,7 @@ const mappings = {
             const {selectLyricsFromResults} = require("./songs")
             selectLyricsFromResults()
         },
-        "<Escape>": () => switchFocus("search"),
+        "<Escape>": () => closeSpecialMode(),
         "<Tab>": () => switchFocus("lyricssearch")
     },
     "lyricseditor": {
@@ -511,13 +510,13 @@ const mappings = {
             const {saveLyrics} = require("./songs")
             saveLyrics()
         },
-        "<C-F4>": () => switchFocus("search"),
+        "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyrics"),
         "<C-s>": () => {
             const {saveLyrics} = require("./songs")
             saveLyrics()
         },
-        "<Escape>": () => switchFocus("search"),
+        "<Escape>": () => closeSpecialMode(),
         "<Tab>": () => switchFocus("lyricssearch")
     },
     "lyricssearch": {
@@ -526,7 +525,7 @@ const mappings = {
                 ?.classList.add("selected")
             switchFocus("lyrics")
         },
-        "<C-F4>": () => switchFocus("search"),
+        "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
             document.querySelector("#lyrics-results > *")
@@ -541,7 +540,7 @@ const mappings = {
             const {searchLyrics} = require("./songs")
             searchLyrics(document.getElementById("lyrics-search").value)
         },
-        "<Escape>": () => switchFocus("search"),
+        "<Escape>": () => closeSpecialMode(),
         "<Tab>": () => null
     },
     "playlist": {
@@ -820,17 +819,17 @@ const handleMouse = e => {
     }
     if (mode === "infopanel") {
         if (!queryMatch(e, "#infopanel")) {
-            switchFocus("search")
+            closeSpecialMode()
         }
     }
     if (mode === "events") {
         if (!queryMatch(e, "#events, #status-notify")) {
-            switchFocus("search")
+            closeSpecialMode()
         }
     }
     if (mode.startsWith("lyrics")) {
         if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
-            switchFocus("search")
+            closeSpecialMode()
         }
     }
     if (queryMatch(e, "#switch-to-playlist")) {
@@ -885,6 +884,7 @@ const handleMouse = e => {
     if (queryMatch(e, "#save-settings")) {
         const {saveSettings} = require("./settings")
         saveSettings()
+        return
     }
     if (queryMatch(e, "#prev, #fs-prev")) {
         const {decrement} = require("./playlist")
