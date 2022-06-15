@@ -126,6 +126,8 @@ const processStartupArgs = () => {
                 outputHelp()
             } else if (name === "--version") {
                 outputVersion()
+            } else if (name === "--devtools") {
+                config.debug = true
             } else if (name === "--cache") {
                 config.cache = value
             } else if (name === "--cache-clean") {
@@ -358,6 +360,9 @@ although you may still change the fontsize without using a custom theme.
 The default theme, including the color configuration, is located here:
 https://github.com/Jelmerro/Garlmap/blob/master/app/renderer/index.css
 If you JUST want to change the colors, you ONLY need the ":root" section!
+
+In case of issues, you can toggle the developer tools at runtime with F12.
+If this does not work, you can also supply the "--devtools" argument.
 `.trim()}\n`)
     showLicense()
 }
@@ -427,6 +432,10 @@ app.on("ready", () => {
         mainWindow.webContents.on("new-window", e => e.preventDefault())
         mainWindow.webContents.on("will-navigate", e => e.preventDefault())
         mainWindow.webContents.on("will-redirect", e => e.preventDefault())
+        if (config.debug) {
+            delete config.debug
+            mainWindow.webContents.openDevTools()
+        }
         logCustomSettings(config)
         config.version = version
         config.configDir = configDir

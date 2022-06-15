@@ -25,6 +25,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Ascending toggle to the query syntax using "asc=true" or "asc=no" etc., to enable/disable ascending order
 - Date field now reads the song date and uses the song year as the fallback for it
 - Originaldate field to parse and query, also uses a similar fallback on the originalyear
+- Song info panel that shows all technical details about the current (with "Ctrl-i") or selected song (with "i")
+- Devtools startup option to open the developments tools on startup (previously only manually with F12)
 
 ### Changed
 
@@ -38,6 +40,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Second try of lyrics fetching now also removes featuring/additional artists (as well as extras between brackets as before)
 - Events are now directly visible in the event viewer, even if they are shown in the status bar later
 - Shortcut for exporting the playlist is now Ctrl-t instead of the weird Ctrl-x that prevented "cut"
+- Shortcut for importing the playlist is now Ctrl-r instead of Ctrl-i to make room for song info panel
 - Fields "disc_total" and "track_total" are now named "disctotal" and "tracktotal"
 - Minimum window size is now 320 instead of 700, because window resizing is improved
 - Rule input field is now resizable and handles pasted newlines correctly

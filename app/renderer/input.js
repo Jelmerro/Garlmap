@@ -375,8 +375,8 @@ const mappings = {
             toggleGenius()
         },
         "<C-i>": () => {
-            const {importList} = require("./playlist")
-            importList()
+            const {showSongInfo} = require("./dom")
+            showSongInfo("current")
         },
         "<C-l>": () => switchFocus("playlist"),
         "<C-m>": () => {
@@ -391,6 +391,10 @@ const mappings = {
         "<C-t>": () => {
             const {exportList} = require("./playlist")
             exportList()
+        },
+        "<C-y>": () => {
+            const {importList} = require("./playlist")
+            importList()
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => resetWelcome(),
@@ -439,6 +443,38 @@ const mappings = {
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
             document.body.getAttribute("focus-el") !== "fullscreen"),
         "<Tab>": () => switchFocus("searchbox")
+    },
+    "infopanel": {
+        "<ArrowDown>": () => {
+            document.getElementById("infopanel").scrollBy(0, 100)
+        },
+        "<ArrowUp>": () => {
+            document.getElementById("infopanel").scrollBy(0, -100)
+        },
+        "<C-E>": () => switchFocus("search"),
+        "<End>": () => {
+            document.getElementById("infopanel").scrollTo(
+                0, Number.MAX_SAFE_INTEGER)
+        },
+        "<Escape>": () => switchFocus("search"),
+        "<Home>": () => {
+            document.getElementById("infopanel").scrollTo(0, 0)
+        },
+        "<PageDown>": () => {
+            document.getElementById("infopanel").scrollBy(0, 500)
+        },
+        "<PageUp>": () => {
+            document.getElementById("infopanel").scrollBy(0, -500)
+        },
+        "<Tab>": () => switchFocus("lyricssearch"),
+        "i": () => switchFocus("search"),
+        "j": () => {
+            document.getElementById("infopanel").scrollBy(0, 100)
+        },
+        "k": () => {
+            document.getElementById("infopanel").scrollBy(0, -100)
+        },
+        "q": () => switchFocus("search")
     },
     "lyrics": {
         "<ArrowDown>": () => {
@@ -622,6 +658,10 @@ const mappings = {
             const {closeSelectedRule} = require("./playlist")
             closeSelectedRule()
         },
+        "i": () => {
+            const {showSongInfo} = require("./dom")
+            showSongInfo("playlist")
+        },
         "j": () => {
             const {incrementSelected} = require("./playlist")
             incrementSelected()
@@ -694,6 +734,10 @@ const mappings = {
         "<S-Enter>": () => {
             const {appendSelectedSong} = require("./dom")
             appendSelectedSong(true)
+        },
+        "i": () => {
+            const {showSongInfo} = require("./dom")
+            showSongInfo("search")
         }
     },
     "searchbox": {
@@ -764,7 +808,8 @@ const handleMouse = e => {
     if (!isReady()) {
         return
     }
-    const ok = ".song, #song-info, textarea, input, #fs-lyrics, #events-list"
+    const ok = ".song, #song-info, textarea, input, "
+        + "#fs-lyrics, #events-list, #infopanel-details"
     if (!queryMatch(e, ok)) {
         e.preventDefault()
     }
@@ -772,6 +817,11 @@ const handleMouse = e => {
     const searchbox = document.getElementById("rule-search")
     if (mode === "search" && document.activeElement === searchbox) {
         mode = "searchbox"
+    }
+    if (mode === "infopanel") {
+        if (!queryMatch(e, "#infopanel")) {
+            switchFocus("search")
+        }
     }
     if (mode === "events") {
         if (!queryMatch(e, "#events, #status-notify")) {

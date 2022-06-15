@@ -79,6 +79,33 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
     }
 }
 
+const showSongInfo = position => {
+    let song = null
+    const {songById} = require("./songs")
+    if (position === "playlist") {
+        const songEl = document.querySelector("#playlist-container .selected")
+        if (songEl) {
+            song = songById(songEl.getAttribute("song-id"))
+        }
+    }
+    if (position === "search") {
+        const songEl = document.querySelector("#search-results .selected.song")
+        if (songEl) {
+            song = songById(songEl.getAttribute("song-id"))
+        }
+    }
+    if (position === "current") {
+        const {currentAndNext} = require("./playlist")
+        const {current} = currentAndNext()
+        song = songById(current.id)
+    }
+    if (song) {
+        document.getElementById("infopanel-details").textContent
+            = JSON.stringify(song, null, 4)
+        switchFocus("infopanel")
+    }
+}
+
 const switchFocus = async newFocus => {
     // Valid focus points for the entire app are:
     // - playlist (playlist section to highlight songs/rules to play or remove)
@@ -86,6 +113,7 @@ const switchFocus = async newFocus => {
     // - searchbox (search box for looking up new songs to play)
     // - fullscreen (only for the fullscreen layout, not the browser fullscreen)
     // - events (event history dialog, not the status bar in the main view)
+    // - infopanel (read-only view of all the info of a single song)
     // - lyrics (lyrics editor dialog, not the lyrics pane in the main view)
     //   - Also the focus when inside the dialog but not searching or editing
     //   - Also the focus when selecting search results after searching Genius
@@ -100,6 +128,11 @@ const switchFocus = async newFocus => {
         document.getElementById("events").style.display = "flex"
     } else {
         document.getElementById("events").style.display = "none"
+    }
+    if (newFocus === "infopanel") {
+        document.getElementById("infopanel").style.display = "flex"
+    } else {
+        document.getElementById("infopanel").style.display = "none"
     }
     if (newFocus.startsWith("lyrics")) {
         document.getElementById("lyrics-editor").style.display = "flex"
@@ -203,5 +236,6 @@ module.exports = {
     generateSongElement,
     incrementSelected,
     setFullscreenLayout,
+    showSongInfo,
     switchFocus
 }
