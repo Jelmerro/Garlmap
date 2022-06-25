@@ -71,9 +71,7 @@ const registerMediaKeys = () => {
 const logCustomSettings = config => {
     let hasCustom = false
     for (const [key, val] of Object.entries(config)) {
-        const modifiedSetting = key === "useGenius" && val !== true
-            || val !== null && val !== undefined && key !== "useGenius"
-        if (modifiedSetting) {
+        if (val !== null && val !== undefined) {
             if (!hasCustom) {
                 console.info("Current custom settings:")
                 hasCustom = true
@@ -110,9 +108,10 @@ const processStartupArgs = () => {
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
         "mpv": process.env.GARLMAP_MPV?.trim(),
+        "shiftLyrics": isTruthyArg(process.env.GARLMAP_SHIFT_LYRICS)
+            || undefined,
         "twoColumn": process.env.GARLMAP_TWO_COLUMN?.trim().toLowerCase(),
-        "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS)
-            || !process.env.GARLMAP_USE_GENIUS
+        "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS) || undefined
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
     if (configFile) {
@@ -152,6 +151,9 @@ const processStartupArgs = () => {
                 config.autoClose = isTruthyArg(value) || arg === "--auto-close"
             } else if (name === "--use-genius") {
                 config.useGenius = isTruthyArg(value) || arg === "--use-genius"
+            } else if (name === "--shift-lyrics") {
+                config.shiftLyrics = isTruthyArg(value)
+                    || arg === "--shift-lyrics"
             } else if (name === "--auto-remove") {
                 config.autoRemove = isTruthyArg(value)
                     || arg === "--auto-remove"
@@ -289,6 +291,18 @@ Garlmap can be started without any arguments, but it supports the following:
                    If also absent, the GARLMAP_USE_GENIUS env will be read,
                    or this setting will by default be enabled and use the API.
                    Change this setting with Ctrl-g or the bottom right checkbox.
+
+    --shift-lyrics Enable automatic scrolling/shifting of song lyrics.
+                   If disabled, no automatic scrolling of lyrics will happen.
+                   There is no word syncing for the lyrics in Garlmap,
+                   the scroll position is based on the current song progress.
+                   The argument can optionally be provided with value:
+                   "--shift-lyrics=yes", "--shift-lyrics=0, "--shift-lyrics=no".
+                   If no arg is found, it will read "shiftLyrics" from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_SHIFT_LYRICS env will be read,
+                   or this setting will by default be disabled.
+                   Change this setting with Ctrl-h or the bottom right checkbox.
 
     --two-column=* Define the policy for using the two column layout.
                    When enabled, only the lyrics with cover are always visible.

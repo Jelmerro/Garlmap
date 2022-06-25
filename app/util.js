@@ -87,6 +87,9 @@ or by clicking the current event in the status bar at the bottom.
 If you don't want lyrics to be fetched from Genius at all, you can disable it:
 at runtime with the checkbox right below the lyrics, using Ctrl-g to toggle it,
 or otherwise using env vars, the config file or the startup arguments.
+You can optionally automatically shift/scroll the lyrics based on song progress:
+toggle this at runtime with the "Shift" checkbox, using Ctrl-h to toggle it,
+or otherwise using env vars, the config file or the startup arguments.
 
 Syntax for queueing and searching
 
@@ -253,7 +256,8 @@ Besides automatically showing the lyrics using the Autolyrics option,
 you can also edit them yourself and save them to the cache.
 To open the editor, either press Ctrl-F4 or use the buttons below the help.
 These buttons can also be used to switch between the help and showing lyrics,
-fetching the lyrics fresh from Genius or disabling the Genius API entirely.
+optionally by fetching the lyrics fresh by pressing the download icon.
+There are also checkboxes for toggling the Genius API and auto shifting lyrics.
 Once in the editor, you can focus mainly on two sections, the search and editor.
 To toggle between the sections, use Ctrl-Tab, or just Tab to jump to searching.
 Like the event dialog, you can close it by clicking outside or using Escape,
@@ -281,9 +285,6 @@ you are more than welcome to reach out on Github.
 Please visit Jelmerro/Garlmap and make an issue with your question or request.
 `.split("\n").map(l => l || "\n\n").join(" ")
     document.getElementById("song-info").scrollTo(0, 0)
-    document.getElementById("fs-lyrics").scrollTo(0, 0)
-    document.getElementById("lyrics-edit-field").scrollTo(0, 0)
-    document.getElementById("fs-lyrics").textContent = ""
 }
 
 const displayNotificationStack = []

@@ -43,7 +43,6 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
-let shouldUseGenius = true
 const low = s => s.toLowerCase()
 
 const sanitizeLyrics = lyrics => lyrics?.trim()
@@ -563,7 +562,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         }
     }
     // Fetch it from Genius
-    if (!shouldUseGenius) {
+    if (!document.getElementById("toggle-genius").checked) {
         return
     }
     try {
@@ -638,14 +637,14 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
 
 const showLyrics = async p => {
     resetWelcome()
-    const {shouldAutoFetchLyrics} = require("./settings")
+    document.getElementById("fs-lyrics").scrollTo(0, 0)
+    document.getElementById("lyrics-edit-field").scrollTo(0, 0)
     const song = songById(p)
+    document.getElementById("fs-lyrics").textContent = song.lyrics || ""
+    document.getElementById("lyrics-edit-field").value = song.lyrics || ""
     if (song.lyrics) {
         document.getElementById("song-info").textContent = song.lyrics
-        document.getElementById("fs-lyrics").textContent = song.lyrics
-        document.getElementById("lyrics-edit-field").value = song.lyrics
-    } else if (shouldAutoFetchLyrics()) {
-        document.getElementById("lyrics-edit-field").value = ""
+    } else {
         await fetchLyrics(song)
     }
 }
@@ -662,10 +661,9 @@ const switchToLyrics = async(forceFetch = false) => {
     }
 }
 
-const setStartupSettings = (dir, policy, removeMissing, enableGenius) => {
+const setStartupSettings = (dir, policy, removeMissing) => {
     configDir = dir
-    cache = policy
-    shouldUseGenius = enableGenius
+    cache = policy || "all"
     if (cache !== "none") {
         cachedSongs = readJSON(joinPath(configDir, "cache.json")) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
@@ -685,9 +683,34 @@ const setStartupSettings = (dir, policy, removeMissing, enableGenius) => {
 const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
-const toggleGenius = () => {
-    shouldUseGenius = !shouldUseGenius
-    document.getElementById("toggle-genius").checked = shouldUseGenius
+const lyricsSyncPosition = current => {
+    const lyricsContainers = [
+        document.getElementById("song-info"),
+        document.getElementById("fs-lyrics")
+    ]
+    const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
+    for (const el of lyricsContainers) {
+        const scrollableHeight = el.scrollHeight - el.clientHeight
+        if (!scrollableHeight) {
+            continue
+        }
+        const pad = Math.max(0, Math.min(
+            el.clientHeight / el.scrollHeight * 50, 30))
+        const percentage = (
+            Math.min(Math.max(current, pad), 100 - pad) - pad
+        ) / (100 - pad - pad)
+        let newHeight = percentage * scrollableHeight
+        if (lineheight) {
+            newHeight -= newHeight % lineheight
+            if (scrollableHeight - newHeight < lineheight) {
+                newHeight = scrollableHeight
+            }
+        }
+        newHeight = Math.floor(newHeight)
+        if (el.scrollTop !== newHeight) {
+            el.scrollTo(0, newHeight)
+        }
+    }
 }
 
 module.exports = {
@@ -695,6 +718,7 @@ module.exports = {
     decrementSelectedLyrics,
     fetchLyrics,
     incrementSelectedLyrics,
+    lyricsSyncPosition,
     query,
     saveLyrics,
     scanner,
@@ -703,6 +727,5 @@ module.exports = {
     setStartupSettings,
     showLyrics,
     songById,
-    switchToLyrics,
-    toggleGenius
+    switchToLyrics
 }

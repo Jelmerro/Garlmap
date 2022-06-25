@@ -22,9 +22,6 @@ let ruleIdx = 0
 let selectedRuleIdx = null
 let selectedPathIdx = null
 let pathIdx = 0
-let shouldAutoScrollTrack = false
-let shouldAutoClose = false
-let shouldAutoRemove = false
 
 const {ipcRenderer} = require("electron")
 const {
@@ -500,31 +497,32 @@ const setFallbackRule = rule => {
 }
 
 const toggleAutoScroll = () => {
-    shouldAutoScrollTrack = !shouldAutoScrollTrack
-    document.getElementById("toggle-autoscroll").checked = shouldAutoScrollTrack
-    if (shouldAutoScrollTrack) {
+    document.getElementById("toggle-autoscroll").checked
+        = !document.getElementById("toggle-autoscroll").checked
+    if (document.getElementById("toggle-autoscroll").checked) {
         autoPlayOpts("scroll")
     }
 }
 
 const toggleAutoClose = () => {
-    shouldAutoClose = !shouldAutoClose
-    document.getElementById("toggle-autoclose").checked = shouldAutoClose
-    if (shouldAutoClose) {
+    document.getElementById("toggle-autoclose").checked
+        = !document.getElementById("toggle-autoclose").checked
+    if (document.getElementById("toggle-autoclose").checked) {
         autoPlayOpts("close")
     }
 }
 
 const toggleAutoRemove = () => {
-    shouldAutoRemove = !shouldAutoRemove
-    document.getElementById("toggle-autoremove").checked = shouldAutoRemove
-    if (shouldAutoRemove) {
+    document.getElementById("toggle-autoremove").checked
+        = !document.getElementById("toggle-autoremove").checked
+    if (document.getElementById("toggle-autoremove").checked) {
         autoPlayOpts("remove")
     }
 }
 
 const autoPlayOpts = (singleOpt = false) => {
-    if (shouldAutoRemove && [false, "remove"].includes(singleOpt)) {
+    const autoRemove = document.getElementById("toggle-autoremove").checked
+    if (autoRemove && [false, "remove"].includes(singleOpt)) {
         rulelist = rulelist.filter((_, index) => index >= ruleIdx)
         if (selectedRuleIdx) {
             selectedRuleIdx -= ruleIdx
@@ -539,7 +537,8 @@ const autoPlayOpts = (singleOpt = false) => {
         ruleIdx = 0
         generatePlaylistView()
     }
-    if (shouldAutoClose && [false, "close"].includes(singleOpt)) {
+    const autoClose = document.getElementById("toggle-autoclose").checked
+    if (autoClose && [false, "close"].includes(singleOpt)) {
         rulelist.forEach((rule, index) => {
             rule.open = index === ruleIdx || !rule.rule
         })
@@ -548,7 +547,8 @@ const autoPlayOpts = (singleOpt = false) => {
         }
         generatePlaylistView()
     }
-    if (shouldAutoScrollTrack && [false, "scroll"].includes(singleOpt)) {
+    const autoScroll = document.getElementById("toggle-autoscroll").checked
+    if (autoScroll && [false, "scroll"].includes(singleOpt)) {
         [...document.querySelectorAll("#main-playlist .current")].pop()
             ?.scrollIntoView({"behavior": "smooth", "block": "center"})
     }

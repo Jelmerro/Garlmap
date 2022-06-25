@@ -27,6 +27,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Originaldate field to parse and query, also uses a similar fallback on the originalyear
 - Song info panel that shows all technical details about the current (with "Ctrl-i") or selected song (with "i")
 - Devtools startup option to open the developments tools on startup (previously only manually with F12)
+- Automatic scrolling/shifting of the lyrics based on the current track time (default off)
 
 ### Changed
 
@@ -56,6 +57,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Sporadic newline issues in lyrics due to Genius response changes (by auto updating them)
 - Incorrect middle mouse paste on fullscreen leave with the middle mouse
 - Modals not being closed when clicking on the song lyrics in the background
+- Lyrics disappearing in editor and fullscreen layout when switching to help in main layout
 
 ### Versions
 

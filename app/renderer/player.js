@@ -72,6 +72,10 @@ const init = path => {
             document.getElementById("fs-progress-played").innerHTML = played
             document.getElementById("fs-progress-played").style.width = perc
             document.getElementById("fs-progress-string").innerHTML = played
+            if (document.getElementById("toggle-shift-lyrics").checked) {
+                const {lyricsSyncPosition} = require("./songs")
+                lyricsSyncPosition(parseFloat(perc))
+            }
             return
         }
         if (info.name === "playlist-pos" && info.data === 1) {
@@ -80,7 +84,7 @@ const init = path => {
             const {showLyrics} = require("./songs")
             const {currentAndNext, autoPlayOpts} = require("./playlist")
             const {current} = currentAndNext()
-            showLyrics(current.id)
+            await showLyrics(current.id)
             autoPlayOpts()
         }
         if (info.name === "playlist-pos" && info.data === -1) {
@@ -88,7 +92,7 @@ const init = path => {
             const {current} = currentAndNext()
             current.stopAfter = false
             stoppedAfterTrack = true
-            playFromPlaylist(false)
+            await playFromPlaylist(false)
             await mpv.set("pause", true)
             updatePlayButton()
         }

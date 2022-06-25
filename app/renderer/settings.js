@@ -20,41 +20,47 @@
 const {ipcRenderer} = require("electron")
 const {deleteFile, notify, joinPath, writeJSON} = require("../util")
 
-let autoLyrics = false
 let startupConfig = {}
 
 const init = () => {
     ipcRenderer.on("config", (_, config) => {
         startupConfig = config
         const {setStartupSettings} = require("./songs")
-        setStartupSettings(config.configDir,
-            config.cache || "all", config.cacheClean, config.useGenius)
         document.body.setAttribute("two-column", config.twoColumn || "mobile")
-        if (config.folder) {
-            const {scanner} = require("./songs")
-            scanner(config.folder, config.dumpLyrics)
-        }
-        autoLyrics = !!config.autoLyrics
-        document.getElementById("toggle-autolyrics").checked = autoLyrics
-        document.getElementById("toggle-genius").checked = config.useGenius
+        document.getElementById("toggle-autoclose").checked = config.autoClose
+        document.getElementById("toggle-autoclose").parentNode
+            .addEventListener("click", () => {
+                const {toggleAutoClose} = require("./playlist")
+                toggleAutoClose()
+            })
+        document.getElementById("toggle-autolyrics").checked = config.autoLyrics
         document.getElementById("toggle-autolyrics").parentNode
             .addEventListener("click", () => toggleAutoLyrics())
+        document.getElementById("toggle-autoremove").checked = config.autoRemove
+        document.getElementById("toggle-autoremove").parentNode
+            .addEventListener("click", () => {
+                const {toggleAutoRemove} = require("./playlist")
+                toggleAutoRemove()
+            })
+        document.getElementById("toggle-autoscroll").checked = config.autoScroll
+        document.getElementById("toggle-autoscroll").parentNode
+            .addEventListener("click", () => {
+                const {toggleAutoScroll} = require("./playlist")
+                toggleAutoScroll()
+            })
+        setStartupSettings(config.configDir, config.cache, config.cacheClean)
+        document.getElementById("toggle-genius").checked
+            = config.useGenius ?? true
+        document.getElementById("toggle-genius").parentNode
+            .addEventListener("click", () => toggleGenius())
+        document.getElementById("toggle-shift-lyrics").checked
+            = config.shiftLyrics
+        document.getElementById("toggle-shift-lyrics").parentNode
+            .addEventListener("click", () => toggleShiftLyrics())
         if (config.customTheme) {
             const styleEl = document.createElement("style")
             styleEl.textContent = config.customTheme
             document.head.appendChild(styleEl)
-        }
-        if (config.autoScroll) {
-            const {toggleAutoScroll} = require("./playlist")
-            toggleAutoScroll()
-        }
-        if (config.autoClose) {
-            const {toggleAutoClose} = require("./playlist")
-            toggleAutoClose()
-        }
-        if (config.autoRemove) {
-            const {toggleAutoRemove} = require("./playlist")
-            toggleAutoRemove()
         }
         const {"init": startMpv} = require("./player")
         let defaultMpv = "mpv"
@@ -62,14 +68,26 @@ const init = () => {
             defaultMpv = "mpv.exe"
         }
         startMpv(config.mpv || defaultMpv)
+        if (config.folder) {
+            const {scanner} = require("./songs")
+            scanner(config.folder, config.dumpLyrics)
+        }
     })
 }
 
-const shouldAutoFetchLyrics = () => autoLyrics
-
 const toggleAutoLyrics = () => {
-    autoLyrics = !autoLyrics
-    document.getElementById("toggle-autolyrics").checked = autoLyrics
+    document.getElementById("toggle-autolyrics").checked
+        = !document.getElementById("toggle-autolyrics").checked
+}
+
+const toggleShiftLyrics = () => {
+    document.getElementById("toggle-shift-lyrics").checked
+        = !document.getElementById("toggle-shift-lyrics").checked
+}
+
+const toggleGenius = () => {
+    document.getElementById("toggle-genius").checked
+        = !document.getElementById("toggle-genius").checked
 }
 
 const saveSettings = () => {
@@ -87,6 +105,7 @@ const saveSettings = () => {
     config.autoRemove = document.getElementById("toggle-autoremove").checked
     config.autoLyrics = document.getElementById("toggle-autolyrics").checked
     config.useGenius = document.getElementById("toggle-genius").checked
+    config.shiftLyrics = document.getElementById("toggle-shift-lyrics").checked
     if (!config.autoScroll) {
         delete config.autoScroll
     }
@@ -101,6 +120,9 @@ const saveSettings = () => {
     }
     if (config.useGenius) {
         delete config.useGenius
+    }
+    if (config.shiftLyrics) {
+        delete config.shiftLyrics
     }
     if (config.cache === "all") {
         delete config.cache
@@ -138,4 +160,6 @@ const saveSettings = () => {
     }
 }
 
-module.exports = {init, saveSettings, shouldAutoFetchLyrics, toggleAutoLyrics}
+module.exports = {
+    init, saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
+}

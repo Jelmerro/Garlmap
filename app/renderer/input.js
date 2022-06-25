@@ -79,38 +79,6 @@ const init = () => {
             }
         })
     }
-    document.getElementById("toggle-autoscroll").parentNode
-        .addEventListener("click", () => {
-            if (!isReady()) {
-                return
-            }
-            const {toggleAutoScroll} = require("./playlist")
-            toggleAutoScroll()
-        })
-    document.getElementById("toggle-autoclose").parentNode
-        .addEventListener("click", () => {
-            if (!isReady()) {
-                return
-            }
-            const {toggleAutoClose} = require("./playlist")
-            toggleAutoClose()
-        })
-    document.getElementById("toggle-autoremove").parentNode
-        .addEventListener("click", () => {
-            if (!isReady()) {
-                return
-            }
-            const {toggleAutoRemove} = require("./playlist")
-            toggleAutoRemove()
-        })
-    document.getElementById("toggle-genius").parentNode
-        .addEventListener("click", () => {
-            if (!isReady()) {
-                return
-            }
-            const {toggleGenius} = require("./songs")
-            toggleGenius()
-        })
     document.getElementById("rule-search").addEventListener("input", () => {
         if (!isReady()) {
             return
@@ -371,8 +339,12 @@ const mappings = {
         },
         "<C-f>": () => switchFocus("search"),
         "<C-g>": () => {
-            const {toggleGenius} = require("./songs")
+            const {toggleGenius} = require("./settings")
             toggleGenius()
+        },
+        "<C-h>": () => {
+            const {toggleShiftLyrics} = require("./settings")
+            toggleShiftLyrics()
         },
         "<C-i>": () => {
             const {showSongInfo} = require("./dom")
