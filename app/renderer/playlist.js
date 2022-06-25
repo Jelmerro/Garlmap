@@ -29,7 +29,6 @@ const {
     queryMatch,
     writeJSON,
     readJSON,
-    resetWelcome,
     isDirectory,
     notify
 } = require("../util")
@@ -621,7 +620,8 @@ const clearPlaylist = async() => {
     generatePlaylistView()
     const {displayCurrentSong} = require("./player")
     await displayCurrentSong(null)
-    resetWelcome()
+    const {resetShowingLyrics} = require("./songs")
+    resetShowingLyrics()
 }
 
 module.exports = {

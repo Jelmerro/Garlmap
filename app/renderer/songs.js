@@ -43,6 +43,7 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
+let showingLyrics = false
 const low = s => s.toLowerCase()
 
 const sanitizeLyrics = lyrics => lyrics?.trim()
@@ -529,6 +530,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         document.getElementById("song-info").textContent = cachedLyrics
         document.getElementById("fs-lyrics").textContent = cachedLyrics
         document.getElementById("lyrics-edit-field").textContent = cachedLyrics
+        showingLyrics = true
         return
     }
     if (!req.artist || !req.title) {
@@ -552,6 +554,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
                 document.getElementById("lyrics-edit-field").value = lyrics
+                showingLyrics = true
             }
             songs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
@@ -601,6 +604,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
                 document.getElementById("lyrics-edit-field").value = lyrics
+                showingLyrics = true
             }
             songs.find(s => s.id === req.id
                 || s.path === req.path).lyrics = lyrics
@@ -635,14 +639,21 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     }
 }
 
-const showLyrics = async p => {
+const resetShowingLyrics = () => {
     resetWelcome()
+    document.getElementById("song-info").scrollTo(0, 0)
+    showingLyrics = false
+}
+
+const showLyrics = async p => {
+    resetShowingLyrics()
     document.getElementById("fs-lyrics").scrollTo(0, 0)
     document.getElementById("lyrics-edit-field").scrollTo(0, 0)
     const song = songById(p)
     document.getElementById("fs-lyrics").textContent = song.lyrics || ""
     document.getElementById("lyrics-edit-field").value = song.lyrics || ""
     if (song.lyrics) {
+        showingLyrics = true
         document.getElementById("song-info").textContent = song.lyrics
     } else {
         await fetchLyrics(song)
@@ -684,16 +695,13 @@ const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
 const lyricsSyncPosition = current => {
-    const lyricsContainers = [
-        document.getElementById("song-info"),
-        document.getElementById("fs-lyrics")
-    ]
+    const lyricsContainers = [document.getElementById("fs-lyrics")]
+    if (showingLyrics) {
+        lyricsContainers.push(document.getElementById("song-info"))
+    }
     const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
-    for (const el of lyricsContainers) {
+    for (const el of lyricsContainers.filter(e => e.scrollHeight)) {
         const scrollableHeight = el.scrollHeight - el.clientHeight
-        if (!scrollableHeight) {
-            continue
-        }
         const pad = Math.max(0, Math.min(
             el.clientHeight / el.scrollHeight * 50, 30))
         const percentage = (
@@ -720,6 +728,7 @@ module.exports = {
     incrementSelectedLyrics,
     lyricsSyncPosition,
     query,
+    resetShowingLyrics,
     saveLyrics,
     scanner,
     searchLyrics,

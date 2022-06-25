@@ -284,7 +284,6 @@ even after reading this entire section and the startup help using "--help",
 you are more than welcome to reach out on Github.
 Please visit Jelmerro/Garlmap and make an issue with your question or request.
 `.split("\n").map(l => l || "\n\n").join(" ")
-    document.getElementById("song-info").scrollTo(0, 0)
 }
 
 const displayNotificationStack = []

@@ -369,7 +369,10 @@ const mappings = {
             exportList()
         },
         "<Escape>": () => setFullscreenLayout(false, false),
-        "<F1>": () => resetWelcome(),
+        "<F1>": () => {
+            const {resetShowingLyrics} = require("./songs")
+            resetShowingLyrics()
+        },
         "<F2>": () => switchFocus("search"),
         "<F3>": () => switchFocus("playlist"),
         "<F4>": () => {
@@ -874,7 +877,8 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#show-help")) {
-        resetWelcome()
+        const {resetShowingLyrics} = require("./songs")
+        resetShowingLyrics()
         return
     }
     if (queryMatch(e, "#show-lyrics")) {
