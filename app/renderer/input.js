@@ -58,6 +58,11 @@ const init = () => {
             e.preventDefault()
         }
     })
+    window.addEventListener("mousewheel", e => {
+        if (queryMatch(e, "#song-info, #fs-lyrics")) {
+            document.getElementById("toggle-shift-lyrics").checked = false
+        }
+    })
     for (const vol of [...document.querySelectorAll("input[type='range']")]) {
         vol.addEventListener("input", () => {
             if (!isReady()) {
@@ -264,17 +269,29 @@ const mappings = {
             const {increment} = require("./playlist")
             increment()
         },
-        "<F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 100),
-        "<F10>": () => document.getElementById("fs-lyrics").scrollBy(0, -100),
+        "<F9>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, 100)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
+        "<F10>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, -100)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
         "<PageDown>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 100)
+            document.getElementById("toggle-shift-lyrics").checked = false
         },
         "<PageUp>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -100)
+            document.getElementById("toggle-shift-lyrics").checked = false
         },
-        "<S-F9>": () => document.getElementById("fs-lyrics").scrollBy(0, 1000),
+        "<S-F9>": () => {
+            document.getElementById("fs-lyrics").scrollBy(0, 1000)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
         "<S-F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -1000)
+            document.getElementById("toggle-shift-lyrics").checked = false
         },
         "=": () => {
             const {volumeUp} = require("./player")
@@ -395,8 +412,14 @@ const mappings = {
             const {increment} = require("./playlist")
             increment()
         },
-        "<F9>": () => document.getElementById("song-info").scrollBy(0, 100),
-        "<F10>": () => document.getElementById("song-info").scrollBy(0, -100),
+        "<F9>": () => {
+            document.getElementById("song-info").scrollBy(0, 100)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
+        "<F10>": () => {
+            document.getElementById("song-info").scrollBy(0, -100)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
         "<F11>": () => {
             const isFullscreened = document.fullscreenElement
                 || document.body.getAttribute("focus-el") === "fullscreen"
@@ -411,9 +434,13 @@ const mappings = {
             const {stopAfterLastTrackOfRule} = require("./playlist")
             stopAfterLastTrackOfRule()
         },
-        "<S-F9>": () => document.getElementById("song-info").scrollBy(0, 1000),
+        "<S-F9>": () => {
+            document.getElementById("song-info").scrollBy(0, 1000)
+            document.getElementById("toggle-shift-lyrics").checked = false
+        },
         "<S-F10>": () => {
             document.getElementById("song-info").scrollBy(0, -1000)
+            document.getElementById("toggle-shift-lyrics").checked = false
         },
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
             document.body.getAttribute("focus-el") !== "fullscreen"),
@@ -786,6 +813,9 @@ const handleMouse = e => {
         + "#fs-lyrics, #events-list, #infopanel-details"
     if (!queryMatch(e, ok)) {
         e.preventDefault()
+    }
+    if (queryMatch(e, "#song-info, #fs-lyrics")) {
+        document.getElementById("toggle-shift-lyrics").checked = false
     }
     let mode = document.body.getAttribute("focus-el")
     const searchbox = document.getElementById("rule-search")
