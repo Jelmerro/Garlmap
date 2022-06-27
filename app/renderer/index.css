@@ -125,6 +125,8 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 body[two-column="always"][focus-el="playlist"] #search-container {display: none;}
 body[two-column="always"][focus-el="search"] #playlist-container {display: none;}
 body[two-column="always"] #switch-to-playlist, body[two-column="always"] #switch-to-search {display: block;}
+body #search-controls {grid-template-columns: repeat(2, 1fr);}
+body[two-column="always"] #search-controls {grid-template-columns: repeat(3, 1fr);}
 @media screen and (max-width: 60em) {
     body[two-column="mobile"][focus-el="playlist"] #search-container {display: none;}
     body[two-column="mobile"][focus-el="search"] #playlist-container {display: none;}
@@ -139,7 +141,7 @@ body[two-column="always"] #switch-to-playlist, body[two-column="always"] #switch
     #playlist-container .song:not(.selected):not(.current) img:first-child {display: none;}
 }
 @media screen and (min-width: 100em) {
-    #playlist-controls, #search-controls {grid-template-columns: repeat(4, 1fr);}
+    #playlist-controls {grid-template-columns: repeat(4, 1fr);}
 }
 
 
