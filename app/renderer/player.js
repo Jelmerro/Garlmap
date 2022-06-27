@@ -73,15 +73,15 @@ const init = path => {
             document.getElementById("fs-progress-played").style.width = perc
             document.getElementById("fs-progress-string").innerHTML = played
             if (document.getElementById("toggle-shift-lyrics").checked) {
-                const {lyricsSyncPosition} = require("./songs")
-                lyricsSyncPosition(parseFloat(perc))
+                const {shiftLyricsByPercentage} = require("./lyrics")
+                shiftLyricsByPercentage(parseFloat(perc))
             }
             return
         }
         if (info.name === "playlist-pos" && info.data === 1) {
             const {increment} = require("./playlist")
             await increment(false)
-            const {showLyrics} = require("./songs")
+            const {showLyrics} = require("./lyrics")
             const {currentAndNext, autoPlayOpts} = require("./playlist")
             const {current} = currentAndNext()
             await showLyrics(current.id)

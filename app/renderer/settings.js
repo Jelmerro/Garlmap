@@ -26,6 +26,7 @@ const init = () => {
     ipcRenderer.on("config", (_, config) => {
         startupConfig = config
         const {setStartupSettings} = require("./songs")
+        const {setShiftTimer} = require("./lyrics")
         document.body.setAttribute("two-column", config.twoColumn || "mobile")
         document.getElementById("toggle-autoclose").checked = config.autoClose
         document.getElementById("toggle-autoclose").parentNode
@@ -49,12 +50,17 @@ const init = () => {
                 toggleAutoScroll()
             })
         setStartupSettings(config.configDir, config.cache, config.cacheClean)
+        setShiftTimer(config.shiftTimer)
         document.getElementById("toggle-genius").checked
             = config.useGenius ?? true
         document.getElementById("toggle-genius").parentNode
             .addEventListener("click", () => toggleGenius())
         document.getElementById("toggle-shift-lyrics").checked
-            = config.shiftLyrics
+            = config.shiftLyrics || config.shiftTimer
+        if (config.shiftTimer) {
+            document.getElementById("toggle-shift-lyrics")
+                .parentNode.style.display = "none"
+        }
         document.getElementById("toggle-shift-lyrics").parentNode
             .addEventListener("click", () => toggleShiftLyrics())
         if (config.customTheme) {
@@ -81,6 +87,9 @@ const toggleAutoLyrics = () => {
 }
 
 const toggleShiftLyrics = () => {
+    if (startupConfig.shiftTimer) {
+        return
+    }
     document.getElementById("toggle-shift-lyrics").checked
         = !document.getElementById("toggle-shift-lyrics").checked
 }
@@ -121,8 +130,11 @@ const saveSettings = () => {
     if (config.useGenius) {
         delete config.useGenius
     }
-    if (config.shiftLyrics) {
+    if (!config.shiftLyrics) {
         delete config.shiftLyrics
+    }
+    if (!config.shiftTimer) {
+        delete config.shiftTimer
     }
     if (config.cache === "all") {
         delete config.cache

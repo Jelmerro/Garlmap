@@ -18,7 +18,7 @@
 "use strict"
 
 const {ipcRenderer, clipboard} = require("electron")
-const {queryMatch, resetWelcome} = require("../util")
+const {queryMatch} = require("../util")
 const {switchFocus, setFullscreenLayout, closeSpecialMode} = require("./dom")
 
 const init = () => {
@@ -60,7 +60,8 @@ const init = () => {
     })
     window.addEventListener("mousewheel", e => {
         if (queryMatch(e, "#song-info, #fs-lyrics")) {
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         }
     })
     for (const vol of [...document.querySelectorAll("input[type='range']")]) {
@@ -167,7 +168,8 @@ const init = () => {
             }
         }
     })
-    resetWelcome()
+    const {resetShowingLyrics} = require("./lyrics")
+    resetShowingLyrics()
 }
 
 const isReady = () => document.getElementById(
@@ -271,27 +273,33 @@ const mappings = {
         },
         "<F9>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<PageDown>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<PageUp>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<S-F9>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 1000)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<S-F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -1000)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "=": () => {
             const {volumeUp} = require("./player")
@@ -387,13 +395,13 @@ const mappings = {
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => {
-            const {resetShowingLyrics} = require("./songs")
+            const {resetShowingLyrics} = require("./lyrics")
             resetShowingLyrics()
         },
         "<F2>": () => switchFocus("search"),
         "<F3>": () => switchFocus("playlist"),
         "<F4>": () => {
-            const {switchToLyrics} = require("./songs")
+            const {switchToLyrics} = require("./lyrics")
             switchToLyrics()
         },
         "<F5>": () => {
@@ -414,11 +422,13 @@ const mappings = {
         },
         "<F9>": () => {
             document.getElementById("song-info").scrollBy(0, 100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<F10>": () => {
             document.getElementById("song-info").scrollBy(0, -100)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<F11>": () => {
             const isFullscreened = document.fullscreenElement
@@ -427,7 +437,7 @@ const mappings = {
         },
         "<F12>": () => ipcRenderer.invoke("toggle-devtools"),
         "<S-F4>": () => {
-            const {switchToLyrics} = require("./songs")
+            const {switchToLyrics} = require("./lyrics")
             switchToLyrics(true)
         },
         "<S-F6>": () => {
@@ -436,11 +446,13 @@ const mappings = {
         },
         "<S-F9>": () => {
             document.getElementById("song-info").scrollBy(0, 1000)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<S-F10>": () => {
             document.getElementById("song-info").scrollBy(0, -1000)
-            document.getElementById("toggle-shift-lyrics").checked = false
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
         },
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
             document.body.getAttribute("focus-el") !== "fullscreen"),
@@ -479,29 +491,29 @@ const mappings = {
     },
     "lyrics": {
         "<ArrowDown>": () => {
-            const {incrementSelectedLyrics} = require("./songs")
+            const {incrementSelectedLyrics} = require("./lyrics")
             incrementSelectedLyrics()
         },
         "<ArrowUp>": () => {
-            const {decrementSelectedLyrics} = require("./songs")
+            const {decrementSelectedLyrics} = require("./lyrics")
             decrementSelectedLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
-            const {incrementSelectedLyrics} = require("./songs")
+            const {incrementSelectedLyrics} = require("./lyrics")
             incrementSelectedLyrics()
         },
         "<C-p>": () => {
-            const {decrementSelectedLyrics} = require("./songs")
+            const {decrementSelectedLyrics} = require("./lyrics")
             decrementSelectedLyrics()
         },
         "<C-s>": () => {
-            const {saveLyrics} = require("./songs")
+            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Enter>": () => {
-            const {selectLyricsFromResults} = require("./songs")
+            const {selectLyricsFromResults} = require("./lyrics")
             selectLyricsFromResults()
         },
         "<Escape>": () => closeSpecialMode(),
@@ -509,13 +521,13 @@ const mappings = {
     },
     "lyricseditor": {
         "<C-Enter>": () => {
-            const {saveLyrics} = require("./songs")
+            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyrics"),
         "<C-s>": () => {
-            const {saveLyrics} = require("./songs")
+            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Escape>": () => closeSpecialMode(),
@@ -535,11 +547,11 @@ const mappings = {
             switchFocus("lyrics")
         },
         "<C-s>": () => {
-            const {saveLyrics} = require("./songs")
+            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Enter>": () => {
-            const {searchLyrics} = require("./songs")
+            const {searchLyrics} = require("./lyrics")
             searchLyrics(document.getElementById("lyrics-search").value)
         },
         "<Escape>": () => closeSpecialMode(),
@@ -815,7 +827,8 @@ const handleMouse = e => {
         e.preventDefault()
     }
     if (queryMatch(e, "#song-info, #fs-lyrics")) {
-        document.getElementById("toggle-shift-lyrics").checked = false
+        const {stunShiftLyrics} = require("./lyrics")
+        stunShiftLyrics()
     }
     let mode = document.body.getAttribute("focus-el")
     const searchbox = document.getElementById("rule-search")
@@ -907,17 +920,17 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#show-help")) {
-        const {resetShowingLyrics} = require("./songs")
+        const {resetShowingLyrics} = require("./lyrics")
         resetShowingLyrics()
         return
     }
     if (queryMatch(e, "#show-lyrics")) {
-        const {switchToLyrics} = require("./songs")
+        const {switchToLyrics} = require("./lyrics")
         switchToLyrics()
         return
     }
     if (queryMatch(e, "#fetch-lyrics")) {
-        const {switchToLyrics} = require("./songs")
+        const {switchToLyrics} = require("./lyrics")
         switchToLyrics(true)
         return
     }
@@ -938,12 +951,12 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#lyrics-query")) {
-        const {searchLyrics} = require("./songs")
+        const {searchLyrics} = require("./lyrics")
         searchLyrics(document.getElementById("lyrics-search").value)
         return
     }
     if (queryMatch(e, "#lyrics-save")) {
-        const {saveLyrics} = require("./songs")
+        const {saveLyrics} = require("./lyrics")
         saveLyrics()
         return
     }

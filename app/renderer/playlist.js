@@ -125,7 +125,7 @@ const generatePlaylistView = () => {
                         }
                         ruleIdx = index
                         pathIdx = songIdx
-                        playFromPlaylist(true)
+                        playFromPlaylist()
                     } else {
                         switchFocus("playlist")
                         selectedRuleIdx = index
@@ -141,7 +141,7 @@ const generatePlaylistView = () => {
                     }
                     ruleIdx = index
                     pathIdx = songIdx
-                    playFromPlaylist(true)
+                    playFromPlaylist()
                 })
                 if (song.stopAfter) {
                     const stopImg = document.createElement("img")
@@ -159,7 +159,7 @@ const playSelectedSong = async() => {
     if (selectedRuleIdx !== null && selectedPathIdx !== null) {
         ruleIdx = selectedRuleIdx
         pathIdx = selectedPathIdx
-        await playFromPlaylist(true)
+        await playFromPlaylist()
     }
 }
 
@@ -355,7 +355,7 @@ const playFromPlaylist = async(switchNow = true) => {
     if (current) {
         if (switchNow) {
             await load(current.path)
-            const {showLyrics} = require("./songs")
+            const {showLyrics} = require("./lyrics")
             showLyrics(current.id)
         }
         await queue(next?.path)
@@ -620,7 +620,7 @@ const clearPlaylist = async() => {
     generatePlaylistView()
     const {displayCurrentSong} = require("./player")
     await displayCurrentSong(null)
-    const {resetShowingLyrics} = require("./songs")
+    const {resetShowingLyrics} = require("./lyrics")
     resetShowingLyrics()
 }
 

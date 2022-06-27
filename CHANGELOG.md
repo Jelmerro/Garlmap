@@ -28,6 +28,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Song info panel that shows all technical details about the current (with "Ctrl-i") or selected song (with "i")
 - Devtools startup option to open the developments tools on startup (previously only manually with F12)
 - Automatic scrolling/shifting of the lyrics based on the current track time (default off)
+- Setting "shiftTimer" to enable the shifting of lyrics automatically on a delay after scrolling manually
 
 ### Changed
 

@@ -110,12 +110,13 @@ const processStartupArgs = () => {
         "mpv": process.env.GARLMAP_MPV?.trim(),
         "shiftLyrics": isTruthyArg(process.env.GARLMAP_SHIFT_LYRICS)
             || undefined,
+        "shiftTimer": process.env.GARLMAP_SHIFT_TIMER?.trim().toLowerCase(),
         "twoColumn": process.env.GARLMAP_TWO_COLUMN?.trim().toLowerCase(),
         "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS) || undefined
     }
     const configFile = readJSON(joinPath(configDir, "settings.json"))
     if (configFile) {
-        config = {...config, ...configFile}
+        config = {...config, ...configFile, "dumpLyrics": undefined}
     }
     args.forEach(arg => {
         if (arg.startsWith("-")) {
@@ -137,6 +138,8 @@ const processStartupArgs = () => {
                     || arg === "--dump-lyrics"
             } else if (name === "--mpv") {
                 config.mpv = value
+            } else if (name === "--shift-timer") {
+                config.shiftTimer = value
             } else if (name === "--two-column") {
                 config.twoColumn = value
             } else if (name === "--font-size") {
@@ -179,6 +182,14 @@ const processStartupArgs = () => {
         console.warn("Error, cache is set to songs only or none,")
         console.warn("therefor there are no lyrics to be dumped.")
         app.exit(1)
+    }
+    if (config.shiftTimer) {
+        const s = Number(config.shiftTimer)
+        if (isNaN(s) || s > 1000 || s < 0) {
+            console.warn("Shift timer must be a number between 0 and 1000")
+            app.exit(1)
+        }
+        config.shiftTimer = s
     }
     if (config.fontSize) {
         const s = Number(config.fontSize)
@@ -296,6 +307,10 @@ Garlmap can be started without any arguments, but it supports the following:
                    If disabled, no automatic scrolling of lyrics will happen.
                    There is no word syncing for the lyrics in Garlmap,
                    the scroll position is based on the current song progress.
+                   Shifting is turned off when scrolling manually,
+                   you can re-enable it on a delay with "--shift-timer" option.
+                   If a timer is set, the shiftLyrics value is ignored,
+                   as it will automatically be enabled on a delay by shiftTimer.
                    The argument can optionally be provided with value:
                    "--shift-lyrics=yes", "--shift-lyrics=0, "--shift-lyrics=no".
                    If no arg is found, it will read "shiftLyrics" from:
@@ -304,7 +319,24 @@ Garlmap can be started without any arguments, but it supports the following:
                    or this setting will by default be disabled.
                    Change this setting with Ctrl-h or the bottom right checkbox.
 
-    --two-column=* Define the policy for using the two column layout.
+    --shift-timer* Set the delay to re-enable lyrics shifting after scrolling.
+                   Accepted values are between 0-1000, and the unit is seconds.
+                   This setting controls how long to wait after scrolling,
+                   to then enable the shift lyrics option automatically.
+                   If set to zero, it's disabled and no enable delay is used.
+                   Any other number controls the amount of seconds to wait,
+                   and will ignore the shitLyrics value, as it's always enabled.
+                   For example 5, will wait 5 seconds to re-enable shifting.
+                   The argument should be provided with value to set it:
+                   "--shift-timer=5", "--shift-timer=0" or "--shift-timer=60".
+                   If no arg is found, it will read the "shiftTimer" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_SHIFT_TIMER env will be read,
+                   or this setting will by default be disabled.
+                   This setting cannot be changed once Garlmap is started,
+                   but you can still toggle shifting manually with the checkbox.
+
+    --two-column*  Define the policy for using the two column layout.
                    When enabled, only the lyrics with cover are always visible.
                    The playlist/search section will be hidden/shown on switch,
                    with only the currently focused section being visible.
@@ -324,7 +356,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    This setting cannot be changed once Garlmap is started.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
-                   Accepted values are between 8-100, and the unit is in pixels.
+                   Accepted values are between 8-100, and the unit is pixels.
                    Especially helpful on very high resolution screens.
                    Even values are recommend regardless of font size value,
                    to prevent rounding errors on small elements in the player.

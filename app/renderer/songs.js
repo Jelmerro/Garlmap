@@ -18,20 +18,14 @@
 "use strict"
 
 const glob = require("glob")
-const {compareTwoStrings} = require("string-similarity")
 const musicMetadata = require("music-metadata")
-const {Client} = require("genius-lyrics")
-const genius = new Client()
 const {ipcRenderer} = require("electron")
 const {
     readJSON,
     writeJSON,
     joinPath,
-    resetWelcome,
     isFile,
     dirName,
-    basePath,
-    readFile,
     writeFile,
     makeDir,
     notify
@@ -43,9 +37,7 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
-let showingLyrics = false
 const low = s => s.toLowerCase()
-
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
@@ -428,250 +420,6 @@ const coverArt = async p => {
     }
 }
 
-let lyricsSearchCache = []
-
-const decrementSelectedLyrics = () => {
-    const selected = document.querySelector("#lyrics-results .selected")
-    const {switchFocus} = require("./dom")
-    if (!selected) {
-        switchFocus("lyricssearch")
-    }
-    if (selected.previousSibling) {
-        selected.classList.remove("selected")
-        selected.previousSibling.classList.add("selected")
-    } else {
-        switchFocus("lyricssearch")
-    }
-}
-
-const incrementSelectedLyrics = () => {
-    const selected = document.querySelector("#lyrics-results .selected")
-    if (selected) {
-        if (selected.nextSibling) {
-            selected.classList.remove("selected")
-            selected.nextSibling.classList.add("selected")
-        }
-    } else {
-        document.querySelector("#lyrics-results > *")
-            ?.classList.add("selected")
-    }
-    const {switchFocus} = require("./dom")
-    switchFocus("lyrics")
-}
-
-const searchLyrics = async searchString => {
-    if (!searchString.trim()) {
-        return
-    }
-    const resultsContainer = document.getElementById("lyrics-results")
-    resultsContainer.textContent = "Searching Genius..."
-    const results = await genius.songs.search(searchString.trim()).catch(() => {
-        notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
-    })
-    lyricsSearchCache = results || []
-    resultsContainer.textContent = ""
-    results?.forEach(result => {
-        const el = document.createElement("div")
-        el.textContent = `${result.title} - ${result.artist.name}`
-        resultsContainer.appendChild(el)
-        el.addEventListener("click", () => {
-            resultsContainer.querySelector(".selected")
-                ?.classList.remove("selected")
-            el.classList.add("selected")
-            const {switchFocus} = require("./dom")
-            switchFocus("lyrics")
-        })
-        el.addEventListener("dblclick", () => selectLyricsFromResults())
-    })
-}
-
-const saveLyrics = () => {
-    const {currentAndNext} = require("./playlist")
-    const {current} = currentAndNext()
-    if (!current) {
-        return
-    }
-    const editor = document.getElementById("lyrics-edit-field")
-    songs.find(s => s.id === current.id
-        || s.path === current.path).lyrics = editor.value
-    cachedSongs.find(s => s.id === current.id
-        || s.path === current.path).lyrics = editor.value
-    setTimeout(() => {
-        updateCache()
-        showLyrics(current.id)
-    }, 1)
-}
-
-const selectLyricsFromResults = async() => {
-    const resultsContainer = document.getElementById("lyrics-results")
-    const selected = resultsContainer.querySelector(".selected")
-    const index = [...resultsContainer.children].indexOf(selected)
-    if (lyricsSearchCache[index]) {
-        const editor = document.getElementById("lyrics-edit-field")
-        const previousLyrics = editor.value
-        editor.value = "Fetching lyrics..."
-        const cacheEntry = lyricsSearchCache[index]
-        try {
-            editor.value = sanitizeLyrics(await cacheEntry.lyrics())
-        } catch {
-            notify(`Failed to fetch lyrics from Genius for: ${
-                cacheEntry.title} ${cacheEntry.artist.name}`)
-            editor.value = previousLyrics
-        }
-        editor.scrollTo(0, 0)
-    }
-}
-
-const fetchLyrics = async(req, force = false, originalReq = false) => {
-    // Use cache
-    const cachedLyrics = songs.find(s => s.id === req.id
-        || s.path === req.path).lyrics
-    if (cachedLyrics && !force) {
-        document.getElementById("song-info").textContent = cachedLyrics
-        document.getElementById("fs-lyrics").textContent = cachedLyrics
-        document.getElementById("lyrics-edit-field").textContent = cachedLyrics
-        showingLyrics = true
-        return
-    }
-    if (!req.artist || !req.title) {
-        return
-    }
-    // Find it in a local file
-    const txtPath = req.path.replace(/\.[^ .]+$/g, ".txt")
-    const txtId = req.id.replace(/\.[^ .]+$/g, ".txt")
-    const files = [
-        txtPath,
-        joinPath(dirName(txtPath), "Lyrics", basePath(txtPath)),
-        joinPath(dirName(txtPath), "Tracklists", basePath(txtPath)),
-        joinPath(req.path.replace(req.id, ""), "Lyrics", txtId),
-        joinPath(req.path.replace(req.id, ""), "Tracklists", txtId)
-    ]
-    const {currentAndNext} = require("./playlist")
-    for (const file of files) {
-        const lyrics = sanitizeLyrics(readFile(file))
-        if (lyrics) {
-            if (currentAndNext().current?.id === req.id) {
-                document.getElementById("song-info").textContent = lyrics
-                document.getElementById("fs-lyrics").textContent = lyrics
-                document.getElementById("lyrics-edit-field").value = lyrics
-                showingLyrics = true
-            }
-            songs.find(s => s.id === req.id
-                || s.path === req.path).lyrics = lyrics
-            cachedSongs.find(s => s.id === req.id
-                || s.path === req.path).lyrics = lyrics
-            setTimeout(() => updateCache(), 1)
-            return
-        }
-    }
-    // Fetch it from Genius
-    if (!document.getElementById("toggle-genius").checked) {
-        return
-    }
-    try {
-        notify(`Searching Genius for the song lyrics of: ${
-            req.title} ${req.artist}`, "info")
-        const results = await genius.songs.search(`${req.title} ${req.artist}`)
-        results.forEach(s => {
-            s.score = compareTwoStrings(low(s.title), low(req.title))
-                + compareTwoStrings(low(s.artist.name), low(req.artist))
-            if (originalReq) {
-                const originalScore = compareTwoStrings(
-                    low(s.title), low(originalReq.title))
-                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
-                if (originalScore > s.score) {
-                    s.score = originalScore
-                }
-                const originalNameScore = compareTwoStrings(
-                    low(s.title), low(originalReq.title))
-                + compareTwoStrings(low(s.artist.name), low(req.artist))
-                if (originalNameScore > s.score) {
-                    s.score = originalNameScore
-                }
-                const originalArtistScore = compareTwoStrings(
-                    low(s.title), low(req.title))
-                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
-                if (originalArtistScore > s.score) {
-                    s.score = originalArtistScore
-                }
-            }
-        })
-        results.sort((a, b) => b.score - a.score)
-        const [song] = results
-        if (song && song.score > 1.6) {
-            const lyrics = sanitizeLyrics(await song.lyrics())
-            if (currentAndNext().current?.id === req.id) {
-                document.getElementById("song-info").textContent = lyrics
-                document.getElementById("fs-lyrics").textContent = lyrics
-                document.getElementById("lyrics-edit-field").value = lyrics
-                showingLyrics = true
-            }
-            songs.find(s => s.id === req.id
-                || s.path === req.path).lyrics = lyrics
-            cachedSongs.find(s => s.id === req.id
-                || s.path === req.path).lyrics = lyrics
-            setTimeout(() => updateCache(), 1)
-            notify(`Found matching lyrics for: ${req.title} ${
-                req.artist}`, "success", false)
-            return
-        }
-        notify(`Failed to find matching song lyrics in Genius results for: ${
-            req.title} ${req.artist}`)
-    } catch (e) {
-        notify(`Failed to fetch lyrics from Genius for: ${
-            req.title} ${req.artist}`)
-    }
-    // Retry without text between brackets in song title and single artist
-    if (originalReq) {
-        return
-    }
-    if (currentAndNext().current?.id === req.id) {
-        const reqWithoutExtraText = JSON.parse(JSON.stringify(req))
-        reqWithoutExtraText.artist = req.artist.replace(/\(.*\)/g, "")
-            .split(" featuring ")[0].split(" feat. ")[0]
-            .split(" ft. ")[0].split(" & ")[0].trim()
-        reqWithoutExtraText.title = req.title.replace(/\(.*\)/g, "").trim()
-        if (reqWithoutExtraText.artist !== req.artist) {
-            fetchLyrics(reqWithoutExtraText, force, req)
-        } else if (reqWithoutExtraText.title !== req.title) {
-            fetchLyrics(reqWithoutExtraText, force, req)
-        }
-    }
-}
-
-const resetShowingLyrics = () => {
-    resetWelcome()
-    document.getElementById("song-info").scrollTo(0, 0)
-    showingLyrics = false
-}
-
-const showLyrics = async p => {
-    resetShowingLyrics()
-    document.getElementById("fs-lyrics").scrollTo(0, 0)
-    document.getElementById("lyrics-edit-field").scrollTo(0, 0)
-    const song = songById(p)
-    document.getElementById("fs-lyrics").textContent = song.lyrics || ""
-    document.getElementById("lyrics-edit-field").value = song.lyrics || ""
-    if (song.lyrics) {
-        showingLyrics = true
-        document.getElementById("song-info").textContent = song.lyrics
-    } else {
-        await fetchLyrics(song)
-    }
-}
-
-const switchToLyrics = async(forceFetch = false) => {
-    const {isAlive} = require("./player")
-    if (isAlive()) {
-        const {currentAndNext} = require("./playlist")
-        const {current} = currentAndNext()
-        if (current) {
-            await fetchLyrics(current, forceFetch)
-            document.getElementById("song-info").scrollTo(0, 0)
-        }
-    }
-}
-
 const setStartupSettings = (dir, policy, removeMissing) => {
     configDir = dir
     cache = policy || "all"
@@ -694,47 +442,27 @@ const setStartupSettings = (dir, policy, removeMissing) => {
 const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
-const lyricsSyncPosition = current => {
-    const lyricsContainers = [document.getElementById("fs-lyrics")]
-    if (showingLyrics) {
-        lyricsContainers.push(document.getElementById("song-info"))
-    }
-    const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
-    for (const el of lyricsContainers.filter(e => e.scrollHeight)) {
-        const scrollableHeight = el.scrollHeight - el.clientHeight
-        const pad = Math.max(0, Math.min(
-            el.clientHeight / el.scrollHeight * 50, 30))
-        const percentage = (
-            Math.min(Math.max(current, pad), 100 - pad) - pad
-        ) / (100 - pad - pad)
-        let newHeight = percentage * scrollableHeight
-        if (lineheight) {
-            newHeight -= newHeight % lineheight
-            if (scrollableHeight - newHeight < lineheight) {
-                newHeight = scrollableHeight
-            }
-        }
-        newHeight = Math.floor(newHeight)
-        if (el.scrollTop !== newHeight) {
-            el.scrollTo(0, newHeight)
-        }
-    }
+const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
+    songs.find(s => s.id === id || s.path === path) || {}))
+
+const updateLyricsOfSong = (id, path, lyrics) => {
+    songs.find(s => s.id === id || s.path === path).lyrics = lyrics
+    cachedSongs.find(s => s.id === id || s.path === path).lyrics = lyrics
+    return new Promise(res => {
+        setTimeout(() => {
+            updateCache()
+            res()
+        }, 1)
+    })
 }
 
 module.exports = {
     coverArt,
-    decrementSelectedLyrics,
-    fetchLyrics,
-    incrementSelectedLyrics,
-    lyricsSyncPosition,
     query,
-    resetShowingLyrics,
-    saveLyrics,
     scanner,
-    searchLyrics,
-    selectLyricsFromResults,
     setStartupSettings,
-    showLyrics,
     songById,
-    switchToLyrics
+    songByIdOrPath,
+    updateCache,
+    updateLyricsOfSong
 }
