@@ -117,7 +117,7 @@ const init = () => {
         if (process.platform === "win32") {
             defaultMpv = "mpv.exe"
         }
-        startMpv(config.mpv || defaultMpv)
+        startMpv(config.mpv || defaultMpv, config.configDir)
         // Scan folder on startup
         if (config.folder) {
             const {scanner} = require("./songs")

@@ -19,7 +19,7 @@
 
 const mpvAPI = require("mpv")
 const {ipcRenderer} = require("electron")
-const {formatTime} = require("../util")
+const {joinPath, formatTime} = require("../util")
 
 let mpv = null
 let customMediaSesion = null
@@ -28,7 +28,7 @@ let lastPos = 0
 let hasAnySong = false
 let stoppedAfterTrack = false
 
-const init = path => {
+const init = (path, configDir) => {
     mpv = new mpvAPI({"args": ["--no-video", "--no-audio-display"], path})
         .on("error", e => ipcRenderer.send("destroy-window", e))
     try {
@@ -36,9 +36,7 @@ const init = path => {
         // if provided by the OS, else the regular MediaSession API is used.
         const MPRIS = require("mpris-service")
         customMediaSesion = MPRIS({
-            "desktopEntry": "garlmap",
-            "identity": "Garlmap",
-            "name": "garlmap"
+            "desktopEntry": "garlmap", "identity": "Garlmap", "name": "garlmap"
         })
     } catch (e) {
         console.warn("Using Chromium's broken MediaSession API, be warned:")
@@ -115,6 +113,18 @@ const init = path => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", () => {
+        try {
+            const rimraf = require("rimraf")
+            rimraf.sync(joinPath(configDir, "Singleton*"))
+            rimraf.sync(joinPath(configDir, "Crashpad/"))
+            rimraf.sync(joinPath(configDir, "*Cache/"))
+            rimraf.sync(joinPath(configDir, "Cookies*/"))
+            rimraf.sync(joinPath(configDir, "*.log"))
+            rimraf.sync(joinPath(configDir, ".org.chromium.Chromium.*"))
+            rimraf.sync(joinPath(configDir, "*torage/"))
+        } catch (e) {
+            // Not essential, just nice to clean up the files
+        }
         mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })

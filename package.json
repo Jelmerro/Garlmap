@@ -29,8 +29,7 @@
     "electron": "19.0.6",
     "electron-builder": "23.1.0",
     "eslint": "8.18.0",
-    "eslint-plugin-sort-keys": "2.3.5",
-    "rimraf": "3.0.2"
+    "eslint-plugin-sort-keys": "2.3.5"
   },
   "dependencies": {
     "genius-lyrics": "4.3.8",
@@ -38,6 +37,7 @@
     "mpris-service": "2.1.2",
     "mpv": "1.0.0",
     "music-metadata": "7.12.3",
+    "rimraf": "3.0.2",
     "string-similarity": "4.0.4"
   }
 }
