@@ -123,6 +123,7 @@ const switchFocus = async newFocus => {
     //   - Also the focus when selecting search results after searching Genius
     // - lyricssearch (lyrics search box in the dialog for searching Genius api)
     // - lyricsseditor (manual lyrics edit box inside the lyrics dialog)
+    // - settingseditor (simple editor for advanced/startup settings)
     const currentFocus = document.body.getAttribute("focus-el")
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {
@@ -138,6 +139,11 @@ const switchFocus = async newFocus => {
         document.getElementById("infopanel").style.display = "flex"
     } else {
         document.getElementById("infopanel").style.display = "none"
+    }
+    if (newFocus === "settingseditor") {
+        document.getElementById("settings-editor").style.display = "flex"
+    } else {
+        document.getElementById("settings-editor").style.display = "none"
     }
     if (newFocus.startsWith("lyrics")) {
         document.getElementById("lyrics-editor").style.display = "flex"
@@ -170,7 +176,7 @@ const switchFocus = async newFocus => {
         }
     }
     if (newFocus.startsWith("search")) {
-        document.body.setAttribute("last-main-focus", newFocus)
+        document.body.setAttribute("last-main-focus", "search")
         const selected = document.querySelector("#search-results .selected")
         if (!selected || newFocus.endsWith("box")) {
             selected?.classList.remove("selected")

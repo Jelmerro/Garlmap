@@ -230,7 +230,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE env will be read,
                    or this setting will by default fallback to using "all".
-                   This setting cannot be changed once Garlmap is started.
+                   This setting can be changed in the advanced settings menu.
 
     --cache-clean  Enable the removal of cached songs that have a missing file.
                    By default they are kept in cache at all times,
@@ -243,7 +243,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE_CLEAN env will be read,
                    or this setting will by default be disabled from cleaning.
-                   This setting cannot be changed once Garlmap is started.
+                   This setting can be changed in the advanced settings menu.
 
     --auto-lyrics  Enable the automatic downloading of lyrics when songs play.
                    If disabled, you can download them per song by pressing F4.
@@ -333,8 +333,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_SHIFT_TIMER env will be read,
                    or this setting will by default be disabled.
-                   This setting cannot be changed once Garlmap is started,
-                   but you can still toggle shifting manually with the checkbox.
+                   This setting can be changed in the advanced settings menu.
 
     --two-column*  Define the policy for using the two column layout.
                    When enabled, only the lyrics with cover are always visible.
@@ -353,7 +352,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_TWO_COLUMN env will be read,
                    or this setting will by default fallback to using "mobile".
-                   This setting cannot be changed once Garlmap is started.
+                   This setting can be changed in the advanced settings menu.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
                    Accepted values are between 8-100, and the unit is pixels.
@@ -364,7 +363,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FONT_SIZE env will be read,
                    or this setting will by default set to 14 pixels.
-                   This setting cannot be changed once Garlmap is started.
+                   This setting can be changed in the advanced settings menu.
 
     --mpv=loc      Define a custom location for the mpv executable.
                    Mostly useful in case you don't want to have mpv on the path.
@@ -373,7 +372,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If also absent, the GARLMAP_MPV env will be read,
                    or this setting will by default set to "mpv" or "mpv.exe",
                    the latter only being the default on Windows.
-                   This setting cannot be changed once Garlmap is started.
+                   This setting can be changed in the advanced settings menu.
 
     --dump-lyrics  Dump all cached lyrics in a "Lyrics" subfolder of the folder.
                    The base directory must be set with the option below,

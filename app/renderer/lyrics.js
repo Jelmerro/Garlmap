@@ -26,7 +26,6 @@ const {joinPath, dirName, basePath, readFile, notify} = require("../util")
 let shitLyricsTimeout = null
 let showingLyrics = false
 let lyricsSearchCache = []
-let shiftTimerDelay = null
 const low = s => s.toLowerCase()
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
@@ -182,16 +181,11 @@ const stunShiftLyrics = () => {
         clearTimeout(shitLyricsTimeout)
     }
     document.getElementById("toggle-shift-lyrics").checked = false
-    if (!shiftTimerDelay) {
-        return
+    if (Number(document.getElementById("setting-shift-timer").value) > 0) {
+        shitLyricsTimeout = setTimeout(() => {
+            document.getElementById("toggle-shift-lyrics").checked = true
+        }, Number(document.getElementById("setting-shift-timer").value) * 1000)
     }
-    shitLyricsTimeout = setTimeout(() => {
-        document.getElementById("toggle-shift-lyrics").checked = true
-    }, shiftTimerDelay * 1000)
-}
-
-const setShiftTimer = policy => {
-    shiftTimerDelay = policy
 }
 
 const searchLyrics = async searchString => {
@@ -327,6 +321,8 @@ or otherwise using env vars, the config file or the startup arguments.
 You can optionally automatically shift/scroll the lyrics based on song progress:
 toggle this at runtime with the "Shift" checkbox, using Ctrl-h to toggle it,
 or otherwise using env vars, the config file or the startup arguments.
+Setting that are not by default visible can be changed in the settings editor,
+you can open that with the settings gear on the bottom right or with Ctrl-/.
 
 Syntax for queueing and searching
 
@@ -561,7 +557,6 @@ module.exports = {
     saveLyrics,
     searchLyrics,
     selectLyricsFromResults,
-    setShiftTimer,
     shiftLyricsByPercentage,
     showLyrics,
     stunShiftLyrics,

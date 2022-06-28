@@ -48,13 +48,13 @@ const init = () => {
         }
     })
     window.addEventListener("click", e => {
-        if (!queryMatch(e, "input")) {
+        if (!queryMatch(e, "input, select")) {
             e.preventDefault()
         }
     })
     window.addEventListener("mousedown", handleMouse)
     window.addEventListener("mouseup", e => {
-        if (!queryMatch(e, "input, textarea, #song-info")) {
+        if (!queryMatch(e, "input, textarea, #song-info, select")) {
             e.preventDefault()
         }
     })
@@ -324,6 +324,7 @@ const mappings = {
         }
     },
     "global": {
+        "<C-/>": () => switchFocus("settingseditor"),
         "<C-=>": () => {
             const {volumeUp} = require("./player")
             volumeUp()
@@ -792,17 +793,75 @@ const mappings = {
             const {append} = require("./playlist")
             append({"rule": search}, true)
         }
+    },
+    "settingseditor": {
+        "<C-/>": () => closeSpecialMode(),
+        "<C-ArrowDown>": () => {
+            const els = [...document.querySelectorAll("#settings-editor label")]
+            const focusEl = els.find(el => el === document.activeElement
+                || el === document.activeElement?.parentNode)
+            const index = els.indexOf(focusEl)
+            if (index === -1 || index >= els.length - 1) {
+                els[0].focus()
+            } else {
+                els[index + 1].focus()
+            }
+        },
+        "<C-ArrowUp>": () => {
+            const els = [...document.querySelectorAll("#settings-editor label")]
+            const focusEl = els.find(el => el === document.activeElement
+                || el === document.activeElement?.parentNode)
+            const index = els.indexOf(focusEl)
+            if (!index || index <= 0) {
+                els[els.length - 1].focus()
+            } else {
+                els[index - 1].focus()
+            }
+        },
+        "<C-Enter>": () => {
+            const {saveSettings} = require("./settings")
+            saveSettings()
+            closeSpecialMode()
+        },
+        "<C-s>": () => {
+            const {saveSettings} = require("./settings")
+            saveSettings()
+            closeSpecialMode()
+        },
+        "<Enter>": () => {
+            const els = [...document.querySelectorAll("#settings-editor label")]
+            const focusEl = els.find(el => el === document.activeElement
+                || el === document.activeElement?.parentNode)
+            let checkbox = focusEl.querySelector("input[type='checkbox']")
+            if (!checkbox && focusEl.matches("input[type='checkbox']")) {
+                checkbox = focusEl
+            }
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked
+            }
+        },
+        "<Escape>": () => closeSpecialMode(),
+        "<PageDown>": () => {
+            document.getElementById("settings-container").scrollBy(0, 300)
+        },
+        "<PageUp>": () => {
+            document.getElementById("settings-container").scrollBy(0, -300)
+        },
+        "q": () => closeSpecialMode()
     }
 }
 
 const handleKeyboard = async e => {
-    if (e.key === "Tab" || !queryMatch(e, "textarea, input[type='text']")) {
+    if (e.key === "Tab" || !queryMatch(e, "textarea, input, select")) {
         e.preventDefault()
     }
     if (!isReady()) {
         return
     }
     const id = toIdentifier(e)
+    if (id === "<Enter>" && queryMatch("select")) {
+        return
+    }
     let mode = document.body.getAttribute("focus-el")
     const searchbox = document.getElementById("rule-search")
     if (mode === "search" && document.activeElement === searchbox) {
@@ -821,7 +880,7 @@ const handleMouse = e => {
     if (!isReady()) {
         return
     }
-    const ok = ".song, #song-info, textarea, input, "
+    const ok = ".song, #song-info, textarea, input, select, "
         + "#fs-lyrics, #events-list, #infopanel-details"
     if (!queryMatch(e, ok)) {
         e.preventDefault()
@@ -837,6 +896,11 @@ const handleMouse = e => {
     }
     if (mode === "infopanel") {
         if (!queryMatch(e, "#infopanel")) {
+            closeSpecialMode()
+        }
+    }
+    if (mode === "settingseditor") {
+        if (!queryMatch(e, "#settings-editor, #edit-settings")) {
             closeSpecialMode()
         }
     }
@@ -899,9 +963,10 @@ const handleMouse = e => {
         importList()
         return
     }
-    if (queryMatch(e, "#save-settings")) {
+    if (queryMatch(e, ".save-settings")) {
         const {saveSettings} = require("./settings")
         saveSettings()
+        closeSpecialMode()
         return
     }
     if (queryMatch(e, "#prev, #fs-prev")) {
@@ -934,8 +999,8 @@ const handleMouse = e => {
         switchToLyrics(true)
         return
     }
-    if (queryMatch(e, "#edit-lyrics")) {
-        switchFocus("lyricseditor")
+    if (queryMatch(e, "#edit-settings")) {
+        switchFocus("settingseditor")
         return
     }
     if (queryMatch(e, "#rule-search")) {
@@ -960,7 +1025,7 @@ const handleMouse = e => {
         saveLyrics()
         return
     }
-    if (queryMatch(e, "#lyrics-edit-field")) {
+    if (queryMatch(e, "#lyrics-edit-field, #edit-lyrics")) {
         switchFocus("lyricseditor")
         return
     }
@@ -968,11 +1033,7 @@ const handleMouse = e => {
         switchFocus("lyricssearch")
         return
     }
-    if (queryMatch(e, "#lyrics-results")) {
-        switchFocus("lyrics")
-        return
-    }
-    if (queryMatch(e, "#lyrics-editor")) {
+    if (queryMatch(e, "#lyrics-results, #lyrics-editor")) {
         switchFocus("lyrics")
     }
 }

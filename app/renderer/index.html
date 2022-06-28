@@ -22,7 +22,7 @@
     <meta http-equiv="Content-Security-Policy" content="img-src 'self' data:; style-src 'unsafe-inline' file://*; media-src file://*; script-src 'none'; connect-src file://* data: node:; default-src 'none'">
     <title>Garlmap</title>
 </head>
-<body focus-el="search">
+<body focus-el="search" last-main-focus="search">
     <div id="player-container">
         <div id="player-status">
             <div id="player-controls">
@@ -70,7 +70,7 @@
                 <div class="button" id="open-folder">Open folder</div>
                 <div class="button" id="import-playlist">Import</div>
                 <div class="button" id="export-playlist">Export</div>
-                <div class="button" id="save-settings">Save settings</div>
+                <div class="button save-settings">Save settings</div>
             </div>
             <div id="main-playlist"></div>
             <div id="fallback-rule">order=shuffle</div>
@@ -98,6 +98,7 @@
             <input type="checkbox" id="toggle-shift-lyrics">
             <span class="checkbox-mark" />
         </label>
+        <div class="button" id="edit-settings"><img src="../img/settings.png"></div>
     </div>
     <div id="fullscreen">
         <img id="fs-song-cover" />
@@ -126,7 +127,7 @@
         <div id="infopanel-details"></div>
     </div>
     <div id="lyrics-editor">
-        <h1>Lyrics editor</h1>
+        <h1>Lyrics</h1>
         <div id="lyrics-container">
             <div id="lyrics-tools">
                 <div id="lyrics-inputs">
@@ -137,6 +138,84 @@
                 <div id="lyrics-results"></div>
             </div>
             <textarea id="lyrics-edit-field"></textarea>
+        </div>
+    </div>
+    <div id="settings-editor">
+        <h1>Settings</h1>
+        <div id="settings-container">
+            <div>
+                These are advanced settings that cannot be changed with shortcuts.
+                Some of them require a restart and/or are only applied on startup.
+                You can switch between settings with Ctrl-Up and Ctrl-Down.
+                Open dropdowns with Space and select with Up and Down.
+                Then select a value or toggle checkboxes with Enter.
+                You can save the settings and close this dialog with Ctrl-Enter,
+                or close without saving immediately using q, Ctrl-/ or Escape.
+                You can also save later from the main screen with Ctrl-s,
+                this is also where you can change other much simpler settings.
+                On smaller screens you can scroll using PageUp and PageDown.
+            </div>
+            <label>Cache
+                <select id="setting-cache">
+                    <option selected value="all">All</option>
+                    <option value="songs">Songs</option>
+                    <option value="lyrics">Lyrics</option>
+                    <option value="none">None</option>
+                </select>
+            </label>
+            <div>
+                Configure caching policy for the next startup.
+                Recommended default value is "all".
+                If you want to delete song cache, but keep the lyrics, set to "Lyrics".
+                To only keep the song info without lyrics, set to "Songs".
+                Delete all cache on next startup with "None".
+            </div>
+            <label class="checkbox-container" tabindex="0" id="setting-cache-clean">Cache clean
+                <input type="checkbox" id="toggle-cache-clean">
+                <span class="checkbox-mark" />
+            </label>
+            <div>Toggle if you want to clean missing files from the cache on next startup.</div>
+            <label>Shift timer
+                <input type="number" min="0" max="1000" id="setting-shift-timer" value="0">
+            </label>
+            <div>
+                Control the delay to automatically enable lyrics shifting.
+                If set to the default 0, it's disabled.
+                When a shift timer is set, you can't manually toggle shifting,
+                but it's still turned off when you manually scroll the lyrics.
+                The value of this setting is the delay in seconds to re-enable shifting.
+            </div>
+            <label>Two column
+                <select id="setting-two-column">
+                    <option value="always">Always</option>
+                    <option selected value="mobile">Mobile</option>
+                    <option value="never">Never</option>
+                </select>
+            </label>
+            <div>
+                Control when the two column layout should be used.
+                If set to mobile, it will activate automatically when shrinking the window size.
+            </div>
+            <label>Font size
+                <input type="number" min="8" max="100" id="setting-fontsize" value="14">
+            </label>
+            <div>
+                Set the font size to use in all of Garlmap.
+                This will also resize the entire interface accordingly,
+                and requires you to restart Garlmap to take effect.
+            </div>
+            <label>Mpv
+                <input type="text" id="setting-mpv">
+            </label>
+            <div>
+                Location of the MPV executable that's used to play songs.
+                An empty value will default to "mpv" or "mpv.exe" (windows only).
+                This executable location is used on the next restart,
+                and if it's not found Garlmap won't be able to start or play songs!
+            </div>
+        </div>
+        <div id="settings-actions">
+            <div class="button save-settings">Save settings</div>
         </div>
     </div>
 </body>

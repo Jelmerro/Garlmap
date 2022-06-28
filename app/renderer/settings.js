@@ -26,35 +26,68 @@ const init = () => {
     ipcRenderer.on("config", (_, config) => {
         startupConfig = config
         const {setStartupSettings} = require("./songs")
-        const {setShiftTimer} = require("./lyrics")
+        // Two column
         document.body.setAttribute("two-column", config.twoColumn || "mobile")
+        document.getElementById("setting-two-column")
+            .addEventListener("input", () => {
+                document.body.setAttribute("two-column",
+                    document.getElementById("setting-two-column").value)
+            })
+        document.getElementById("setting-two-column").value
+            = config.twoColumn || "mobile"
+        // Autoclose
         document.getElementById("toggle-autoclose").checked = config.autoClose
         document.getElementById("toggle-autoclose").parentNode
             .addEventListener("click", () => {
                 const {toggleAutoClose} = require("./playlist")
                 toggleAutoClose()
             })
+        // Autolyrics
         document.getElementById("toggle-autolyrics").checked = config.autoLyrics
         document.getElementById("toggle-autolyrics").parentNode
             .addEventListener("click", () => toggleAutoLyrics())
+        // Autoremove
         document.getElementById("toggle-autoremove").checked = config.autoRemove
         document.getElementById("toggle-autoremove").parentNode
             .addEventListener("click", () => {
                 const {toggleAutoRemove} = require("./playlist")
                 toggleAutoRemove()
             })
+        // Autoscroll
         document.getElementById("toggle-autoscroll").checked = config.autoScroll
         document.getElementById("toggle-autoscroll").parentNode
             .addEventListener("click", () => {
                 const {toggleAutoScroll} = require("./playlist")
                 toggleAutoScroll()
             })
-        setStartupSettings(config.configDir, config.cache, config.cacheClean)
-        setShiftTimer(config.shiftTimer)
-        document.getElementById("toggle-genius").checked
-            = config.useGenius ?? true
-        document.getElementById("toggle-genius").parentNode
-            .addEventListener("click", () => toggleGenius())
+        // Cache
+        document.getElementById("setting-cache").value = config.cache || "all"
+        // Cacheclean
+        document.getElementById("setting-cache-clean")
+            .addEventListener("click", () => {
+                document.getElementById("toggle-cache-clean").checked
+                    = !document.getElementById("toggle-cache-clean").checked
+                document.getElementById("setting-cache-clean").focus()
+            })
+        document.getElementById("toggle-cache-clean").checked
+            = config.cacheClean
+        // Set config dir
+        setStartupSettings(config.configDir)
+        // Shifttimer
+        document.getElementById("setting-shift-timer").value
+            = config.shiftTimer || 0
+        document.getElementById("setting-shift-timer")
+            .addEventListener("input", () => {
+                const val = document.getElementById("setting-shift-timer").value
+                if (Number(val) > 0) {
+                    document.getElementById("toggle-shift-lyrics")
+                        .parentNode.style.display = "none"
+                } else {
+                    document.getElementById("toggle-shift-lyrics")
+                        .parentNode.style.display = null
+                }
+            })
+        // Shiftlyrics
         document.getElementById("toggle-shift-lyrics").checked
             = config.shiftLyrics || config.shiftTimer
         if (config.shiftTimer) {
@@ -63,17 +96,29 @@ const init = () => {
         }
         document.getElementById("toggle-shift-lyrics").parentNode
             .addEventListener("click", () => toggleShiftLyrics())
+        // Fontsize
+        document.getElementById("setting-fontsize").value
+            = config.fontSize || "14"
+        // Customtheme
         if (config.customTheme) {
             const styleEl = document.createElement("style")
             styleEl.textContent = config.customTheme
             document.head.appendChild(styleEl)
         }
+        // Usegenius
+        document.getElementById("toggle-genius").checked
+            = config.useGenius ?? true
+        document.getElementById("toggle-genius").parentNode
+            .addEventListener("click", () => toggleGenius())
+        // Mpv
+        document.getElementById("setting-mpv").value = config.mpv || ""
         const {"init": startMpv} = require("./player")
         let defaultMpv = "mpv"
         if (process.platform === "win32") {
             defaultMpv = "mpv.exe"
         }
         startMpv(config.mpv || defaultMpv)
+        // Scan folder on startup
         if (config.folder) {
             const {scanner} = require("./songs")
             scanner(config.folder, config.dumpLyrics)
@@ -87,7 +132,7 @@ const toggleAutoLyrics = () => {
 }
 
 const toggleShiftLyrics = () => {
-    if (startupConfig.shiftTimer) {
+    if (Number(document.getElementById("setting-shift-timer").value) > 0) {
         return
     }
     document.getElementById("toggle-shift-lyrics").checked
@@ -100,11 +145,8 @@ const toggleGenius = () => {
 }
 
 const saveSettings = () => {
-    const config = JSON.parse(JSON.stringify(startupConfig))
-    const configFile = joinPath(config.configDir, "settings.json")
-    delete config.configDir
-    delete config.version
-    delete config.dumpLyrics
+    const config = {}
+    const configFile = joinPath(startupConfig.configDir, "settings.json")
     const folder = document.getElementById("status-folder").textContent.trim()
     if (folder !== "No folder selected") {
         config.folder = folder
@@ -114,7 +156,16 @@ const saveSettings = () => {
     config.autoRemove = document.getElementById("toggle-autoremove").checked
     config.autoLyrics = document.getElementById("toggle-autolyrics").checked
     config.useGenius = document.getElementById("toggle-genius").checked
+    config.shiftTimer = Number(document.getElementById(
+        "setting-shift-timer").value) || 0
     config.shiftLyrics = document.getElementById("toggle-shift-lyrics").checked
+        && config.shiftTimer === 0
+    config.cacheClean = document.getElementById("toggle-cache-clean").checked
+    config.cache = document.getElementById("setting-cache").value
+    config.twoColumn = document.getElementById("setting-two-column").value
+    config.fontSize = Number(document.getElementById(
+        "setting-fontsize").value) || 14
+    config.mpv = document.getElementById("setting-mpv").value
     if (!config.autoScroll) {
         delete config.autoScroll
     }

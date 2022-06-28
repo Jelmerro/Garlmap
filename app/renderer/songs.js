@@ -420,13 +420,13 @@ const coverArt = async p => {
     }
 }
 
-const setStartupSettings = (dir, policy, removeMissing) => {
+const setStartupSettings = dir => {
     configDir = dir
-    cache = policy || "all"
+    cache = document.getElementById("setting-cache").value || "all"
     if (cache !== "none") {
         cachedSongs = readJSON(joinPath(configDir, "cache.json")) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
-        if (removeMissing) {
+        if (document.getElementById("toggle-cache-clean").checked) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))
         }
         if (cache === "songs") {
