@@ -76,7 +76,11 @@ const logCustomSettings = config => {
                 console.info("Current custom settings:")
                 hasCustom = true
             }
-            console.info(`- ${key}: ${val}`)
+            if (key === "customTheme") {
+                console.info(`- ${key}: ${joinPath(configDir, "theme.css")}`)
+            } else {
+                console.info(`- ${key}: ${val}`)
+            }
         }
     }
     if (!hasCustom) {

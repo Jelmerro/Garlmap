@@ -23,6 +23,11 @@
     <title>Garlmap</title>
 </head>
 <body focus-el="search" last-main-focus="search">
+    <svg style="position: absolute;height: 0; width: 0;overflow: none;left: -100%;">
+        <filter id="colored" color-interpolation-filters="sRGB" x="0" y="0" height="100%" width="100%">
+            <feColorMatrix type="matrix" values="0.33203125 0 0 0 0 0.9296875 0 0 0 0 0.9296875 0 0 0 0 0 0 0 1 0" />
+        </filter>
+    </svg>
     <div id="player-container">
         <div id="player-status">
             <div id="player-controls">
