@@ -114,14 +114,14 @@ const init = (path, configDir) => {
     })
     ipcRenderer.on("window-close", () => {
         try {
-            const rimraf = require("rimraf")
-            rimraf.sync(joinPath(configDir, "Singleton*"))
-            rimraf.sync(joinPath(configDir, "Crashpad/"))
-            rimraf.sync(joinPath(configDir, "*Cache/"))
-            rimraf.sync(joinPath(configDir, "Cookies*/"))
-            rimraf.sync(joinPath(configDir, "*.log"))
-            rimraf.sync(joinPath(configDir, ".org.chromium.Chromium.*"))
-            rimraf.sync(joinPath(configDir, "*torage/"))
+            const rimraf = require("rimraf").sync
+            rimraf(joinPath(configDir, "Singleton*"))
+            rimraf(joinPath(configDir, "Crashpad/"))
+            rimraf(joinPath(configDir, "*Cache/"))
+            rimraf(joinPath(configDir, "Cookies*/"))
+            rimraf(joinPath(configDir, "*.log"))
+            rimraf(joinPath(configDir, ".org.chromium.Chromium.*"))
+            rimraf(joinPath(configDir, "*torage/"))
         } catch (e) {
             // Not essential, just nice to clean up the files
         }
