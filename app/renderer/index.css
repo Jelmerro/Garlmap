@@ -162,7 +162,7 @@ body[two-column="always"] #search-controls {grid-template-columns: repeat(3, 1fr
 #status-folder, #status-notify {cursor: pointer;}
 #status-scan, #status-notify {flex: 1;overflow: hidden;text-overflow: ellipsis;}
 #status-scan:empty + #status-notify {flex: 1;}
-#status-line .button {display: flex;cursor: pointer;border: .1em solid var(--primary);}
+#status-line .button {display: flex;cursor: pointer;border: .1em solid var(--primary);height: 1.6em;width: 1.6em;}
 #status-line .button img {height: 1.5em;width: 1.5em;margin: auto;filter: invert(.46) sepia(100%) hue-rotate(135deg) contrast(3.5);}
 #status-line input:not(:checked) ~ .checkbox-mark {background: var(--accent);}
 /* responsive design */
