@@ -58,6 +58,12 @@ const init = () => {
             e.preventDefault()
         }
     })
+    window.addEventListener("touchmove", e => {
+        if (queryMatch(e, "#song-info, #fs-lyrics")) {
+            const {stunShiftLyrics} = require("./lyrics")
+            stunShiftLyrics()
+        }
+    })
     window.addEventListener("mousewheel", e => {
         if (queryMatch(e, "#song-info, #fs-lyrics")) {
             const {stunShiftLyrics} = require("./lyrics")
