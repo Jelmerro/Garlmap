@@ -8,6 +8,25 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Added
+
+- Separate temp data folder for cache and browser files in the system's temp dir
+
+### Changed
+
+- Devtools are now always undocked to prevent window size issues
+
+### Fixed
+
+- Cursor and hover styling of the fullscreen progress bar
+
+### Versions
+
+- Electron 20.0.0 (was 19.0.7)
+- Chromium 104.0.5112.65 (was 102.0.5005.134)
+
 ## [1.0.0](https://github.com/Jelmerro/Garlmap/compare/0.4.0...1.0.0) - 2022-07-04
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/0.4.0...1.0.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/1.0.0)

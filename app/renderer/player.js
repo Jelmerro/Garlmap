@@ -19,7 +19,7 @@
 
 const mpvAPI = require("mpv")
 const {ipcRenderer} = require("electron")
-const {joinPath, formatTime} = require("../util")
+const {joinPath, formatTime, deleteFolder} = require("../util")
 
 let mpv = null
 let customMediaSesion = null
@@ -113,18 +113,7 @@ const init = (path, configDir) => {
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", () => {
-        try {
-            const rimraf = require("rimraf").sync
-            rimraf(joinPath(configDir, "Singleton*"))
-            rimraf(joinPath(configDir, "Crashpad/"))
-            rimraf(joinPath(configDir, "*Cache/"))
-            rimraf(joinPath(configDir, "Cookies*/"))
-            rimraf(joinPath(configDir, "*.log"))
-            rimraf(joinPath(configDir, ".org.chromium.Chromium.*"))
-            rimraf(joinPath(configDir, "*torage/"))
-        } catch (e) {
-            // Not essential, just nice to clean up the files
-        }
+        deleteFolder(joinPath(configDir, "Crashpad"))
         mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })

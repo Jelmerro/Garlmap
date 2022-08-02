@@ -199,6 +199,17 @@ const makeDir = loc => {
     return false
 }
 
+const deleteFolder = loc => {
+    try {
+        const {rmSync} = require("fs")
+        rmSync(loc, {"force": true, "recursive": true})
+        return true
+    } catch {
+        // Will return false as it was unsuccessful
+    }
+    return false
+}
+
 const deleteFile = loc => {
     try {
         const {unlinkSync} = require("fs")
@@ -213,6 +224,7 @@ const deleteFile = loc => {
 module.exports = {
     basePath,
     deleteFile,
+    deleteFolder,
     dirName,
     formatTime,
     isDirectory,

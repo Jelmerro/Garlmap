@@ -59,7 +59,7 @@ body::backdrop {background: var(--bg);}
 #current-song .title, #current-song .artist {font-size: 2em;display: flex;}
 #current-song .album, #current-song .title {color: var(--secondary);}
 #current-song .other-info {display: flex;flex-direction: column;margin-left: auto;gap: .5em;}
-#progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);}
+#progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);cursor: default;}
 #progress-container:hover {background: var(--accent);}
 #progress-played {background: var(--primary);color: var(--bg);z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
@@ -196,7 +196,8 @@ body[two-column="always"] #search-controls {grid-template-columns: repeat(3, 1fr
 #fs-current-song .title, #fs-current-song .artist, #fs-current-song .other-info span {overflow: hidden;text-overflow: ellipsis;}
 #fs-current-song .album {color: var(--secondary);}
 #fs-current-song .other-info {display: flex;flex-direction: column;}
-#fs-progress-container {display: flex;flex: 1;color: var(--bg);min-width: 14em;width: 100%;max-width: 100%;background: var(--bg);overflow: hidden;border: .1em solid var(--primary);position: relative;margin-top: .5em;}
+#fs-progress-container {display: flex;flex: 1;color: var(--bg);min-width: 14em;width: 100%;max-width: 100%;background: var(--bg);overflow: hidden;border: .1em solid var(--primary);position: relative;margin-top: .5em;cursor: default;}
+#fs-progress-container:hover {background: var(--accent);}
 #fs-progress-played {background: var(--primary);color: var(--bg);z-index: 3;}
 #fs-progress-string {position: absolute;color: var(--primary);text-overflow: ellipsis;width: 100%;}
 #fs-progress-played, #fs-progress-string {font-size: 1.6em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;line-height: 1em;}

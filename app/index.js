@@ -41,6 +41,8 @@ const applyDevtoolsSettings = prefFile => {
     // Disable source maps as they are unused and produce a lot of warnings
     preferences.electron.devtools.preferences.cssSourceMapsEnabled = false
     preferences.electron.devtools.preferences.jsSourceMapsEnabled = false
+    // Undock devtools by default as to not mess with the window size
+    preferences.electron.devtools.preferences.currentDockState = `"undocked"`
     // Disable release notes, none of these are relevant for Garlmap
     preferences.electron.devtools.preferences["help.show-release-note"] = false
     // Show timestamps in the console
@@ -438,7 +440,9 @@ const version = process.env.npm_package_version || app.getVersion()
 const configDir = joinPath(app.getPath("appData"), "Garlmap")
 app.setPath("appData", configDir)
 app.setPath("userData", configDir)
-applyDevtoolsSettings(joinPath(configDir, "Preferences"))
+const tempDir = joinPath(app.getPath("temp"), "Garlmap")
+app.setPath("sessionData", tempDir)
+applyDevtoolsSettings(joinPath(tempDir, "Preferences"))
 let mainWindow = null
 
 app.on("ready", () => {
