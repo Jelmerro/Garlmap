@@ -29,8 +29,7 @@
     "electron": "20.0.0",
     "electron-builder": "23.3.3",
     "eslint": "8.21.0",
-    "eslint-plugin-sort-keys": "2.3.5",
-    "rimraf": "3.0.2"
+    "eslint-plugin-sort-keys": "2.3.5"
   },
   "dependencies": {
     "genius-lyrics": "4.3.8",
