@@ -1,7 +1,7 @@
 {
   "name": "garlmap",
   "productName": "Garlmap",
-  "version": "1.1.0-dev",
+  "version": "1.1.0",
   "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
   "main": "app/index.js",
   "scripts": {
