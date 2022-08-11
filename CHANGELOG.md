@@ -2,11 +2,18 @@ CHANGELOG
 =========
 
 This document aims to represent all notable changes to Garlmap.
-See the README.md or LICENSE file for more info and details about Garlmap and it's license.
+See the README.md or LICENSE file for more info and details about Garlmap and its license.
 Links in the changelog are part of [github.com/Jelmerro/Garlmap](https://github.com/Jelmerro/Garlmap).
 The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains the most important changes per release,
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
+
+## Unreleased
+
+### Versions
+
+- Electron 20.0.2 (was 20.0.0)
+- Chromium 104.0.5112.81 (was 104.0.5112.65)
 
 ## [1.1.0](https://github.com/Jelmerro/Garlmap/compare/1.0.0...1.1.0) - 2022-08-02
 

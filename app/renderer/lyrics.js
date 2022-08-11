@@ -504,9 +504,9 @@ Your changes are not saved automatically, and you can safely close the dialog,
 if you reopen it without changing the song, your changes are still there.
 If you do not save your changes before a song change, they will be removed.
 You can save with Ctrl-s, the save button or with Ctrl-Enter in the text editor.
-The search results can also be used to fill the lyrics editor with it's text.
+The search results can also be used to fill the lyrics editor with its text.
 After a search, highlight the right song with the arrow keys or the mouse,
-then press Enter or double-click on the song to use it's lyrics in the editor.
+then press Enter or double-click on the song to use its lyrics in the editor.
 You can then edit them further, or save them with the button or Ctrl-Enter,
 You must save your changes manually for them to be stored to the cache.
 

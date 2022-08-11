@@ -19,7 +19,9 @@ import shutil
 import subprocess
 import re
 
-overrides = {}
+overrides = {
+    "music-metadata": "7.12.6"
+}
 
 
 def find_version(text, version):

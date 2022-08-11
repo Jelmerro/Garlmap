@@ -7,7 +7,7 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 
 - Gapless playback for a wide range of formats
   - No clicks or stops between different tracks, even for mp3
-- Almighty knowledge of your library and it's tags
+- Almighty knowledge of your library and its tags
   - It knows a lot, so it rarely needs internet to find answers
 - Rule-based playlist management and auto queueing
   - Search with filters, custom queries and build a dynamic playlist

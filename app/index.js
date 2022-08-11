@@ -385,7 +385,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    or using the folder option in the config or env vars.
                    Inside the base music folder, it will create a "Lyrics" dir,
                    which will have text files in the same path as the songs,
-                   with every song getting it's own text file at the right path.
+                   with every song getting its own text file at the right path.
                    Each of these files is filled with the lyrics for that song.
                    Garlmap will read "Lyrics" folders even without a cache file,
                    as long as they follow this same file structure.
