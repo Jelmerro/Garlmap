@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Support for setting the "lyrics" for instrumental songs to "[Instrumental]" automatically
+
 ### Versions
 
 - Electron 20.0.2 (was 20.0.0)

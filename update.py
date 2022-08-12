@@ -20,7 +20,7 @@ import subprocess
 import re
 
 overrides = {
-    "music-metadata": "7.12.6"
+    "music-metadata": "cjs"
 }
 
 

@@ -102,7 +102,10 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         results.sort((a, b) => b.score - a.score)
         const [song] = results
         if (song && song.score > 1.6) {
-            const lyrics = sanitizeLyrics(await song.lyrics())
+            let lyrics = "[Instrumental]"
+            if (!song.instrumental) {
+                lyrics = sanitizeLyrics(await song.lyrics())
+            }
             if (currentAndNext().current?.id === req.id) {
                 document.getElementById("song-info").textContent = lyrics
                 document.getElementById("fs-lyrics").textContent = lyrics
@@ -235,7 +238,11 @@ const selectLyricsFromResults = async() => {
         editor.value = "Fetching lyrics..."
         const cacheEntry = lyricsSearchCache[index]
         try {
-            editor.value = sanitizeLyrics(await cacheEntry.lyrics())
+            if (cacheEntry.instrumental) {
+                editor.value = "[Instrumental]"
+            } else {
+                editor.value = sanitizeLyrics(await cacheEntry.lyrics())
+            }
         } catch {
             notify(`Failed to fetch lyrics from Genius for: ${
                 cacheEntry.title} ${cacheEntry.artist.name}`)
