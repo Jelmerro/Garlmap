@@ -51,6 +51,10 @@ win:
       arch:
         - x64
         - arm64
+files:
+  - "app/img/*.png"
+  - "app/img/icon/1024x1024.png"
+  - "app/**/*.js"
 nsis:
   differentialPackage: false
   oneClick: false

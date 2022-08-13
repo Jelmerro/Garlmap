@@ -18,19 +18,27 @@
 "use strict"
 
 const builder = require("electron-builder")
-const {rmSync} = require("fs")
-const builds = {}
+const {rmSync, readdir, unlinkSync} = require("fs")
+const ebuilder = {"config": {
+    "afterPack": context => {
+        const localeDir = `${context.appOutDir}/locales/`
+        readdir(localeDir, (_err, files) => {
+            files?.filter(f => !f.match(/en-US\.pak/))
+                .forEach(f => unlinkSync(localeDir + f))
+        })
+    }
+}}
 
 rmSync("dist/", {"force": true, "recursive": true})
 process.argv.slice(1).forEach(a => {
     if (a === "--linux") {
-        builds.linux = []
+        ebuilder.linux = []
     }
     if (a === "--win") {
-        builds.win = []
+        ebuilder.win = []
     }
     if (a === "--mac") {
-        builds.mac = []
+        ebuilder.mac = []
     }
 })
-builder.build(builds).then(e => console.info(e)).catch(e => console.error(e))
+builder.build(ebuilder).then(e => console.info(e)).catch(e => console.error(e))
