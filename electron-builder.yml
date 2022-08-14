@@ -54,7 +54,8 @@ win:
 files:
   - "app/img/*.png"
   - "app/img/icon/1024x1024.png"
-  - "app/**/*.js"
+  - "app/*.js"
+  - "app/renderer/*"
 nsis:
   differentialPackage: false
   oneClick: false
