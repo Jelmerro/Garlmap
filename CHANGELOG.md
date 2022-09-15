@@ -8,6 +8,21 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Added
+
+- Import and export options for m3u/m3u8
+
+### Changed
+
+- Playlist importing is now much faster for large playlists
+
+### Versions
+
+- Electron 20.0.2 (unnchanged)
+- Chromium 104.0.5112.81 (unchanged)
+
 ## [1.2.1](https://github.com/Jelmerro/Garlmap/compare/1.2.0...1.2.1) - 2022-08-14
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/1.2.0...1.2.1) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/1.2.1)

@@ -30,7 +30,9 @@ const {
     writeJSON,
     readJSON,
     isDirectory,
-    notify
+    notify,
+    readFile,
+    writeFile
 } = require("../util")
 
 const generatePlaylistView = () => {
@@ -189,16 +191,18 @@ const currentAndNext = () => {
     if (!next) {
         const songs = query(fallbackRule)
         next = JSON.parse(JSON.stringify(songs[songs.indexOf(songs.find(
-            s => s.id === current.id) + 1)] || songs[0]))
-        next.upcoming = true
-        if (rulelist[ruleIdx]?.rule === fallbackRule) {
-            rulelist[ruleIdx].duration = rulelist[ruleIdx].songs
-                .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
-            rulelist[ruleIdx].songs.push(next)
-            playFromPlaylist(false)
-        } else {
-            append({"rule": fallbackRule,
-                "songs": [{...next, "upcoming": true}]})
+            s => s.id === current.id) + 1)] || songs[0] || {}))
+        if (next?.id) {
+            next.upcoming = true
+            if (rulelist[ruleIdx]?.rule === fallbackRule) {
+                rulelist[ruleIdx].duration = rulelist[ruleIdx].songs
+                    .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
+                rulelist[ruleIdx].songs.push(next)
+                playFromPlaylist(false)
+            } else {
+                append({"rule": fallbackRule,
+                    "songs": [{...next, "upcoming": true}]})
+            }
         }
     }
     if (current.stopAfter) {
@@ -375,7 +379,7 @@ const playFromPlaylist = async(switchNow = true) => {
     }
 }
 
-const append = (item, upNext = false) => {
+const append = (item, upNext = false, updateList = true) => {
     if (!item.songs) {
         const {query} = require("./songs")
         item.songs = JSON.parse(JSON.stringify(query(item.rule)))
@@ -405,9 +409,11 @@ const append = (item, upNext = false) => {
     } else {
         rulelist.push(item)
     }
-    playFromPlaylist(false).then(() => {
-        autoPlayOpts("scroll")
-    })
+    if (updateList) {
+        playFromPlaylist(false).then(() => {
+            autoPlayOpts("scroll")
+        })
+    }
 }
 
 const stopAfterTrack = (track = null) => {
@@ -562,6 +568,8 @@ const exportList = () => {
     ipcRenderer.invoke("dialog-save", {
         "filters": [{
             "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
+        }, {
+            "extensions": ["m3u", "m3u8"], "name": "M3U Playlist File"
         }],
         "title": "Export playlist"
     }).then(info => {
@@ -569,6 +577,14 @@ const exportList = () => {
             return
         }
         let file = String(info.filePath)
+        if (file.endsWith("m3u") || file.endsWith("m3u8")) {
+            const list = rulelist.map(r => r.songs).flat().map(s => s.path)
+            const success = writeFile(file, `#EXTM3U\n${list.join("\n")}\n`)
+            if (!success) {
+                notify("Failed to save playlist, write error")
+            }
+            return
+        }
         if (!file.endsWith(".garlmap.json")) {
             file += ".garlmap.json"
         }
@@ -588,7 +604,8 @@ const exportList = () => {
 const importList = () => {
     ipcRenderer.invoke("dialog-open", {
         "filters": [{
-            "extensions": ["garlmap.json"], "name": "Garlmap JSON Playlist File"
+            "extensions": ["m3u", "m3u8", "garlmap.json"],
+            "name": "Garlmap JSON Playlist File or M3U Playlist File"
         }],
         "properties": ["openFile"],
         "title": "Import playlist"
@@ -596,18 +613,34 @@ const importList = () => {
         if (info.canceled) {
             return
         }
-        const imported = readJSON(info.filePaths[0])
-        if (!imported?.list || !imported?.folder) {
-            notify("Not a valid Garlmap playlist file")
-            return
+        if (info.filePaths[0]?.endsWith(".garlmap.json")) {
+            const imported = readJSON(info.filePaths[0])
+            if (!imported?.list || !imported?.folder) {
+                notify("Not a valid Garlmap playlist file")
+                return
+            }
+            if (!isDirectory(imported.folder)) {
+                notify("Playlist base folder could not be found")
+                return
+            }
+            const {scanner} = require("./songs")
+            await scanner(imported.folder)
+            imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
+                append(r, false, false)
+            })
+            playFromPlaylist(false)
+        } else {
+            const list = readFile(info.filePaths[0]) || ""
+            await clearPlaylist()
+            const {songByIdOrPath} = require("./songs")
+            list.split("\n").filter(i => i && !i.startsWith("#")).forEach(i => {
+                const song = songByIdOrPath(i, i)
+                if (song?.id) {
+                    append({"songs": [song]}, false, false)
+                }
+            })
+            playFromPlaylist(false)
         }
-        if (!isDirectory(imported.folder)) {
-            notify("Playlist base folder could not be found")
-            return
-        }
-        const {scanner} = require("./songs")
-        await scanner(imported.folder)
-        imported.list.filter(r => r?.rule || r?.songs).forEach(append)
     })
 }
 
