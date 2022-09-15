@@ -186,12 +186,15 @@ const currentAndNext = () => {
     }
     rulelist[ruleIdx].upcoming = false
     current.upcoming = false
+    if (current.stopAfter) {
+        return {current, "next": null}
+    }
     let next = rulelist[ruleIdx]?.songs[pathIdx + 1]
         || rulelist[ruleIdx + 1]?.songs[0]
     if (!next) {
         const songs = query(fallbackRule)
         next = JSON.parse(JSON.stringify(songs[songs.indexOf(songs.find(
-            s => s.id === current.id) + 1)] || songs[0] || {}))
+            s => s.id === current.id)) + 1] || songs[0] || {}))
         if (next?.id) {
             next.upcoming = true
             if (rulelist[ruleIdx]?.rule === fallbackRule) {
@@ -204,9 +207,6 @@ const currentAndNext = () => {
                     "songs": [{...next, "upcoming": true}]})
             }
         }
-    }
-    if (current.stopAfter) {
-        next = null
     }
     return {current, next}
 }

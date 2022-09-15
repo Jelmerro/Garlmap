@@ -18,6 +18,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Playlist importing is now much faster for large playlists
 
+### Fixed
+
+- Fallback rule not working correctly with "order=albumshuffle"
+
 ### Versions
 
 - Electron 20.1.4 (was 20.0.2)
