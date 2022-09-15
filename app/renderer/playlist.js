@@ -19,9 +19,11 @@
 
 let rulelist = []
 let ruleIdx = 0
+let pathIdx = 0
 let selectedRuleIdx = null
 let selectedPathIdx = null
-let pathIdx = 0
+let upcomingPlaybackRuleIdx = null
+let upcomingPlaybackPathIdx = null
 
 const {ipcRenderer} = require("electron")
 const {
@@ -189,6 +191,32 @@ const currentAndNext = () => {
     if (current.stopAfter) {
         return {current, "next": null}
     }
+    const playbackOrder = document.getElementById("fallback-rule")
+        .getAttribute("playback-order")
+    const moreThanOne = rulelist.length > 1 || rulelist[0]?.songs?.length > 1
+    if (playbackOrder && moreThanOne) {
+        const allSongs = rulelist.map((r, idx) => [...r.songs.map(s => {
+            const song = JSON.parse(JSON.stringify(s))
+            song.idx = idx
+            return song
+        })]).flat(1)
+        if (playbackOrder === "list") {
+            upcomingPlaybackRuleIdx = null
+            upcomingPlaybackPathIdx = null
+            const next = rulelist[ruleIdx]?.songs[pathIdx + 1]
+                || rulelist[ruleIdx + 1]?.songs[0]
+            return {current, next}
+        }
+        let randomSong = null
+        while (!randomSong || randomSong.id === current.id) {
+            randomSong = allSongs.at(Math.random() * allSongs.length)
+        }
+        upcomingPlaybackRuleIdx = randomSong.idx
+        upcomingPlaybackPathIdx = rulelist[randomSong.idx].songs.indexOf(
+            rulelist[randomSong.idx].songs.find(s => s.id === randomSong.id))
+        const next = rulelist[randomSong.idx].songs[upcomingPlaybackPathIdx]
+        return {current, next}
+    }
     let next = rulelist[ruleIdx]?.songs[pathIdx + 1]
         || rulelist[ruleIdx + 1]?.songs[0]
     if (!next) {
@@ -212,7 +240,10 @@ const currentAndNext = () => {
 }
 
 const decrement = async() => {
-    if (pathIdx > 0) {
+    if (upcomingPlaybackRuleIdx !== null && upcomingPlaybackPathIdx !== null) {
+        ruleIdx = upcomingPlaybackRuleIdx
+        pathIdx = upcomingPlaybackPathIdx
+    } else if (pathIdx > 0) {
         pathIdx -= 1
     } else if (ruleIdx > 0) {
         ruleIdx -= 1
@@ -224,7 +255,10 @@ const decrement = async() => {
 }
 
 const increment = async(user = true) => {
-    if (rulelist[ruleIdx]?.songs.length > pathIdx + 1) {
+    if (upcomingPlaybackRuleIdx !== null && upcomingPlaybackPathIdx !== null) {
+        ruleIdx = upcomingPlaybackRuleIdx
+        pathIdx = upcomingPlaybackPathIdx
+    } else if (rulelist[ruleIdx]?.songs.length > pathIdx + 1) {
         pathIdx += 1
     } else if (rulelist.length > ruleIdx + 1) {
         ruleIdx += 1
@@ -485,18 +519,29 @@ const deleteSelected = () => {
 }
 
 const setFallbackRule = rule => {
-    if (!` ${rule} `.includes(" order:shuffle ")
-    && !` ${rule} `.includes(" order:albumshuffle ")
-    && !` ${rule} `.includes(" order=shuffle ")
-    && !` ${rule} `.includes(" order=albumshuffle ")) {
-        notify("Fallback rule must have a shuffling order to play forever")
-        return
-    }
-    const {query} = require("./songs")
-    const {length} = query(rule)
-    if (length < 2) {
-        notify("Fallback rule must match at least 2 tracks to work properly")
-        return
+    const filters = rule.split(/(?= \w+[:=])/g).map(p => ({
+        "name": p.trim().split(/[:=]/g)[0].toLowerCase(),
+        "value": p.trim().split(/[:=]/g)[1].toLowerCase()
+    }))
+    const playback = filters.find(f => f.name === "playback")
+    const hasOther = filters.length > 1
+    if (playback) {
+        if (["shuffle", "list"].includes(playback.value) && !hasOther) {
+            document.getElementById("fallback-rule")
+                .setAttribute("playback-order", playback.value)
+        } else {
+            notify("Fallback rule of type playback must only contain playback")
+            return
+        }
+    } else {
+        const {query} = require("./songs")
+        const {length} = query(rule)
+        if (length < 2) {
+            notify("Fallback rule must match at least 2 tracks or be playback")
+            return
+        }
+        document.getElementById("fallback-rule")
+            .removeAttribute("playback-order")
     }
     document.getElementById("fallback-rule").textContent = rule
 }
@@ -578,7 +623,7 @@ const exportList = () => {
         }
         let file = String(info.filePath)
         if (file.endsWith("m3u") || file.endsWith("m3u8")) {
-            const list = rulelist.map(r => r.songs).flat().map(s => s.path)
+            const list = rulelist.map(r => r.songs).flat(1).map(s => s.path)
             const success = writeFile(file, `#EXTM3U\n${list.join("\n")}\n`)
             if (!success) {
                 notify("Failed to save playlist, write error")

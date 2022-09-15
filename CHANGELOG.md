@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Added
 
 - Import and export options for m3u/m3u8
+- Fallback rule options "playback=list" and "playback=shuffle" to skip auto queueing and only play the existing list
 
 ### Changed
 

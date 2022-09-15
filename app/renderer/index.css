@@ -121,6 +121,7 @@ body[focus-el="search"] #playlist-container .song.upcoming,
 .song .main-info.id-only {margin: auto;display: block;}
 .song .other-info {display: flex;flex-direction: column;margin-left: auto;text-align: right;}
 #fallback-rule {color: var(--black);background: var(--secondary);padding: .5em;}
+#fallback-rule[playback-order] {color: var(--black);background: var(--tertiary);padding: .5em;}
 #switch-to-playlist, #switch-to-search {display: none;}
 /* responsive design */
 body[two-column="always"]:not([last-main-focus="search"]) #search-container {display: none;}

@@ -330,7 +330,7 @@ instead of immediately bringing the focus to the search box.
 After entering a search, you can add the rule to the playlist in 3 ways:
 1. At the end of the playlist with Enter.
 2. Immediately after the current rule/song with Shift-Enter.
-3. As a fallback rule (if it has a shuffling order) with Ctrl-Enter.
+3. As a fallback rule with Ctrl-Enter, see playlist for more info.
 The entire query can be added as a rule to the playlist with these shortcuts,
 which will automatically queue all matching tracks based on the rule.
 Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
@@ -352,7 +352,15 @@ The rules can be added at the end or immediately after the current track.
 The playlist can also include simple individual tracks with no specific rule,
 but rules are the core of what gives Garlmap superpowers in the playlist.
 There is one special highlighted rule at the bottom: the fallback rule.
-Songs will automatically be added to the playlist based on this fallback rule.
+Songs will automatically be added to the playlist based on this fallback rule,
+unless you have added a rule that specifically mentions to not append new songs.
+You can do so by adding a custom playback order to play the existing playlist,
+by adding "playback=shuffle" or "playback=list" to the fallback rule.
+Playback "list" will play every entry of the list in order and then stop,
+while "shuffle" will play random entries from the existing playlist at random.
+Both will prevent new upcoming songs from being added to the list at the end.
+By default, the fallback rule is set to "order=shuffle",
+which will append new songs in shuffled order at the end playlist.
 An upcoming song will have a temporary place in the playlist,
 which will automatically become part of the playlist on play.
 This upcoming song will be removed when a new rule or song is added before that.
