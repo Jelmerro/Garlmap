@@ -207,6 +207,11 @@ const currentAndNext = () => {
                 || rulelist[ruleIdx + 1]?.songs[0]
             return {current, next}
         }
+        let next = rulelist[upcomingPlaybackRuleIdx]
+            ?.songs?.[upcomingPlaybackPathIdx]
+        if (next && next.id !== current.id) {
+            return {current, next}
+        }
         let randomSong = null
         while (!randomSong || randomSong.id === current.id) {
             randomSong = allSongs.at(Math.random() * allSongs.length)
@@ -214,7 +219,7 @@ const currentAndNext = () => {
         upcomingPlaybackRuleIdx = randomSong.idx
         upcomingPlaybackPathIdx = rulelist[randomSong.idx].songs.indexOf(
             rulelist[randomSong.idx].songs.find(s => s.id === randomSong.id))
-        const next = rulelist[randomSong.idx].songs[upcomingPlaybackPathIdx]
+        next = rulelist[upcomingPlaybackRuleIdx].songs[upcomingPlaybackPathIdx]
         return {current, next}
     }
     let next = rulelist[ruleIdx]?.songs[pathIdx + 1]
@@ -521,7 +526,7 @@ const deleteSelected = () => {
 const setFallbackRule = rule => {
     const filters = rule.split(/(?= \w+[:=])/g).map(p => ({
         "name": p.trim().split(/[:=]/g)[0].toLowerCase(),
-        "value": p.trim().split(/[:=]/g)[1].toLowerCase()
+        "value": p.trim().split(/[:=]/g)[1]?.toLowerCase()
     }))
     const playback = filters.find(f => f.name === "playback")
     const hasOther = filters.length > 1
@@ -544,6 +549,7 @@ const setFallbackRule = rule => {
             .removeAttribute("playback-order")
     }
     document.getElementById("fallback-rule").textContent = rule
+    playFromPlaylist(false)
 }
 
 const toggleAutoScroll = () => {
