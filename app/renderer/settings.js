@@ -126,7 +126,7 @@ const init = () => {
         // Scan folder on startup
         if (config.folder) {
             const {scanner} = require("./songs")
-            scanner(config.folder, config.dumpLyrics)
+            setTimeout(() => scanner(config.folder, config.dumpLyrics), 10)
         }
     })
 }

@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const glob = require("glob")
+const glob = require("glob").sync
 const musicMetadata = require("music-metadata")
 const {ipcRenderer} = require("electron")
 const {
@@ -183,30 +183,29 @@ const scanner = async(rawFolder, dumpOnly = false) => {
         "wv"
     ]
     const escapedFolder = folder.replace(/\[/g, "\\[")
-    glob(joinPath(escapedFolder, "**/*"), async(_e, all) => {
-        const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
-            .filter(f => isFile(f))
-        for (const f of files) {
-            const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
-            await processFile(f, id)
-            processedFiles += 1
-            document.getElementById("status-files").textContent
-                = `${processedFiles}/${files.length} songs`
-        }
-        if (dumpOnly) {
-            dumpLyrics(folder)
-            return
-        }
-        document.getElementById("status-current").textContent = `Ready`
-        document.getElementById("status-current").style.display = ""
+    const all = glob(joinPath(escapedFolder, "**/*"))
+    const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
+        .filter(f => isFile(f))
+    for (const f of files) {
+        const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
+        await processFile(f, id)
+        processedFiles += 1
         document.getElementById("status-files").textContent
-            = `${songs.length} songs`
-        document.getElementById("status-scan").textContent = ""
-        if (failureCount) {
-            notify(`Total of ${failureCount} scan failures`)
-        }
-        setTimeout(() => updateCache(), 1)
-    })
+            = `${processedFiles}/${files.length} songs`
+    }
+    if (dumpOnly) {
+        dumpLyrics(folder)
+        return
+    }
+    document.getElementById("status-current").textContent = `Ready`
+    document.getElementById("status-current").style.display = ""
+    document.getElementById("status-files").textContent
+        = `${songs.length} songs`
+    document.getElementById("status-scan").textContent = ""
+    if (failureCount) {
+        notify(`Total of ${failureCount} scan failures`)
+    }
+    setTimeout(() => updateCache(), 1)
 }
 
 const updateCache = () => writeJSON(joinPath(

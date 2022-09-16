@@ -18,6 +18,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Changed
 
 - Playlist importing is now much faster for large playlists
+- Garlmap playlist format now only stores song paths and ids instead of entire info
 
 ### Fixed
 

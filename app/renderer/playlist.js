@@ -640,11 +640,18 @@ const exportList = () => {
             file += ".garlmap.json"
         }
         const list = rulelist.map(r => {
+            if (r.upcoming) {
+                return false
+            }
             if (r.rule) {
                 return {"rule": r.rule}
             }
-            return {"songs": r.songs}
-        })
+            if (r.songs) {
+                return {"songs": r.songs.map(
+                    s => ({"id": s.id, "path": s.path}))}
+            }
+            return false
+        }).filter(r => r)
         const success = writeJSON(file, {folder, list}, 4)
         if (!success) {
             notify("Failed to save playlist, write error")
@@ -664,6 +671,7 @@ const importList = () => {
         if (info.canceled) {
             return
         }
+        const {songByIdOrPath} = require("./songs")
         if (info.filePaths[0]?.endsWith(".garlmap.json")) {
             const imported = readJSON(info.filePaths[0])
             if (!imported?.list || !imported?.folder) {
@@ -677,13 +685,14 @@ const importList = () => {
             const {scanner} = require("./songs")
             await scanner(imported.folder)
             imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
-                append(r, false, false)
+                const songs = r.songs?.map(s => songByIdOrPath(s?.id, s?.path))
+                    .filter(s => s?.id)
+                append({"rule": r.rule, songs}, false, false)
             })
             playFromPlaylist(false)
         } else {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
-            const {songByIdOrPath} = require("./songs")
             list.split("\n").filter(i => i && !i.startsWith("#")).forEach(i => {
                 const song = songByIdOrPath(i, i)
                 if (song?.id) {
