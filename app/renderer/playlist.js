@@ -532,25 +532,22 @@ const setFallbackRule = rule => {
     if (playback) {
         if (filters.length > 1) {
             notify("Fallback rule playback can not contain other fields")
-            return
-        }
-        if (["shuffle", "list"].includes(playback.value)) {
+        } else if (["shuffle", "list"].includes(playback.value)) {
             document.getElementById("fallback-rule")
                 .setAttribute("playback-order", playback.value)
+            document.getElementById("fallback-rule").textContent = rule
+            playFromPlaylist(false)
         } else {
             notify("Fallback rule playback value must be shuffle or list")
-            return
         }
-    } else {
-        const {query} = require("./songs")
-        const {length} = query(rule)
-        if (length < 2) {
-            notify("Fallback rule must match at least 2 tracks or be playback")
-            return
-        }
-        document.getElementById("fallback-rule")
-            .removeAttribute("playback-order")
+        return
     }
+    const {query} = require("./songs")
+    if (query(rule).length < 2) {
+        notify("Fallback rule must match at least 2 tracks or be playback")
+        return
+    }
+    document.getElementById("fallback-rule").removeAttribute("playback-order")
     document.getElementById("fallback-rule").textContent = rule
     playFromPlaylist(false)
 }
