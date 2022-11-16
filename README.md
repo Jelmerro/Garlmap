@@ -48,6 +48,7 @@ or you can download a [release from here](https://github.com/Jelmerro/Garlmap/re
 
 ```bash
 sudo apt add-repository "deb [trusted=yes] https://jelmerro.nl/debs /"
+sudo apt update
 sudo apt install garlmap
 ```
 
