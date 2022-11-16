@@ -529,13 +529,16 @@ const setFallbackRule = rule => {
         "value": p.trim().split(/[:=]/g)[1]?.toLowerCase()
     }))
     const playback = filters.find(f => f.name === "playback")
-    const hasOther = filters.length > 1
     if (playback) {
-        if (["shuffle", "list"].includes(playback.value) && !hasOther) {
+        if (filters.length > 1) {
+            notify("Fallback rule playback can not contain other fields")
+            return
+        }
+        if (["shuffle", "list"].includes(playback.value)) {
             document.getElementById("fallback-rule")
                 .setAttribute("playback-order", playback.value)
         } else {
-            notify("Fallback rule of type playback must only contain playback")
+            notify("Fallback rule playback value must be shuffle or list")
             return
         }
     } else {
