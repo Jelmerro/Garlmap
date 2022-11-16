@@ -29,6 +29,30 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 
 ## Getting started
 
+### Fedora
+
+I host a custom DNF repository that you can use for Garlmap,
+or you can download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
+
+```bash
+sudo dnf config-manager --add-repo https://jelmerro.nl/fedora/jelmerro.repo
+sudo dnf install garlmap
+```
+
+You need to have enabled [RPM Fusion](https://rpmfusion.org) to be able to install mpv.
+
+### Debian/Ubuntu/Mint
+
+I host a custom APT repository that you can use for Garlmap,
+or you can download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
+
+```bash
+sudo apt add-repository "deb [trusted=yes] https://jelmerro.nl/debs /"
+sudo apt install garlmap
+```
+
+### Windows/Mac/Other Linux
+
 1. Install mpv from [mpv.io](https://mpv.io) or your package manager.
 You must add mpv to your path, or use the `--mpv` option.
 2. Download a [release from here](https://github.com/Jelmerro/Garlmap/releases).

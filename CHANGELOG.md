@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Changed
+
+- Add "mpv" as a dependency for pacman, deb and rpm releases
+
 ### Fixed
 
 - Incorrect message for fallback rule

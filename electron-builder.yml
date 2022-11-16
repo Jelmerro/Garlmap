@@ -29,6 +29,13 @@ linux:
 rpm:
   fpm:
     - --rpm-rpmbuild-define=_build_id_links none
+    - -d mpv
+deb:
+  fpm:
+    - -d mpv
+pacman:
+  fpm:
+    - -d mpv
 mac:
   category: public.app-category.music
   icon: app/img/icon
