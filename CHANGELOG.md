@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Changed
 
 - Add "mpv" as a dependency for pacman, deb and rpm releases
+- Rpm and deb releases are now symlinked in /usr/bin/ correctly on updates after this one
 
 ### Fixed
 
