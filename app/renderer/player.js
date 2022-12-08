@@ -61,15 +61,15 @@ const init = (path, configDir) => {
                     duration, "playbackRate": 1, position
                 })
             }
-            const played = `&nbsp;${formatTime(position)}/${
-                formatTime(duration)}&nbsp;`
+            const played = `\u00a0${formatTime(position)}/${
+                formatTime(duration)}\u00a0`
             const perc = `${position / duration * 100}%`
-            document.getElementById("progress-played").innerHTML = played
+            document.getElementById("progress-played").textContent = played
             document.getElementById("progress-played").style.width = perc
-            document.getElementById("progress-string").innerHTML = played
-            document.getElementById("fs-progress-played").innerHTML = played
+            document.getElementById("progress-string").textContent = played
+            document.getElementById("fs-progress-played").textContent = played
             document.getElementById("fs-progress-played").style.width = perc
-            document.getElementById("fs-progress-string").innerHTML = played
+            document.getElementById("fs-progress-string").textContent = played
             if (document.getElementById("toggle-shift-lyrics").checked) {
                 const {shiftLyricsByPercentage} = require("./lyrics")
                 shiftLyricsByPercentage(parseFloat(perc))

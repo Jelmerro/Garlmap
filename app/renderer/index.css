@@ -40,6 +40,7 @@ body::backdrop {background: var(--bg);}
 ::-webkit-scrollbar-thumb {background: var(--scrollbar-thumb);}
 .button:hover {background: var(--border);}
 ::selection {color: var(--primary);background: var(--black);}
+svg {position: absolute;height: 0; width: 0;overflow: none;left: -100%;}
 
 
 /* general column alignment */
@@ -61,7 +62,7 @@ body::backdrop {background: var(--bg);}
 #current-song .other-info {display: flex;flex-direction: column;margin-left: auto;gap: .5em;}
 #progress-container {display: flex;flex: 1;color: var(--bg);width: 100%;max-width: 100%;background: var(--bg);height: 1.5em;overflow: hidden;border: .1em solid var(--primary);cursor: default;}
 #progress-container:hover {background: var(--accent);}
-#progress-played {background: var(--primary);color: var(--bg);z-index: 1;}
+#progress-played {width: 0%;background: var(--primary);color: var(--bg);z-index: 1;}
 #progress-string {position: absolute;color: var(--primary);}
 #progress-played, #progress-string {font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;}
 #volume-slider {margin: auto .4em auto auto;appearance: none;background: var(--primary);height: 1.6em;width: 7.3em;font: inherit;border: .15em solid var(--bg);outline: .1em solid var(--primary);}
@@ -199,7 +200,7 @@ body[two-column="always"] #search-controls {grid-template-columns: repeat(3, 1fr
 #fs-current-song .other-info {display: flex;flex-direction: column;}
 #fs-progress-container {display: flex;flex: 1;color: var(--bg);min-width: 14em;width: 100%;max-width: 100%;background: var(--bg);overflow: hidden;border: .1em solid var(--primary);position: relative;margin-top: .5em;cursor: default;}
 #fs-progress-container:hover {background: var(--accent);}
-#fs-progress-played {background: var(--primary);color: var(--bg);z-index: 3;}
+#fs-progress-played {width: 0%;background: var(--primary);color: var(--bg);z-index: 3;}
 #fs-progress-string {position: absolute;color: var(--primary);text-overflow: ellipsis;width: 100%;}
 #fs-progress-played, #fs-progress-string {font-size: 1.6em;font-weight: bold;overflow: hidden;white-space: nowrap;margin: .1em;line-height: 1em;}
 #fs-volume-slider {margin-top: .6em;margin-right: .5em;appearance: none;background: var(--primary);height: 1.6em;min-width: 5em;width: 100%;max-width: 10em;font: inherit;border: .2em solid var(--bg);outline: .1em solid var(--primary);flex: 1;}

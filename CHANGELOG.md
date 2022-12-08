@@ -14,6 +14,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Add "mpv" as a dependency for pacman, deb and rpm releases
 - Rpm and deb releases are now symlinked in /usr/bin/ correctly on updates after this one
+- Time display no longer relies on innerHTML, making the app completely free of HTML modifications
+- CSP no longer allows inline styling in the html
 
 ### Fixed
 
