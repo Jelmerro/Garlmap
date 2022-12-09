@@ -20,6 +20,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Fixed
 
 - Incorrect message for fallback rule
+- Play/pause not toggling the icon when manually triggered
 
 ### Versions
 

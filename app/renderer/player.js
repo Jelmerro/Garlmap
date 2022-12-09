@@ -213,6 +213,7 @@ const pause = async() => {
         playFromPlaylist()
         stoppedAfterTrack = false
     }
+    updatePlayButton()
 }
 
 const relativeSeek = async seconds => {
