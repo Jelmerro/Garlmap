@@ -21,6 +21,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Incorrect message for fallback rule
 - Play/pause not toggling the icon when manually triggered
+- Undefined being shown as title and artist in the "next up" fullscreen layout when track has no artist or title
 
 ### Versions
 

@@ -409,8 +409,13 @@ const playFromPlaylist = async(switchNow = true) => {
         }
     }
     if (next && !current.stopAfter) {
-        document.getElementById("fs-up-next").textContent = `Up Next: ${
-            next.title} by ${next.artist}`
+        if (next.title && next.artist) {
+            document.getElementById("fs-up-next").textContent
+                = `Up Next: ${next.title} by ${next.artist}`
+        } else {
+            document.getElementById("fs-up-next").textContent
+                = `Up Next: ${next.id}`
+        }
         document.getElementById("fullscreen").setAttribute("up-next", "yes")
     } else {
         document.getElementById("fs-up-next").textContent = ""
