@@ -41,17 +41,6 @@ sudo dnf install garlmap
 
 You need to have enabled [RPM Fusion](https://rpmfusion.org) to be able to install mpv.
 
-### Debian/Ubuntu/Mint
-
-I host a custom APT repository that you can use for Garlmap,
-or you can download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
-
-```bash
-sudo apt add-repository "deb [trusted=yes] https://jelmerro.nl/debs /"
-sudo apt update
-sudo apt install garlmap
-```
-
 ### Windows/Mac/Other Linux
 
 1. Install mpv from [mpv.io](https://mpv.io) or your package manager.
