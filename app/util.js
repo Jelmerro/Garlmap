@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -219,6 +219,11 @@ const deleteFile = loc => {
         // Will return false as it was unsuccessful
     }
     return false
+}
+
+const watchFile = (...args) => {
+    const {"watchFile": watchFileFS} = require("fs")
+    watchFileFS(...args)
 }
 
 const resetWelcome = () => {
@@ -487,6 +492,7 @@ module.exports = {
     readFile,
     readJSON,
     resetWelcome,
+    watchFile,
     writeFile,
     writeJSON
 }

@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,13 @@ const {
     dirName,
     writeFile,
     makeDir,
+    watchFile,
     notify
 } = require("../util")
 
 let configDir = null
 let cache = "all"
+let ownCacheChange = true
 let cachedSongs = []
 let songs = []
 let failureCount = 0
@@ -208,8 +210,10 @@ const scanner = async(rawFolder, dumpOnly = false) => {
     setTimeout(() => updateCache(), 1)
 }
 
-const updateCache = () => writeJSON(joinPath(
-    configDir, "cache.json"), cachedSongs)
+const updateCache = () => {
+    ownCacheChange = true
+    writeJSON(joinPath(configDir, "cache.json"), cachedSongs)
+}
 
 const query = search => {
     if (!search.trim()) {
@@ -422,8 +426,9 @@ const coverArt = async p => {
 const setStartupSettings = dir => {
     configDir = dir
     cache = document.getElementById("setting-cache").value || "all"
+    const cachePath = joinPath(configDir, "cache.json")
     if (cache !== "none") {
-        cachedSongs = readJSON(joinPath(configDir, "cache.json")) || []
+        cachedSongs = readJSON(cachePath) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
         if (document.getElementById("toggle-cache-clean").checked) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))
@@ -436,6 +441,13 @@ const setStartupSettings = dir => {
                 .map(s => ({"id": s.id, "lyrics": s.lyrics, "path": s.path}))
         }
     }
+    watchFile(cachePath, {"interval": 1000}, () => {
+        if (ownCacheChange) {
+            ownCacheChange = false
+            return
+        }
+        cachedSongs = readJSON(cachePath) || cachedSongs
+    })
 }
 
 const songById = id => JSON.parse(JSON.stringify(
