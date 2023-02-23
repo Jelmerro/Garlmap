@@ -27,8 +27,8 @@
   "funding": "https://github.com/sponsors/Jelmerro/",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "23.1.0",
-    "electron-builder": "24.0.0-alpha.12",
+    "electron": "23.1.1",
+    "electron-builder": "24.0.0-alpha.13",
     "eslint": "8.34.0",
     "eslint-plugin-sort-keys": "2.3.5"
   },
