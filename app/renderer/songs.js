@@ -17,7 +17,6 @@
 */
 "use strict"
 
-const glob = require("glob").sync
 const musicMetadata = require("music-metadata")
 const {ipcRenderer} = require("electron")
 const {
@@ -28,6 +27,7 @@ const {
     dirName,
     writeFile,
     makeDir,
+    listFiles,
     watchFile,
     notify
 } = require("../util")
@@ -184,10 +184,8 @@ const scanner = async(rawFolder, dumpOnly = false) => {
         "wmv",
         "wv"
     ]
-    const escapedFolder = folder.replace(/\[/g, "\\[")
-    const all = glob(joinPath(escapedFolder, "**/*"))
-    const files = all.filter(f => fileExts.includes(f.replace(/.*\./g, "")))
-        .filter(f => isFile(f))
+    const files = listFiles(folder)
+        .filter(f => fileExts.includes(f.replace(/.*\./g, "")))
     for (const f of files) {
         const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
         await processFile(f, id)

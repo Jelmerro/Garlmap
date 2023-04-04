@@ -226,6 +226,20 @@ const watchFile = (...args) => {
     watchFileFS(...args)
 }
 
+const listFiles = dir => {
+    const {readdirSync} = require("fs")
+    const files = []
+    readdirSync(dir, {"withFileTypes": true}).forEach(entry => {
+        const loc = joinPath(dir, entry.name)
+        if (entry.isDirectory()) {
+            files.push(...listFiles(loc))
+        } else if (entry.isFile()) {
+            files.push(loc)
+        }
+    })
+    return files
+}
+
 const resetWelcome = () => {
     document.getElementById("song-info").textContent = `Welcome to Garlmap
 
@@ -486,6 +500,7 @@ module.exports = {
     isDirectory,
     isFile,
     joinPath,
+    listFiles,
     makeDir,
     notify,
     queryMatch,
