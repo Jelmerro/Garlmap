@@ -5,6 +5,7 @@ linux:
   executableName: garlmap
   category: Audio;AudioVideo;Player;
   maintainer: Jelmer van Arnhem
+  publish:
   target:
     - target: AppImage
       arch:
@@ -43,6 +44,7 @@ pacman:
 mac:
   category: public.app-category.music
   icon: app/img/icon
+  publish:
   target:
     - target: zip
       arch:
@@ -51,6 +53,7 @@ mac:
 win:
   icon: app/img/icon/512x512.png
   legalTrademarks: Copyright @ Jelmer van Arnhem | Licensed as free software (GPL-3.0 or later)
+  publish:
   target:
     - target: nsis
       arch:
