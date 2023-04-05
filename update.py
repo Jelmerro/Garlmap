@@ -22,7 +22,6 @@ import re
 overrides = {
     "electron": "beta",
     "electron-builder": "next",
-    "mpv": "1.0.0",
     "music-metadata": "cjs"
 }
 

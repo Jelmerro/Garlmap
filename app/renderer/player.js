@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const mpvAPI = require("mpv")
+const mpvAPI = require("./mpv")
 const {ipcRenderer} = require("electron")
 const {joinPath, formatTime, deleteFolder} = require("../util")
 
@@ -29,7 +29,12 @@ let hasAnySong = false
 let stoppedAfterTrack = false
 
 const init = (path, configDir) => {
-    mpv = new mpvAPI({"args": ["--no-video", "--no-audio-display"], path})
+    mpv = mpvAPI({
+        "args": [
+            "--no-video", "--no-audio-display", "--no-config", "--idle=yes"
+        ],
+        path
+    })
         .on("error", e => ipcRenderer.send("destroy-window", e))
     try {
         // This package takes care of connecting to the MPRIS D-Bus interface,
