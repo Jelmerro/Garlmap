@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Changed
 
 - Module glob in favor of built-in implementation
+- Module string-similarity in favor of built-in implementation
 
 ### Versions
 

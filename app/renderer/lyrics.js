@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2022-2022 Jelmer van Arnhem
+*  Copyright (C) 2022-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 */
 "use strict"
 
-const {compareTwoStrings} = require("string-similarity")
+const {compareStrings} = require("./compare-strings")
 const {Client} = require("genius-lyrics")
 const genius = new Client()
 const {songByIdOrPath, updateLyricsOfSong, songById} = require("./songs")
@@ -78,24 +78,24 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
             req.title} ${req.artist}`, "info")
         const results = await genius.songs.search(`${req.title} ${req.artist}`)
         results.forEach(s => {
-            s.score = compareTwoStrings(low(s.title), low(req.title))
-                + compareTwoStrings(low(s.artist.name), low(req.artist))
+            s.score = compareStrings(low(s.title), low(req.title))
+                + compareStrings(low(s.artist.name), low(req.artist))
             if (originalReq) {
-                const originalScore = compareTwoStrings(
+                const originalScore = compareStrings(
                     low(s.title), low(originalReq.title))
-                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
+                + compareStrings(low(s.artist.name), low(originalReq.artist))
                 if (originalScore > s.score) {
                     s.score = originalScore
                 }
-                const originalNameScore = compareTwoStrings(
+                const originalNameScore = compareStrings(
                     low(s.title), low(originalReq.title))
-                + compareTwoStrings(low(s.artist.name), low(req.artist))
+                + compareStrings(low(s.artist.name), low(req.artist))
                 if (originalNameScore > s.score) {
                     s.score = originalNameScore
                 }
-                const originalArtistScore = compareTwoStrings(
+                const originalArtistScore = compareStrings(
                     low(s.title), low(req.title))
-                + compareTwoStrings(low(s.artist.name), low(originalReq.artist))
+                + compareStrings(low(s.artist.name), low(originalReq.artist))
                 if (originalArtistScore > s.score) {
                     s.score = originalArtistScore
                 }
