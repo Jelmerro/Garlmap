@@ -69,6 +69,9 @@ def main():
     subprocess.run(["npm", "audit", "fix", "--legacy-peer-deps"], check=False)
     print("\n  = Deduplicating dependencies\n")
     subprocess.run(["npm", "dedup", "--legacy-peer-deps"], check=True)
+    print("\n = Final install and patching\n")
+    subprocess.run(["npm", "ci"], check=True)
+    subprocess.run(["npx", "patch-package"], check=True)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Module string-similarity in favor of built-in implementation
 - Module mpv in favor of built-in implementation
 
+### Fixed
+
+- Import error in devtools related to source-map caused by mpris module
+
 ### Versions
 
 - Electron 24.0.0-beta.7 (was 23.1.1)
