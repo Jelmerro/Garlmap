@@ -260,6 +260,7 @@ F7 and F8 are for moving to the previous and next track.
 You can seek by clicking the progress bar with any mouse button,
 use Ctrl-[ and Ctrl-] to seek 6 seconds, or Ctrl-{ and Ctrl-} to seek 1 minute.
 F12 will open the development tools where you can find any runtime errors.
+You can jump to a percentage of a song based on Ctrl-\` and Ctrl-1 to Ctrl-9.
 There are many more shortcuts, which are listed in most of the sections below.
 When in doubt, the mouse can also be used to do most actions.
 

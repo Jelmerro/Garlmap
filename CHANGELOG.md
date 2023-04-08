@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Shortcuts to jump to a percentage or the start of the current song
+
 ### Changed
 
 - Module glob in favor of built-in implementation

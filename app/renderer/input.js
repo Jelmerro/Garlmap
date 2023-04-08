@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -136,8 +136,8 @@ const init = () => {
             const {seek} = require("./player")
             const x = e.pageX - element.offsetLeft
                 - element.offsetParent.offsetLeft
-            let percentage = x / element.getBoundingClientRect().width
-            if (percentage < 0.01) {
+            let percentage = x / element.getBoundingClientRect().width * 100
+            if (percentage < 1) {
                 percentage = 0
             }
             seek(percentage)
@@ -330,6 +330,10 @@ const mappings = {
         }
     },
     "global": {
+        "<C-+>": () => {
+            const {volumeUp} = require("./player")
+            volumeUp()
+        },
         "<C-/>": () => switchFocus("settingseditor"),
         "<C-=>": () => {
             const {volumeUp} = require("./player")
@@ -342,6 +346,14 @@ const mappings = {
         "<C-]>": () => {
             const {relativeSeek} = require("./player")
             relativeSeek(6)
+        },
+        "<C-_>": () => {
+            const {volumeDown} = require("./player")
+            volumeDown()
+        },
+        "<C-`>": () => {
+            const {seek} = require("./player")
+            seek(0)
         },
         "<C-{>": () => {
             const {relativeSeek} = require("./player")
@@ -358,6 +370,42 @@ const mappings = {
         "<C-0>": () => {
             const {volumeSet} = require("./player")
             volumeSet(100)
+        },
+        "<C-1>": () => {
+            const {seek} = require("./player")
+            seek(10)
+        },
+        "<C-2>": () => {
+            const {seek} = require("./player")
+            seek(20)
+        },
+        "<C-3>": () => {
+            const {seek} = require("./player")
+            seek(30)
+        },
+        "<C-4>": () => {
+            const {seek} = require("./player")
+            seek(40)
+        },
+        "<C-5>": () => {
+            const {seek} = require("./player")
+            seek(50)
+        },
+        "<C-6>": () => {
+            const {seek} = require("./player")
+            seek(60)
+        },
+        "<C-7>": () => {
+            const {seek} = require("./player")
+            seek(70)
+        },
+        "<C-8>": () => {
+            const {seek} = require("./player")
+            seek(80)
+        },
+        "<C-9>": () => {
+            const {seek} = require("./player")
+            seek(90)
         },
         "<C-E>": () => switchFocus("events"),
         "<C-F4>": () => switchFocus("lyricseditor"),

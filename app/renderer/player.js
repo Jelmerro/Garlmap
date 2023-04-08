@@ -232,9 +232,9 @@ const seek = async percent => {
         const {currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
         const {duration} = current
-        await mpv.command("seek", percent * duration, "absolute")
+        await mpv.command("seek", percent * duration / 100, "absolute")
         if (customMediaSesion) {
-            customMediaSesion.seeked(percent * duration * 1000000)
+            customMediaSesion.seeked(percent * duration * 10000)
         }
     }
 }
