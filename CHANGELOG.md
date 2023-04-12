@@ -20,9 +20,9 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Module string-similarity in favor of built-in implementation
 - Module mpv in favor of built-in implementation
 
-### Fixed
+### Removed
 
-- Import error in devtools related to source-map caused by mpris module
+- Vulnerable MPRIS module in favor of native Chromium API (meaning no images in system media on Linux)
 
 ### Versions
 

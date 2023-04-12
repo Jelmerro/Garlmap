@@ -30,12 +30,10 @@
     "electron": "24.0.0",
     "electron-builder": "24.2.0",
     "eslint": "8.37.0",
-    "eslint-plugin-sort-keys": "2.3.5",
-    "patch-package": "6.5.1"
+    "eslint-plugin-sort-keys": "2.3.5"
   },
   "dependencies": {
     "genius-lyrics": "4.4.3",
-    "mpris-service": "2.1.2",
     "music-metadata": "7.13.0"
   }
 }

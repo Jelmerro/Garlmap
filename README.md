@@ -39,8 +39,6 @@ sudo dnf config-manager --add-repo https://jelmerro.nl/fedora/jelmerro.repo
 sudo dnf install garlmap
 ```
 
-You need to have enabled [RPM Fusion](https://rpmfusion.org) to be able to install mpv.
-
 ### Windows/Mac/Other Linux
 
 1. Install mpv from [mpv.io](https://mpv.io) or your package manager.
