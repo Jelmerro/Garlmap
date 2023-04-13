@@ -36,6 +36,9 @@ def main():
         package = json.load(f)
     for dep_type in ["devDependencies", "dependencies"]:
         for dep, version in package.get(dep_type, {}).items():
+            if "github" in version:
+                print(f"- updating {dep} to the latest git version")
+                continue
             info = subprocess.run(
                 ["npm", "dist-tags", dep], stdout=subprocess.PIPE, check=True)
             info = info.stdout.decode()
@@ -68,9 +71,6 @@ def main():
     subprocess.run(["npm", "audit", "fix", "--legacy-peer-deps"], check=False)
     print("\n  = Deduplicating dependencies\n")
     subprocess.run(["npm", "dedup", "--legacy-peer-deps"], check=True)
-    print("\n = Final install and patching\n")
-    subprocess.run(["npm", "ci"], check=True)
-    subprocess.run(["npx", "patch-package"], check=True)
 
 
 if __name__ == "__main__":

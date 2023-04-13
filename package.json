@@ -27,13 +27,14 @@
   "funding": "https://github.com/sponsors/Jelmerro/",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "24.0.0",
-    "electron-builder": "24.2.0",
-    "eslint": "8.37.0",
+    "electron": "24.1.1",
+    "electron-builder": "24.2.1",
+    "eslint": "8.38.0",
     "eslint-plugin-sort-keys": "2.3.5"
   },
   "dependencies": {
     "genius-lyrics": "4.4.3",
+    "mpris-service": "github:Jelmerro/mpris-service",
     "music-metadata": "7.13.0"
   }
 }

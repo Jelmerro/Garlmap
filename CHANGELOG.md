@@ -19,15 +19,12 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Module glob in favor of built-in implementation
 - Module string-similarity in favor of built-in implementation
 - Module mpv in favor of built-in implementation
-
-### Removed
-
-- Vulnerable MPRIS module in favor of native Chromium API (meaning no images in system media on Linux)
+- Outdated MPRIS module in favor of own fork including dbus module fork
 
 ### Versions
 
-- Electron 24.0.0 (was 23.1.1)
-- Chromium 112.0.5615.49 (was 110.0.5481.104)
+- Electron 24.1.1 (was 23.1.1)
+- Chromium 112.0.5615.50 (was 110.0.5481.104)
 
 ## [1.4.0](https://github.com/Jelmerro/Garlmap/compare/1.3.1...1.4.0) - 2023-02-23
 
