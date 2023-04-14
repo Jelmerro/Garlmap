@@ -8,6 +8,17 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Fixed
+
+- Raise and Quit options not working in MPRIS menu
+
+### Versions
+
+- Electron 24.1.1 (unchanged)
+- Chromium 112.0.5615.50 (unchanged)
+
 ## [1.5.0](https://github.com/Jelmerro/Garlmap/compare/1.4.0...1.5.0) - 2023-04-14
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/1.4.0...1.5.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/1.5.0)

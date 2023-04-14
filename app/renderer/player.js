@@ -122,7 +122,6 @@ const init = (path, configDir) => {
         ipcRenderer.send("destroy-window")
     })
     if (customMediaSesion) {
-        customMediaSesion.canEditTracks = false
         customMediaSesion.getPosition = () => lastPos
         customMediaSesion.on("raise", () => ipcRenderer.send("show-window"))
         customMediaSesion.on("quit", () => {
@@ -132,14 +131,14 @@ const init = (path, configDir) => {
         customMediaSesion.on("play", () => pause())
         customMediaSesion.on("pause", () => pause())
         customMediaSesion.on("playpause", () => pause())
-        customMediaSesion.on("stop", () => {
+        customMediaSesion.on("stop", async() => {
             const {stopAfterTrack} = require("./playlist")
-            stopAfterTrack()
+            await stopAfterTrack()
+            customMediaSesion.seeked(lastPos)
         })
         customMediaSesion.on("position", details => {
-            const pos = parseInt(details.position, 10)
-            mpv.command("seek", pos / 1000000, "absolute")
-            customMediaSesion.seeked(pos)
+            mpv.command("seek", details.position / 1000000, "absolute")
+            customMediaSesion.seeked(details.position)
         })
         customMediaSesion.on("previous", () => {
             const {decrement} = require("./playlist")
