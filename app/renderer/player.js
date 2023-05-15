@@ -33,6 +33,7 @@ const init = (path, configDir) => {
         "args": [
             "--no-video", "--no-audio-display", "--no-config", "--idle=yes"
         ],
+        "options": {"detached": true, "shell": true},
         path
     }).on("error", e => ipcRenderer.send("destroy-window", e))
     try {
@@ -95,7 +96,8 @@ const init = (path, configDir) => {
             current.stopAfter = false
             stoppedAfterTrack = true
             await playFromPlaylist(false)
-            await mpv.set("pause", true)
+            await mpv.set("pause",
+                !document.getElementById("toggle-autoplay").checked)
             updatePlayButton()
         }
     })

@@ -1,6 +1,6 @@
 <!--
     Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-    Copyright (C) 2021-2022 Jelmer van Arnhem
+    Copyright (C) 2021-2023 Jelmer van Arnhem
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@
                 Open dropdowns with Space and select with Up and Down.
                 Then select a value or toggle checkboxes with Enter.
                 You can save the settings and close this dialog with Ctrl-Enter,
-                or close without saving immediately using q, Ctrl-/ or Escape.
+                or close without saving immediately using Ctrl-/ or Escape.
                 You can also save later from the main screen with Ctrl-s,
                 this is also where you can change other much simpler settings.
                 On smaller screens you can scroll using PageUp and PageDown.
@@ -218,6 +218,19 @@
                 This executable location is used on the next restart,
                 and if it's not found Garlmap won't be able to start or play songs!
             </div>
+            <label>Fallback
+                <input type="text" id="setting-fallback">
+            </label>
+            <div>
+                Change the fallback rule for subsequent startups.
+                By default it will shuffle the entire library,
+                but with this setting you can change the initial fallback rule.
+            </div>
+            <label class="checkbox-container" tabindex="0" id="setting-autoplay">Autoplay
+                <input type="checkbox" id="toggle-autoplay">
+                <span class="checkbox-mark" />
+            </label>
+            <div>Toggle if you automatically play music on playlist load and app startup.</div>
         </div>
         <div id="settings-actions">
             <div class="button save-settings">Save settings</div>

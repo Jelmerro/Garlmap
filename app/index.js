@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -107,10 +107,12 @@ const processStartupArgs = () => {
         "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
         "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
         "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
+        "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
         "customTheme": readFile(joinPath(configDir, "theme.css")),
         "dumpLyrics": undefined,
+        "fallback": process.env.GARLMAP_FALLBACK?.trim().toLowerCase(),
         "folder": process.env.GARLMAP_FOLDER?.trim(),
         "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
         "mpv": process.env.GARLMAP_MPV?.trim(),
@@ -148,6 +150,10 @@ const processStartupArgs = () => {
                 config.shiftTimer = value
             } else if (name === "--two-column") {
                 config.twoColumn = value
+            } else if (name === "--fallback") {
+                config.fallback = value
+            } else if (name === "--autoplay") {
+                config.autoplay = isTruthyArg(value)
             } else if (name === "--font-size") {
                 config.fontSize = value
             } else if (name === "--auto-lyrics") {
@@ -215,8 +221,9 @@ const processStartupArgs = () => {
 const outputHelp = () => {
     console.info(`${`
 > garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \\
-    --auto-scroll --auto-close --auto-remove --use-genius --font-size=<int> \\
-    --mpv=<loc> --dump-lyrics folder
+    --auto-scroll --auto-close --auto-remove --use-genius --shift-lyrics \\
+    --shift-timer=<int> two-column=<MOBILE,never,always> --font-size=<int> \\
+    --fallback=<str> --autoplay --mpv=<loc> --dump-lyrics folder
 
 For help with app usage, see the built-in help on the right.
 Garlmap can be started without any arguments, but it supports the following:
@@ -235,7 +242,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "cache" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE env will be read,
-                   or this setting will by default fallback to using "all".
+                   or this setting will by default be set to using "all".
                    This setting can be changed in the advanced settings menu.
 
     --cache-clean  Enable the removal of cached songs that have a missing file.
@@ -357,7 +364,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "twoColumn" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_TWO_COLUMN env will be read,
-                   or this setting will by default fallback to using "mobile".
+                   or this setting will by default be set to using "mobile".
                    This setting can be changed in the advanced settings menu.
 
     --font-size=14 Define a custom font size, without requiring a custom theme.
@@ -368,7 +375,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "fontSize" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FONT_SIZE env will be read,
-                   or this setting will by default set to 14 pixels.
+                   or this setting will by default be set to 14 pixels.
                    This setting can be changed in the advanced settings menu.
 
     --mpv=loc      Define a custom location for the mpv executable.
@@ -376,7 +383,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    If no arg is found, it will read the "mpv" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_MPV env will be read,
-                   or this setting will by default set to "mpv" or "mpv.exe",
+                   or this setting will by default be set to "mpv" or "mpv.exe",
                    the latter only being the default on Windows.
                    This setting can be changed in the advanced settings menu.
 
@@ -396,13 +403,39 @@ Garlmap can be started without any arguments, but it supports the following:
                    next create these files and then exit without playing songs.
                    You cannot set this option from the config file or env vars.
 
+    --fallback=str Define the fallback rule that is used to queue songs.
+                   Default rule is used in case of an invalid value,
+                   or when not enough tracks are found to match the value.
+                   You can also change the fallback rule at anytime in Garlmap,
+                   but this setting changes the default one on startup.
+                   If no arg is found, it will read the "fallback" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_FALLBACK env will be read,
+                   or this setting will by default be set to "order=shuffle".
+                   This setting can be changed in the advanced settings menu.
+
+    --autoplay     Control if autoplay should be enabled on load.
+                   By default, Garlmap will not autoplay,
+                   but with this setting you can choose if it should.
+                   It controls autoplay on startup, after loading a folder,
+                   and also after importing a playlist file.
+                   The argument can optionally be provided with value:
+                   "--autoplay=true", "--autoplay=0, "--autoplay=no".
+                   If no arg is found, it will read the "autoplay" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_AUTOPLAY env will be read,
+                   or this setting will by default be disabled.
+                   This setting can be changed in the advanced settings menu.
+
     folder         Provide a folder to load the songs from for this instance.
                    If no arg is found, it will read the "folder" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_FOLDER env will be read,
                    or no default folder is opened on startup.
                    This is a positional argument, of which only one is allowed.
-                   You can change the folder after starting with "Ctrl-o".
+                   You can change the folder after starting with "Ctrl-o",
+                   or by using the "Open folder" button.
+                   The chosen folder is only remembered when you save settings.
 
 You can also customize the look and feel of Garlmap using a custom theme file:
 ${joinPath(configDir, "theme.css")}

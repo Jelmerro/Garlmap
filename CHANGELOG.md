@@ -10,14 +10,20 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Setting "autoplay" to automatically start playing audio on folder load and playlist open
+- Setting "fallback" to use a custom fallback rule on startup
+
 ### Fixed
 
 - Raise and Quit options not working in MPRIS menu
+- Character "q" being used as a shortcut in settings panel preventing it from being used in setting values
 
 ### Versions
 
-- Electron 24.1.1 (unchanged)
-- Chromium 112.0.5615.50 (unchanged)
+- Electron 25.0.0-beta.5 (was 24.1.1)
+- Chromium 114.0.5735.16 (was 112.0.5615.50)
 
 ## [1.5.0](https://github.com/Jelmerro/Garlmap/compare/1.4.0...1.5.0) - 2023-04-14
 

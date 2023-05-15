@@ -85,7 +85,7 @@ const MPVSocket = (path, close) => {
     return socket
 }
 
-const Mpv = ({args = [], options = {"detached": true}, path} = {}) => {
+const Mpv = ({args = [], options = {}, path} = {}) => {
     const error = x => mpv.emit("error", x)
     args.shift()
     const mpv = new EventEmitter()

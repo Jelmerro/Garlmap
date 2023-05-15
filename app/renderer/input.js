@@ -185,9 +185,15 @@ const openFolder = () => {
     const {scanner} = require("./songs")
     ipcRenderer.invoke("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
-    }).then(info => {
+    }).then(async info => {
         if (!info.canceled) {
-            scanner(info.filePaths[0])
+            await scanner(info.filePaths[0])
+            if (document.getElementById("toggle-autoplay").checked) {
+                const {playFromPlaylist} = require("./playlist")
+                playFromPlaylist(true)
+                const {pause} = require("./player")
+                pause()
+            }
         }
     })
 }
@@ -900,8 +906,7 @@ const mappings = {
         },
         "<PageUp>": () => {
             document.getElementById("settings-container").scrollBy(0, -300)
-        },
-        "q": () => closeSpecialMode()
+        }
     }
 }
 

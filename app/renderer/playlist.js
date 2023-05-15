@@ -694,7 +694,7 @@ const importList = () => {
                     .filter(s => s?.id)
                 append({"rule": r.rule, songs}, false, false)
             })
-            playFromPlaylist(false)
+            playFromPlaylist(document.getElementById("toggle-autoplay").checked)
         } else {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
@@ -704,7 +704,7 @@ const importList = () => {
                     append({"songs": [song]}, false, false)
                 }
             })
-            playFromPlaylist(false)
+            playFromPlaylist(document.getElementById("toggle-autoplay").checked)
         }
     })
 }

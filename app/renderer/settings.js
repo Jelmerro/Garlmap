@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2023 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -123,10 +123,32 @@ const init = () => {
             defaultMpv = "mpv.exe"
         }
         startMpv(config.mpv || defaultMpv, config.configDir)
+        // Fallback
+        document.getElementById("setting-fallback").value = config.fallback
+            || "order=shuffle"
+        // Autoplay
+        document.getElementById("setting-autoplay")
+            .addEventListener("click", () => {
+                document.getElementById("toggle-autoplay").checked
+                    = !document.getElementById("toggle-autoplay").checked
+                document.getElementById("setting-autoplay").focus()
+            })
+        document.getElementById("toggle-autoplay").checked
+            = config.autoplay ?? false
         // Scan folder on startup
         if (config.folder) {
-            const {scanner} = require("./songs")
-            setTimeout(() => scanner(config.folder, config.dumpLyrics), 10)
+            setTimeout(async() => {
+                const {scanner} = require("./songs")
+                await scanner(config.folder, config.dumpLyrics)
+                if (config.fallback) {
+                    const {setFallbackRule} = require("./playlist")
+                    setFallbackRule(config.fallback)
+                }
+                if (config.autoplay) {
+                    const {pause} = require("./player")
+                    pause()
+                }
+            }, 10)
         }
     })
 }
@@ -171,6 +193,8 @@ const saveSettings = () => {
     config.fontSize = Number(document.getElementById(
         "setting-fontsize").value) || 14
     config.mpv = document.getElementById("setting-mpv").value
+    config.fallback = document.getElementById("setting-fallback").value
+    config.autoplay = document.getElementById("toggle-autoplay").checked
     if (!config.autoScroll) {
         delete config.autoScroll
     }
@@ -216,6 +240,12 @@ const saveSettings = () => {
     }
     if (!config.mpv || config.mpv === defaultMpv) {
         delete config.mpv
+    }
+    if (!config.fallback || config.fallback === "order=shuffle") {
+        delete config.fallback
+    }
+    if (!config.autoplay) {
+        delete config.autoplay
     }
     let success = false
     if (Object.keys(config).length === 0) {
