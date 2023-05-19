@@ -231,6 +231,17 @@
                 <span class="checkbox-mark" />
             </label>
             <div>Toggle if you automatically play music on playlist load and app startup.</div>
+            <label>Api key
+                <input type="text" id="setting-apikey">
+            </label>
+            <div>
+                Optionally set the api key to be used for Genius requests.
+                Has the advantage of listing twice the amount of search results,
+                as well as being the officially supported way of using Genius without scraping.
+                A valid api key can be obtained on the genius.com/api-clients website.
+                The key you need is the Client Access Token, which can be generated once you have added an app.
+                If you don't want to use the official API and are fine with scraping you don't need to set an api key.
+            </div>
         </div>
         <div id="settings-actions">
             <div class="button save-settings">Save settings</div>

@@ -14,6 +14,11 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Setting "autoplay" to automatically start playing audio on folder load and playlist open
 - Setting "fallback" to use a custom fallback rule on startup
+- Setting "apiKey" to optionally use the official Genius API if set (default remains to scrape)
+
+### Changed
+
+- Failed lyrics requests are now logged in the console so they can be inspected
 
 ### Fixed
 

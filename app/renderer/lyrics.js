@@ -34,7 +34,6 @@ const sanitizeLyrics = lyrics => lyrics?.trim()
 // Only needed in NodeJS < 20, will be removed when no longer needed
 const dns = require("dns")
 dns.setDefaultResultOrder("ipv4first")
-const apiKey = undefined
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache
@@ -77,6 +76,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (!document.getElementById("toggle-genius").checked) {
         return
     }
+    const apiKey = document.getElementById("setting-apikey").value || undefined
     const genius = new Client(apiKey)
     try {
         notify(`Searching Genius for the song lyrics of: ${
@@ -205,6 +205,7 @@ const searchLyrics = async searchString => {
     }
     const resultsContainer = document.getElementById("lyrics-results")
     resultsContainer.textContent = "Searching Genius..."
+    const apiKey = document.getElementById("setting-apikey").value || undefined
     const genius = new Client(apiKey)
     const results = await genius.songs.search(searchString.trim()).catch(e => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)

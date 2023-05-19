@@ -103,6 +103,7 @@ const processStartupArgs = () => {
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
     let config = {
+        "apiKey": process.env.GARLMAP_API_KEY?.trim().toLowerCase(),
         "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
         "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
         "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
@@ -154,6 +155,8 @@ const processStartupArgs = () => {
                 config.fallback = value
             } else if (name === "--autoplay") {
                 config.autoplay = isTruthyArg(value)
+            } else if (name === "--api-key") {
+                config.apiKey = value
             } else if (name === "--font-size") {
                 config.fontSize = value
             } else if (name === "--auto-lyrics") {
@@ -223,7 +226,7 @@ const outputHelp = () => {
 > garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \\
     --auto-scroll --auto-close --auto-remove --use-genius --shift-lyrics \\
     --shift-timer=<int> two-column=<MOBILE,never,always> --font-size=<int> \\
-    --fallback=<str> --autoplay --mpv=<loc> --dump-lyrics folder
+    --mpv=<loc> --dump-lyrics --fallback=<str> --autoplay --api-key=<str> folder
 
 For help with app usage, see the built-in help on the right.
 Garlmap can be started without any arguments, but it supports the following:
@@ -425,6 +428,18 @@ Garlmap can be started without any arguments, but it supports the following:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_AUTOPLAY env will be read,
                    or this setting will by default be disabled.
+                   This setting can be changed in the advanced settings menu.
+
+    --api-key=str  Set the Genius API key to be used for lyrics requests.
+                   If set, the official API is used, else Genius is scraped.
+                   An API key can by creating a Client Access Token here:
+                   genius.com/api-clients
+                   Completely optional to set, but will make it more stable,
+                   as well as giving more search results in the lyrics editor.
+                   If no arg is found, it will read the "apiKey" field from:
+                   ${joinPath(configDir, "settings.json")}
+                   If also absent, the GARLMAP_API_KEY env will be read,
+                   or this setting will by default be left unset and blank.
                    This setting can be changed in the advanced settings menu.
 
     folder         Provide a folder to load the songs from for this instance.

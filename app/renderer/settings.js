@@ -135,6 +135,9 @@ const init = () => {
             })
         document.getElementById("toggle-autoplay").checked
             = config.autoplay ?? false
+        // Api key
+        document.getElementById("setting-apikey").value
+            = config.apiKey ?? ""
         // Scan folder on startup
         if (config.folder) {
             setTimeout(async() => {
@@ -195,6 +198,7 @@ const saveSettings = () => {
     config.mpv = document.getElementById("setting-mpv").value
     config.fallback = document.getElementById("setting-fallback").value
     config.autoplay = document.getElementById("toggle-autoplay").checked
+    config.apiKey = document.getElementById("setting-apikey").value
     if (!config.autoScroll) {
         delete config.autoScroll
     }
@@ -246,6 +250,9 @@ const saveSettings = () => {
     }
     if (!config.autoplay) {
         delete config.autoplay
+    }
+    if (!config.apiKey) {
+        delete config.apiKey
     }
     let success = false
     if (Object.keys(config).length === 0) {
