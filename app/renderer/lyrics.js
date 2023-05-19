@@ -19,7 +19,6 @@
 
 const {compareStrings} = require("./compare-strings")
 const {Client} = require("genius-lyrics")
-const genius = new Client()
 const {songByIdOrPath, updateLyricsOfSong, songById} = require("./songs")
 const {
     joinPath, dirName, basePath, readFile, notify, resetWelcome
@@ -31,6 +30,11 @@ let lyricsSearchCache = []
 const low = s => s.toLowerCase()
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
+// Fixes IPV6 issues: https://github.com/zyrouge/node-genius-lyrics/issues/47
+// Only needed in NodeJS < 20, will be removed when no longer needed
+const dns = require("dns")
+dns.setDefaultResultOrder("ipv4first")
+const apiKey = undefined
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache
@@ -73,6 +77,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     if (!document.getElementById("toggle-genius").checked) {
         return
     }
+    const genius = new Client(apiKey)
     try {
         notify(`Searching Genius for the song lyrics of: ${
             req.title} ${req.artist}`, "info")
@@ -124,6 +129,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     } catch (e) {
         notify(`Failed to fetch lyrics from Genius for: ${
             req.title} ${req.artist}`)
+        console.warn(e)
     }
     // Retry without text between brackets in song title and single artist
     if (originalReq) {
@@ -199,8 +205,10 @@ const searchLyrics = async searchString => {
     }
     const resultsContainer = document.getElementById("lyrics-results")
     resultsContainer.textContent = "Searching Genius..."
-    const results = await genius.songs.search(searchString.trim()).catch(() => {
+    const genius = new Client(apiKey)
+    const results = await genius.songs.search(searchString.trim()).catch(e => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
+        console.warn(e)
     })
     lyricsSearchCache = results || []
     resultsContainer.textContent = ""
@@ -245,10 +253,11 @@ const selectLyricsFromResults = async() => {
             } else {
                 editor.value = sanitizeLyrics(await cacheEntry.lyrics())
             }
-        } catch {
+        } catch (e) {
             notify(`Failed to fetch lyrics from Genius for: ${
                 cacheEntry.title} ${cacheEntry.artist.name}`)
             editor.value = previousLyrics
+            console.warn(e)
         }
         editor.scrollTo(0, 0)
     }
