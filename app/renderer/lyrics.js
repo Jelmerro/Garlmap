@@ -271,7 +271,14 @@ const resetShowingLyrics = () => {
 }
 
 const showLyrics = async p => {
-    resetShowingLyrics()
+    const previouslyShowingLyrics = showingLyrics
+    if (showingLyrics) {
+        resetShowingLyrics()
+    }
+    if (!previouslyShowingLyrics
+        && !document.getElementById("toggle-autolyrics").checked) {
+        return
+    }
     document.getElementById("fs-lyrics").scrollTo(0, 0)
     document.getElementById("lyrics-edit-field").scrollTo(0, 0)
     const song = songById(p)
