@@ -271,12 +271,10 @@ const resetShowingLyrics = () => {
 }
 
 const showLyrics = async p => {
-    const previouslyShowingLyrics = showingLyrics
     if (showingLyrics) {
         resetShowingLyrics()
     }
-    if (!previouslyShowingLyrics
-        && !document.getElementById("toggle-autolyrics").checked) {
+    if (!document.getElementById("toggle-autolyrics").checked) {
         return
     }
     document.getElementById("fs-lyrics").scrollTo(0, 0)

@@ -332,8 +332,11 @@ Any text that is listed before any of these fields, will search in all fields:
 even the lyrics are searched, if they are cached for a specific song.
 For the number fields, such as "date", "duration", "originaldate" or "track",
 it's also possible to specify a number range like so: "date:1960-1975".
-You can also use upercase letters in a field name to make it case sensitive,
-as all searches are by default case insensitive: "Album=Dark Side" for example.
+You can also use upercase letters in the name/value to make it case sensitive,
+as all searches are case insensitive if no capital letters are used.
+Every other type of casing makes it case sensitive, so it has to match,
+for example "album:Dark Side", "Album:dark side" or "album:DARK SIDE",
+are all case sensitive and thus will find entirely different results per query.
 For the general search, if there are capital letters in it, it's case sensitive.
 For fields that support multiple values, each value is searched to find a match,
 for example: "genre=rock" will look for any song with the rock genre,

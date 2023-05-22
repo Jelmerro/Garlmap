@@ -42,6 +42,46 @@ let processedFiles = 0
 const low = s => s.toLowerCase()
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
+const mainProps = [
+    "album",
+    "artist",
+    "bitrate",
+    "date",
+    "disc",
+    "disctotal",
+    "duration",
+    "id",
+    "lyrics",
+    "path",
+    "title",
+    "track",
+    "tracktotal"
+]
+const extraProps = [
+    "genre",
+    "composer",
+    "lyricist",
+    "writer",
+    "conductor",
+    "remixer",
+    "arranger",
+    "engineer",
+    "producer",
+    "technician",
+    "djmixer",
+    "mixer",
+    "label",
+    "grouping",
+    "subtitle",
+    "rating",
+    "bpm",
+    "mood",
+    "releasetype",
+    "originalalbum",
+    "originalartist"
+]
+const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
+const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
 const processFile = async(path, id) => {
     let song = null
@@ -80,29 +120,6 @@ const processFile = async(path, id) => {
             "track": details.common.track.no,
             "tracktotal": details.common.track.of
         }
-        const extraProps = [
-            "genre",
-            "composer",
-            "lyricist",
-            "writer",
-            "conductor",
-            "remixer",
-            "arranger",
-            "engineer",
-            "producer",
-            "technician",
-            "djmixer",
-            "mixer",
-            "label",
-            "grouping",
-            "subtitle",
-            "rating",
-            "bpm",
-            "mood",
-            "releasetype",
-            "originalalbum",
-            "originalartist"
-        ]
         for (const prop of extraProps) {
             if (details.common[prop]) {
                 song[prop] = details.common[prop]
@@ -217,14 +234,16 @@ const query = search => {
     if (!search.trim()) {
         return []
     }
-    const filters = search.split(/(?= \w+[:=])/g).map(p => ({
+    const filters = search.split(queryRegex).map(p => ({
         "cased": low(p.trim().split(/[:=]/g)[0]) !== p.trim().split(/[:=]/g)[0],
         "name": p.trim().split(/[:=]/g)[0],
-        "value": p.trim().split(/[:=]/g)[1]
+        "part": p.trim(),
+        "value": p.trim().split(/([:=])/g).slice(2).join("")
     }))
-    let globalSearch = {"cased": false, "name": null}
-    if (filters[0]?.value === undefined) {
+    let globalSearch = {"cased": false, "name": "", "part": ""}
+    if (!validProps.includes(filters[0]?.name)) {
         globalSearch = filters.shift()
+        globalSearch.cased = low(globalSearch.part) !== globalSearch.part
     }
     const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
         .filter(f => !["order", "limit", "asc"].includes(f.name))
@@ -293,12 +312,12 @@ const query = search => {
                 }
             }
         }
-        if (globalSearch?.name) {
+        if (globalSearch?.part) {
             let flags = "gi"
             if (globalSearch.cased) {
                 flags = "g"
             }
-            for (const word of globalSearch.name.split(/\s/g).filter(w => w)) {
+            for (const word of globalSearch.part.split(/\s/g).filter(w => w)) {
                 try {
                     const regex = RegExp(word, flags)
                     if (!Object.values(s).find(
