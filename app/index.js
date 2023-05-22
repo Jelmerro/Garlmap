@@ -237,11 +237,14 @@ Garlmap can be started without any arguments, but it supports the following:
 
     --cache=all    Define the cache policy to use for this instance.
                    By default, both lyrics and song data are cached forever.
-                   If you want to update either of them once in a while,
-                   simply run Garlmap with a --cache=none argument present.
                    Cache will still be written after being freshly fetched/read.
                    Other than "all", this arg can be set to these values:
                    Song data (songs), lyrics (lyrics), or nothing at all (none)
+                   Cache is stored in in ~/.config/Garlmap or %APPDATA%/Garlmap,
+                   which depends on your OS, the filename is "cache.json".
+                   You can safely delete this file if desired,
+                   though it greatly speeds up Garlmap on subsequent startups,
+                   and also reduces the amount of requests to Genius for lyrics.
                    If no arg is found, it will read the "cache" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_CACHE env will be read,
@@ -261,10 +264,12 @@ Garlmap can be started without any arguments, but it supports the following:
                    or this setting will by default be disabled from cleaning.
                    This setting can be changed in the advanced settings menu.
 
-    --auto-lyrics  Enable the automatic downloading of lyrics when songs play.
-                   If disabled, you can download them per song by pressing F4.
+    --auto-lyrics  Enable the automatic showing of lyrics when songs play.
+                   If not enabled, you can show them manually by pressing F4.
                    Lyrics will be cached forever after being fetched once,
                    unless you disable it with the cache setting listed above.
+                   You can fetch them again with Shift-F4 or use the editor.
+                   If Genius is disabled this option only searches local lyrics.
                    The argument can optionally be provided with value:
                    "--auto-lyrics=true", "--auto-lyrics=0, "--auto-lyrics=no".
                    If no arg is found, it will read the "autoLyrics" field from:
@@ -274,7 +279,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    Change this setting in the playlist with "t" or the mouse.
 
     --auto-scroll  Enable automatic scrolling to the current song in the list.
-                   If disabled, no automatic scrolling will happen.
+                   If not enabled, no automatic scrolling will happen.
                    The argument can optionally be provided with value:
                    "--auto-scroll=true", "--auto-scroll=0, "--auto-scroll=no".
                    If no arg is found, it will read the "autoScroll" field from:
@@ -285,7 +290,7 @@ Garlmap can be started without any arguments, but it supports the following:
 
     --auto-close   Enable automatic closing and opening of rules when played.
                    The current rule will be opened, all others will be closed.
-                   If disabled, no automatic open or closing will happen.
+                   If not enabled, no automatic open or closing will happen.
                    The argument can optionally be provided with value:
                    "--auto-close=true", "--auto-close=0, "--auto-close=no".
                    If no arg is found, it will read the "autoClose" field from:
@@ -295,7 +300,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    Change this setting in the playlist with "c" or the mouse.
 
     --auto-remove  Enable automatic removal of old rules and tracks after play.
-                   If disabled, no automatic removal of songs/rules will happen.
+                   If not enabled, no automatic removal of songs/rules happens.
                    The argument can optionally be provided with value:
                    "--auto-remove=true", "--auto-remove=0, "--auto-remove=no".
                    If no arg is found, it will read the "autoRemove" field from:
@@ -320,7 +325,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    Change this setting with Ctrl-g or the bottom right checkbox.
 
     --shift-lyrics Enable automatic scrolling/shifting of song lyrics.
-                   If disabled, no automatic scrolling of lyrics will happen.
+                   If not enabled, no automatic scrolling of lyrics will happen.
                    There is no word syncing for the lyrics in Garlmap,
                    the scroll position is based on the current song progress.
                    Shifting is turned off when scrolling manually,
@@ -383,6 +388,7 @@ Garlmap can be started without any arguments, but it supports the following:
 
     --mpv=loc      Define a custom location for the mpv executable.
                    Mostly useful in case you don't want to have mpv on the path.
+                   The location must be an mpv executable for Garlmap to start.
                    If no arg is found, it will read the "mpv" field from:
                    ${joinPath(configDir, "settings.json")}
                    If also absent, the GARLMAP_MPV env will be read,

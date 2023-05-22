@@ -25,6 +25,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 - Raise and Quit options not working in MPRIS menu
 - Character "q" being used as a shortcut in settings panel preventing it from being used in setting values
 - Genius API issues when using IPV6 by first trying to use IPV4 as the Genius API prefers that
+- Lyrics selection not being able to be cleared by clicking on it when in fullscreen
 
 ### Versions
 

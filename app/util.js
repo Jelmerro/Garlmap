@@ -248,13 +248,7 @@ Alternatively you can use Ctrl-f or Ctrl-l for the search and playlist sections.
 No other sections are focusable in the traditional sense,
 but they can be controlled with other shortcuts.
 Toggling between the two sections can also be done using Ctrl-Tab.
-The lyrics section can be scrolled with F9 and F10, without needing focus.
-You can also display song lyrics here, by pressing F4,
-which will happen automatically if they are available offline,
-or you can bring back this help at any time with F1.
-With Shift-F4 you can refetch the lyrics in case the cached ones are outdated.
-For more lyrics options, see the dedicated paragraph or the buttons below it.
-You can toggle automatic fetching with t in the playlist or with the checkbox.
+The help section can be scrolled with F9 and F10, without needing focus.
 F5 is for play/pause, and F6 for stopping after the current track.
 F7 and F8 are for moving to the previous and next track.
 You can seek by clicking the progress bar with any mouse button,
@@ -264,6 +258,25 @@ You can jump to a percentage of a song based on Ctrl-\` and Ctrl-1 to Ctrl-9.
 There are many more shortcuts, which are listed in most of the sections below.
 When in doubt, the mouse can also be used to do most actions.
 
+Lyrics
+
+You can also display song lyrics here, by pressing F4,
+which you can also do automatically on song change by turning Autolyrics on,
+after which you can bring back this help at any time with F1.
+You can toggle Autolyrics with t in the playlist or with the checkbox.
+You can use local lyrics, by making a ".txt" that has the same path as a song,
+or do so in a "Lyrics" folder at the base music folder and then the same path.
+For example: "Lyrics/Weezer/Blue/Undone.txt" for "Weezer/Blue/Undone.mp3".
+These will always work regardless of whether Genius is enabled via the checkbox,
+as is the case for the built-in lyrics editor (including the manual searching).
+You can generate these files based on the cache file using "--dump-lyrics".
+If there are no local lyrics, they are fetched with Genius, on by default,
+though not automatically called as Autolyrics is disabled by default.
+Once fetched or found, lyrics are cached forever unless: the cache is cleared,
+you refresh them manually using Shift-F4, or you edit them manually (see end).
+You can also make use of the official Genius API instead of scraping it,
+by adding an API key to the settings as explained below.
+
 Settings
 
 It's required to load a folder for Garlmap to play songs.
@@ -272,8 +285,10 @@ You can load a folder with Ctrl-o, the button, or by changing your settings.
 There are many ways to do so, with env vars, a config file, or with arguments,
 all of which are explained if you start Garlmap with the "--help" argument.
 It's recommended to read both this help and the startup help at least once.
+Setting that are not by default visible can be changed in the settings editor,
+you can open that with the settings gear on the bottom right or with Ctrl-/.
 You can save all your settings with the button or using Ctrl-s at any time,
-a list of custom settings currently in use is always logged on startup.
+a list of custom settings currently used is always logged to stdout on startup.
 Your playlist is not part of the settings, but you can import/export it instead.
 Importing and exporting can also be done using Ctrl-r and Ctrl-t respectively.
 You can choose a Garlmap specific format which keeps the rules and everything,
@@ -286,21 +301,22 @@ or otherwise using env vars, the config file or the startup arguments.
 You can optionally automatically shift/scroll the lyrics based on song progress:
 toggle this at runtime with the "Shift" checkbox, using Ctrl-h to toggle it,
 or otherwise using env vars, the config file or the startup arguments.
-Setting that are not by default visible can be changed in the settings editor,
-you can open that with the settings gear on the bottom right or with Ctrl-/.
 
 Syntax for queueing and searching
 
 You can search for songs using the search section on the left.
 These can be queued in the playlist individually, or as what is called a rule.
 Rules are filters with a specific order and/or limit that can queue in bulk.
+Rules can do global searches, or use specific fields to search song info.
 For example, "album:pinkerton artist:weezer" can be added to the playlist,
 this rule which will play the entire Pinkerton album by artist Weezer.
-You could also just search for "weezer pinker" or something and find it,
+You could also just globally search for "weezer pinker" or similar and find it,
 but the above is much more accurate if you have a large library.
 There are many fields that can be used to search for songs based on their tags,
 while others are specific to Garlmap for ordering or counting the query.
-These properties are always present, though sometimes empty:
+Fields can be search for in your query by doing "field=value" or "field:value",
+and you can search for as many fields as you want and even repeat the same ones.
+These fields are always present on songs, though sometimes empty:
 "title", "artist", "album", "disc", "disctotal", "track", "tracktotal",
 "lyrics", "duration", "date", "order" and "limit".
 On some files that support them, you can also search for the following fields:
@@ -338,7 +354,8 @@ which can be done by setting "asc=false" (or with "asc=0" and "asc=no").
 By default, ascending order is always used and the default is true (or yes/1).
 Songs without a valid date are always ordered at the end of the list,
 you can exclude them entirely by setting an empty filter on date with "date=".
-The "limit" field can be set to any number and will limit the amount of songs.
+The "limit" field can be set to any number and will limit the amount of songs,
+so adding "limit=5" to your search will give a maximum of 5 results.
 
 Search usage
 
@@ -350,7 +367,7 @@ instead of immediately bringing the focus to the search box.
 After entering a search, you can add the rule to the playlist in 3 ways:
 1. At the end of the playlist with Enter.
 2. Immediately after the current rule/song with Shift-Enter.
-3. As a fallback rule with Ctrl-Enter, see playlist for more info.
+3. As a fallback rule with Ctrl-Enter, see playlist usage below for more info.
 The entire query can be added as a rule to the playlist with these shortcuts,
 which will automatically queue all matching tracks based on the rule.
 Alternatively, you can scroll through the results with Ctrl-n and Ctrl-p,
@@ -398,30 +415,12 @@ which scrolls the view, or use the same keys with Ctrl to move the selection.
 Ctrl-up and Ctrl-down are the same as Ctrl-PageUp and Ctrl-PageDown,
 but without control the arrows move the selection, while Page keys move a page.
 You can also play the selected track right away with Enter.
-With a you can toggle auto scrolling the playlist to the current song,
+With a you can toggle auto scrolling the playlist on song change (Autoscroll),
 though it will not move the selection, similar to scrolling with Ctrl-e/Ctrl-y.
-You can also toggle automatic opening and closing of the rules with c,
-or toggle automatic removal of old rules and songs using r.
+You can toggle automatic opening and closing of the rules with c (Autoclose),
+or toggle automatic removal of old rules and songs using r (Autoremove).
 You can view the internal song info of the selected song using i,
 or show the song info for the current song with Ctrl-i.
-
-Caching
-
-All song data and lyrics are cached for the next startup in a "cache.json" file,
-either in ~/.config/Garlmap or %APPDATA%/Garlmap depending on your OS.
-You can control if the cache should be read on startup using --cache,
-or with the GARLMAP_CACHE ENV var set to one of: all, songs, lyrics, none.
-Obviously you are free to delete the "cache.json" at any time if you want to,
-just know that the cache file greatly speeds up parsing of large folders,
-and greatly reduces the amount of requests to Genius if you want auto lyrics.
-Don't expect miracles, it will still take multiple seconds to parse 10k+ songs,
-but after startup there shouldn't be too many moments that freeze the app.
-You can use local lyrics, by making a ".txt" that has the same path as a song,
-or do so in a "Lyrics" folder at the base music folder and then the same path.
-For example: "Lyrics/Weezer/Blue/Undone.txt" for "Weezer/Blue/Undone.mp3".
-These will always work regardless of whether Genius is enabled via the checkbox,
-as is the case for the built-in lyrics editor (including the manual searching).
-You can generate these files based on the cache file using "--dump-lyrics".
 
 Volume control
 
@@ -458,24 +457,23 @@ Finally, you can use Space to toggle pause and q to exit fullscreen completely.
 
 Lyrics editor
 
-Besides automatically showing the lyrics using the Autolyrics option,
-you can also edit them yourself and save them to the cache.
+Besides using local lyrics or Genius to fetch the lyrics as explained on top,
+you can also edit lyrics yourself and save them to the cache.
 To open the editor, either press Ctrl-F4 or use the buttons below the help.
 These buttons can also be used to switch between the help and showing lyrics,
 optionally by fetching the lyrics fresh by pressing the download icon.
-There are also checkboxes for toggling the Genius API and auto shifting lyrics.
 Once in the editor, you can focus mainly on two sections, the search and editor.
 To toggle between the sections, use Ctrl-Tab, or just Tab to jump to searching.
 Like the event dialog, you can close it by clicking outside or using Escape,
 as well as by pressing the same shortcut you used to open it: Ctrl-F4.
 In the search section, you can type a query, and search on Genius for songs.
-This will continue to work, even if you have disabled the automatic fetching.
+This will continue to work, even if you have disabled automatic Genius fetching.
 You can do so with the search button or Enter, it will NOT search while typing.
 The last query is always remembered for ease of use even after typing again.
 The other section is the lyrics editor itself, where you can edit the lyrics.
 Your changes are not saved automatically, and you can safely close the dialog,
 if you reopen it without changing the song, your changes are still there.
-If you do not save your changes before a song change, they will be removed.
+If you do not save your changes before a song change, they will be forgotten.
 You can save with Ctrl-s, the save button or with Ctrl-Enter in the text editor.
 The search results can also be used to fill the lyrics editor with its text.
 After a search, highlight the right song with the arrow keys or the mouse,
