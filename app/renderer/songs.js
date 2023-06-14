@@ -131,10 +131,10 @@ const processFile = async(path, id) => {
             song.originaldate = details.common.originalyear
         }
     }
-    if (cacheIndex >= 0) {
-        cachedSongs[cacheIndex] = song
-    } else {
+    if (cacheIndex === null) {
         cachedSongs.push(song)
+    } else {
+        cachedSongs[cacheIndex] = song
     }
     songs.push(song)
 }
