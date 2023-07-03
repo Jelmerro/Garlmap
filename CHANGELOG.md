@@ -8,6 +8,17 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Fixed
+
+- New songs not being added to the cache correctly since 2.0.0
+
+### Versions
+
+- Electron 25.1.1 (unchanged)
+- Chromium 114.0.5735.106 (unchanged)
+
 ## [2.0.0](https://github.com/Jelmerro/Garlmap/compare/1.5.0...2.0.0) - 2023-06-15
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/1.5.0...2.0.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.0.0)

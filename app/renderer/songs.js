@@ -85,7 +85,7 @@ const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
 const processFile = async(path, id) => {
     let song = null
-    let cacheIndex = null
+    let cacheIndex = -1
     if (cache !== "none") {
         song = cachedSongs.find(s => path === s.path)
             || cachedSongs.find(s => id.endsWith(s.id))
@@ -131,7 +131,7 @@ const processFile = async(path, id) => {
             song.originaldate = details.common.originalyear
         }
     }
-    if (cacheIndex === null) {
+    if (cacheIndex === -1) {
         cachedSongs.push(song)
     } else {
         cachedSongs[cacheIndex] = song
