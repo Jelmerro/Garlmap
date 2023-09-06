@@ -20,6 +20,7 @@ import subprocess
 import re
 
 overrides = {
+    "electron": "alpha",
     "music-metadata": "cjs"
 }
 
