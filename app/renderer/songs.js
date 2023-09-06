@@ -39,9 +39,6 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
-const low = s => s.toLowerCase()
-const sanitizeLyrics = lyrics => lyrics?.trim()
-    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 const mainProps = [
     "album",
     "artist",
@@ -82,6 +79,11 @@ const extraProps = [
 ]
 const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
 const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
+
+const low = s => s.toLowerCase()
+
+const sanitizeLyrics = lyrics => lyrics?.trim()
+    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
 const processFile = async(path, id) => {
     let song = null

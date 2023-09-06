@@ -44,6 +44,7 @@ const MPVSocket = (path, close) => {
         queue = []
         open = true
     })
+
     const message = m => {
         if (m.event) {
             return socket.emit("event", m.event, m)
@@ -61,6 +62,7 @@ const MPVSocket = (path, close) => {
         }
         requests.delete(m.request_id)
     }
+
     socket.on("data", data => data.split(/\r?\n/g).filter(x => x)
         .map(x => JSON.parse(x.trim())).forEach(message))
     socket.send = (...args) => new Promise((res, rej) => {
@@ -86,9 +88,11 @@ const MPVSocket = (path, close) => {
 }
 
 const Mpv = ({args = [], options = {}, path} = {}) => {
-    const error = x => mpv.emit("error", x)
     args.shift()
     const mpv = new EventEmitter()
+
+    const error = x => mpv.emit("error", x)
+
     let socketPath = "/tmp/mpvsocket"
     if (platform() === "win32") {
         socketPath = "\\\\.\\pipe\\mpvsocket"

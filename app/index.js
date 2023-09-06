@@ -34,10 +34,9 @@ const {
 const applyDevtoolsSettings = prefFile => {
     makeDir(dirName(prefFile))
     const preferences = readJSON(prefFile) || {}
-    preferences.electron = preferences.electron || {}
-    preferences.electron.devtools = preferences.electron.devtools || {}
-    preferences.electron.devtools.preferences
-        = preferences.electron.devtools.preferences || {}
+    preferences.electron ||= {}
+    preferences.electron.devtools ||= {}
+    preferences.electron.devtools.preferences ||= {}
     // Disable source maps as they are unused and produce a lot of warnings
     preferences.electron.devtools.preferences.cssSourceMapsEnabled = false
     preferences.electron.devtools.preferences.jsSourceMapsEnabled = false
@@ -90,15 +89,16 @@ const logCustomSettings = config => {
     }
 }
 
+const isTruthyArg = arg => {
+    const argStr = String(arg).trim().toLowerCase()
+    return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
+}
+
 const processStartupArgs = () => {
     let args = process.argv.slice(1)
     const exec = basePath(process.argv[0])
     if (exec === "electron" || process.defaultApp && exec !== "garlmap") {
         args = args.slice(1)
-    }
-    const isTruthyArg = arg => {
-        const argStr = String(arg).trim().toLowerCase()
-        return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
     }
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
@@ -498,7 +498,6 @@ const tempDir = joinPath(app.getPath("temp"), "Garlmap")
 app.setPath("sessionData", tempDir)
 applyDevtoolsSettings(joinPath(tempDir, "Preferences"))
 let mainWindow = null
-
 app.on("ready", () => {
     const config = processStartupArgs()
     if (!app.requestSingleInstanceLock()) {
@@ -553,7 +552,6 @@ app.on("ready", () => {
         }
     })
 })
-
 ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
 // #bug Setting the mainWindow will block interaction completely on second open,
 // but only when using Linux and GNOME (and forks like Cinnamon),

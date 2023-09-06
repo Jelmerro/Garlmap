@@ -20,6 +20,10 @@
 const builder = require("electron-builder")
 const {rmSync, readdir, unlinkSync} = require("fs")
 const ebuilder = {"config": {
+    /**
+     * Remove all locales except English US from the build.
+     * @param {import("electron-builder").AfterPackContext} context
+     */
     "afterPack": context => {
         const localeDir = `${context.appOutDir}/locales/`
         readdir(localeDir, (_err, files) => {
@@ -28,7 +32,6 @@ const ebuilder = {"config": {
         })
     }
 }}
-
 rmSync("dist/", {"force": true, "recursive": true})
 process.argv.slice(1).forEach(a => {
     if (a === "--linux") {

@@ -27,13 +27,15 @@ const {
 let shitLyricsTimeout = null
 let showingLyrics = false
 let lyricsSearchCache = []
-const low = s => s.toLowerCase()
-const sanitizeLyrics = lyrics => lyrics?.trim()
-    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 // Fixes IPV6 issues: https://github.com/zyrouge/node-genius-lyrics/issues/47
 // Only needed in NodeJS < 20, will be removed when no longer needed
 const dns = require("dns")
 dns.setDefaultResultOrder("ipv4first")
+
+const low = s => s.toLowerCase()
+
+const sanitizeLyrics = lyrics => lyrics?.trim()
+    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
 const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache

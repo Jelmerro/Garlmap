@@ -17,14 +17,6 @@
 */
 "use strict"
 
-let rulelist = []
-let ruleIdx = 0
-let pathIdx = 0
-let selectedRuleIdx = null
-let selectedPathIdx = null
-let upcomingPlaybackRuleIdx = null
-let upcomingPlaybackPathIdx = null
-
 const {ipcRenderer} = require("electron")
 const {
     formatTime,
@@ -36,6 +28,14 @@ const {
     readFile,
     writeFile
 } = require("../util")
+
+let rulelist = []
+let ruleIdx = 0
+let pathIdx = 0
+let selectedRuleIdx = null
+let selectedPathIdx = null
+let upcomingPlaybackRuleIdx = null
+let upcomingPlaybackPathIdx = null
 
 const generatePlaylistView = () => {
     document.getElementById("main-playlist").textContent = ""
