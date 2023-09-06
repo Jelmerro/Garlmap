@@ -5,11 +5,6 @@
   "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
   "main": "app/index.js",
   "scripts": {
-    "build": "node build.js",
-    "buildall": "node build.js --linux --win --mac",
-    "buildlinux": "node build.js --linux",
-    "buildmac": "node build.js --mac",
-    "buildwin": "node build.js --win",
     "fix": "eslint --fix app .eslintrc.js build.js",
     "lint": "eslint app .eslintrc.js build.js",
     "start": "electron app"

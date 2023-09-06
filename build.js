@@ -34,13 +34,19 @@ const ebuilder = {"config": {
 }}
 rmSync("dist/", {"force": true, "recursive": true})
 process.argv.slice(1).forEach(a => {
-    if (a === "--linux") {
+    if (a === "--help") {
+        console.info("Basic Garlmap build script, these are its options:")
+        console.info(" --all, --linux, --win, --mac")
+        console.info("By default it will only build for the current platform.")
+        process.exit(0)
+    }
+    if (a === "--linux" || a === "--all") {
         ebuilder.linux = []
     }
-    if (a === "--win") {
+    if (a === "--win" || a === "--all") {
         ebuilder.win = []
     }
-    if (a === "--mac") {
+    if (a === "--mac" || a === "--all") {
         ebuilder.mac = []
     }
 })

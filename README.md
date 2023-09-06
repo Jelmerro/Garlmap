@@ -52,8 +52,9 @@ See what's changed recently by viewing the [changelog](CHANGELOG.md).
 
 Please clone this repo and run `npm ci` then `npm start`.
 You should now have Garlmap up and running from source,
-next you can make your own executable builds using `npm run build`.
-See `npm run` for other (build) options, the executables will be stored in `dist`.
+next you can make your own executable builds using `node build`.
+See `node build --help` for other options, the builds will be stored in `dist`.
+I you plan to contribute, please follow the included linter, see `npm run lint`.
 
 ## License
 
