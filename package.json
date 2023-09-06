@@ -6,7 +6,9 @@
   "main": "app/index.js",
   "scripts": {
     "fix": "eslint --fix app .eslintrc.js build.js",
-    "lint": "eslint app .eslintrc.js build.js",
+    "lint": "npm run eslint && npm run tsc",
+    "eslint": "eslint app .eslintrc.js build.js",
+    "tsc": "tsc",
     "start": "electron app"
   },
   "repository": "https://github.com/Jelmerro/Garlmap",
@@ -27,7 +29,8 @@
     "eslint": "8.48.0",
     "eslint-plugin-jsdoc": "46.5.1",
     "eslint-plugin-padding-lines": "github:Jelmerro/eslint-plugin-padding-lines",
-    "eslint-plugin-sort-keys": "2.3.5"
+    "eslint-plugin-sort-keys": "2.3.5",
+    "typescript": "5.2.2"
   },
   "dependencies": {
     "genius-lyrics": "4.4.3",
