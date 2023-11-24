@@ -20,165 +20,73 @@
 const {ipcRenderer} = require("electron")
 const {deleteFile, notify, joinPath, writeJSON} = require("../util")
 
-let startupConfig = {}
+/** @typedef {{
+ *   apiKey: string | undefined,
+ *   autoClose?: boolean | undefined,
+ *   autoLyrics?: boolean | undefined,
+ *   autoRemove?: boolean | undefined,
+ *   autoScroll?: boolean | undefined,
+ *   autoplay?: boolean | undefined,
+ *   cache: string | undefined,
+ *   cacheClean?: boolean | undefined,
+ *   configDir?: string | undefined,
+ *   customTheme: string | null,
+ *   debug?: boolean | undefined,
+ *   dumpLyrics?: boolean | undefined,
+ *   fallback: string | undefined,
+ *   folder: string | undefined,
+ *   fontSize: string | number | undefined,
+ *   mpv: string | undefined,
+ *   shiftLyrics?: boolean | undefined,
+ *   shiftTimer?: string | number | undefined,
+ *   twoColumn: string | undefined,
+ *   useGenius?: boolean | undefined,
+ *   version?: string | undefined
+ * }} Config
+ */
 
-const init = () => {
-    ipcRenderer.on("config", (_, config) => {
-        startupConfig = config
-        const {setStartupSettings} = require("./songs")
-        // Two column
-        document.body.setAttribute("two-column", config.twoColumn || "mobile")
-        document.getElementById("setting-two-column")
-            .addEventListener("input", () => {
-                document.body.setAttribute("two-column",
-                    document.getElementById("setting-two-column").value)
-            })
-        document.getElementById("setting-two-column").value
-            = config.twoColumn || "mobile"
-        // Autoclose
-        document.getElementById("toggle-autoclose").checked = config.autoClose
-        document.getElementById("toggle-autoclose").parentNode
-            .addEventListener("click", () => {
-                const {toggleAutoClose} = require("./playlist")
-                toggleAutoClose()
-            })
-        // Autolyrics
-        document.getElementById("toggle-autolyrics").checked = config.autoLyrics
-        document.getElementById("toggle-autolyrics").parentNode
-            .addEventListener("click", () => toggleAutoLyrics())
-        // Autoremove
-        document.getElementById("toggle-autoremove").checked = config.autoRemove
-        document.getElementById("toggle-autoremove").parentNode
-            .addEventListener("click", () => {
-                const {toggleAutoRemove} = require("./playlist")
-                toggleAutoRemove()
-            })
-        // Autoscroll
-        document.getElementById("toggle-autoscroll").checked = config.autoScroll
-        document.getElementById("toggle-autoscroll").parentNode
-            .addEventListener("click", () => {
-                const {toggleAutoScroll} = require("./playlist")
-                toggleAutoScroll()
-            })
-        // Cache
-        document.getElementById("setting-cache").value = config.cache || "all"
-        // Cacheclean
-        document.getElementById("setting-cache-clean")
-            .addEventListener("click", () => {
-                document.getElementById("toggle-cache-clean").checked
-                    = !document.getElementById("toggle-cache-clean").checked
-                document.getElementById("setting-cache-clean").focus()
-            })
-        document.getElementById("toggle-cache-clean").checked
-            = config.cacheClean
-        // Set config dir
-        setStartupSettings(config.configDir)
-        // Shifttimer
-        document.getElementById("setting-shift-timer").value
-            = config.shiftTimer || 0
-        document.getElementById("setting-shift-timer")
-            .addEventListener("input", () => {
-                const val = document.getElementById("setting-shift-timer").value
-                if (Number(val) > 0) {
-                    document.getElementById("toggle-shift-lyrics")
-                        .parentNode.style.display = "none"
-                } else {
-                    document.getElementById("toggle-shift-lyrics")
-                        .parentNode.style.display = null
-                }
-            })
-        // Shiftlyrics
-        document.getElementById("toggle-shift-lyrics").checked
-            = config.shiftLyrics || config.shiftTimer
-        if (config.shiftTimer) {
-            document.getElementById("toggle-shift-lyrics")
-                .parentNode.style.display = "none"
-        }
-        document.getElementById("toggle-shift-lyrics").parentNode
-            .addEventListener("click", () => toggleShiftLyrics())
-        // Fontsize
-        document.getElementById("setting-fontsize").value
-            = config.fontSize || "14"
-        // Customtheme
-        if (config.customTheme) {
-            const styleEl = document.createElement("style")
-            styleEl.textContent = config.customTheme
-            document.head.appendChild(styleEl)
-            try {
-                applyPrimaryColorToImages()
-            } catch {
-                // Should not prevent loading mpv and playing songs
-            }
-        }
-        // Usegenius
-        document.getElementById("toggle-genius").checked
-            = config.useGenius ?? true
-        document.getElementById("toggle-genius").parentNode
-            .addEventListener("click", () => toggleGenius())
-        // Mpv
-        document.getElementById("setting-mpv").value = config.mpv || ""
-        const {"init": startMpv} = require("./player")
-        let defaultMpv = "mpv"
-        if (process.platform === "win32") {
-            defaultMpv = "mpv.exe"
-        }
-        startMpv(config.mpv || defaultMpv, config.configDir)
-        // Fallback
-        document.getElementById("setting-fallback").value = config.fallback
-            || "order=shuffle"
-        // Autoplay
-        document.getElementById("setting-autoplay")
-            .addEventListener("click", () => {
-                document.getElementById("toggle-autoplay").checked
-                    = !document.getElementById("toggle-autoplay").checked
-                document.getElementById("setting-autoplay").focus()
-            })
-        document.getElementById("toggle-autoplay").checked
-            = config.autoplay ?? false
-        // Api key
-        document.getElementById("setting-apikey").value
-            = config.apiKey ?? ""
-        // Scan folder on startup
-        if (config.folder) {
-            setTimeout(async() => {
-                const {scanner} = require("./songs")
-                await scanner(config.folder, config.dumpLyrics)
-                if (config.fallback) {
-                    const {setFallbackRule} = require("./playlist")
-                    setFallbackRule(config.fallback)
-                }
-                if (config.autoplay) {
-                    const {pause} = require("./player")
-                    pause()
-                }
-            }, 10)
-        }
-    })
-}
+let startupConfigDir = ""
 
+/** Toggle the auto lyrics feature. */
 const toggleAutoLyrics = () => {
-    document.getElementById("toggle-autolyrics").checked
-        = !document.getElementById("toggle-autolyrics").checked
+    const autoLyricsEl = document.getElementById("toggle-autolyrics")
+    if (autoLyricsEl instanceof HTMLInputElement) {
+        autoLyricsEl.checked = !autoLyricsEl.checked
+    }
 }
 
+/** Toggle the shift lyrics feature. */
 const toggleShiftLyrics = () => {
-    if (Number(document.getElementById("setting-shift-timer").value) > 0) {
+    const timingEl = document.getElementById("setting-shift-timer")
+    const toggleEl = document.getElementById("toggle-shift-lyrics")
+    if (timingEl instanceof HTMLInputElement) {
+        if (Number(timingEl.value) > 0) {
+            return
+        }
+        if (toggleEl instanceof HTMLInputElement) {
+            toggleEl.checked = !toggleEl.checked
+        }
+    }
+}
+
+/** Toggle the automatic invocation of the Genius API. */
+const toggleGenius = () => {
+    const toggleGeniusEl = document.getElementById("toggle-genius")
+    if (toggleGeniusEl instanceof HTMLInputElement) {
+        toggleGeniusEl.checked = !toggleGeniusEl.checked
+    }
+}
+
+/** Save the currently active settings to disk inside the configdir. */
+const saveSettings = () => {
+    /** @type {Partial<Config>} */
+    const config = {}
+    if (!startupConfigDir) {
         return
     }
-    document.getElementById("toggle-shift-lyrics").checked
-        = !document.getElementById("toggle-shift-lyrics").checked
-}
-
-const toggleGenius = () => {
-    document.getElementById("toggle-genius").checked
-        = !document.getElementById("toggle-genius").checked
-}
-
-const saveSettings = () => {
-    const config = {}
-    const configFile = joinPath(startupConfig.configDir, "settings.json")
-    const folder = document.getElementById("status-folder").textContent.trim()
-    if (folder !== "No folder selected") {
+    const configFile = joinPath(startupConfigDir, "settings.json")
+    const folder = document.getElementById("status-folder")?.textContent?.trim()
+    if (folder && folder !== "No folder selected") {
         config.folder = folder
     }
     config.autoScroll = document.getElementById("toggle-autoscroll").checked
@@ -265,6 +173,7 @@ const saveSettings = () => {
     }
 }
 
+/** @type {{[key: string]: string | undefined}} */
 const cssColors = {
     "aliceblue": "#f0f8ff",
     "antiquewhite": "#faebd7",
@@ -416,14 +325,10 @@ const cssColors = {
     "yellowgreen": "#9acd32"
 }
 
-const applyPrimaryColorToImages = () => {
-    const color = getComputedStyle(document.body).getPropertyValue("--icons")
-    const rgb = hexToRgb(cssColors[color.trim()] || color.trim())
-    document.querySelector("#colored feColorMatrix").setAttribute("values",
-        `${rgb.r / 256} 0 0 0 0 ${rgb.g / 256} `
-        + `0 0 0 0 ${rgb.b / 256} 0 0 0 0 0 0 0 1 0`)
-}
-
+/**
+ * Convert a color hex code to red, green and blue values.
+ * @param {string} hex
+ */
 const hexToRgb = hex => {
     const shorthand = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
     const split = hex.replace(shorthand, (_, r, g, b) => r + r + g + g + b + b)
@@ -436,6 +341,195 @@ const hexToRgb = hex => {
         }
     }
     return null
+}
+
+/** Apply the primary color or the icon specific color as an image filter. */
+const applyPrimaryColorToImages = () => {
+    const color = getComputedStyle(document.body).getPropertyValue("--icons")
+    const rgb = hexToRgb(cssColors[color.trim()] || color.trim())
+    const matrixEl = document.querySelector("#colored feColorMatrix")
+    if (rgb && matrixEl) {
+        matrixEl.setAttribute("values", `${rgb.r / 256} 0 0 0 0 ${rgb.g / 256} `
+            + `0 0 0 0 ${rgb.b / 256} 0 0 0 0 0 0 0 1 0`)
+    }
+}
+
+/** Initialize the settings by waiting for the config from main. */
+const init = () => {
+    ipcRenderer.on("config",
+        /**
+         * Load the config, set interface according and load folder if present.
+         * @param {any} _
+         * @param {Config} config
+         */
+        (_, config) => {
+            startupConfigDir = config.configDir ?? ""
+            const {setStartupSettings} = require("./songs")
+            // Two column
+            document.body.setAttribute(
+                "two-column", config.twoColumn || "mobile")
+            const twoColumnEl = document.getElementById("setting-two-column")
+            if (twoColumnEl instanceof HTMLSelectElement) {
+                twoColumnEl.value = config.twoColumn || "mobile"
+                twoColumnEl.addEventListener("input", () => {
+                    if (twoColumnEl instanceof HTMLSelectElement) {
+                        document.body.setAttribute(
+                            "two-column", twoColumnEl.value)
+                    }
+                })
+            }
+            // Autoclose
+            const autoCloseEl = document.getElementById("toggle-autoclose")
+            if (autoCloseEl instanceof HTMLInputElement) {
+                autoCloseEl.checked = config.autoClose ?? false
+                autoCloseEl.parentNode?.addEventListener("click", () => {
+                    const {toggleAutoClose} = require("./playlist")
+                    toggleAutoClose()
+                })
+            }
+            // Autolyrics
+            const autoLyricsEl = document.getElementById("toggle-autolyrics")
+            if (autoLyricsEl instanceof HTMLInputElement) {
+                autoLyricsEl.checked = config.autoLyrics ?? false
+                autoLyricsEl.parentNode?.addEventListener(
+                    "click", () => toggleAutoLyrics())
+            }
+            // Autoremove
+            const autoRemoveEl = document.getElementById("toggle-autoremove")
+            if (autoRemoveEl instanceof HTMLInputElement) {
+                autoRemoveEl.checked = config.autoRemove ?? false
+                autoRemoveEl.parentNode?.addEventListener("click", () => {
+                    const {toggleAutoRemove} = require("./playlist")
+                    toggleAutoRemove()
+                })
+            }
+            // Autoscroll
+            const autoScrollEl = document.getElementById("toggle-autoscroll")
+            if (autoScrollEl instanceof HTMLInputElement) {
+                autoScrollEl.checked = config.autoScroll ?? false
+                autoScrollEl.parentNode?.addEventListener("click", () => {
+                    const {toggleAutoScroll} = require("./playlist")
+                    toggleAutoScroll()
+                })
+            }
+            // Cache
+            const settingCacheEl = document.getElementById("setting-cache")
+            if (settingCacheEl instanceof HTMLSelectElement) {
+                settingCacheEl.value = config.cache || "all"
+            }
+            // Cacheclean
+            const cacheCleanEl = document.getElementById("setting-cache-clean")
+            if (cacheCleanEl instanceof HTMLInputElement) {
+                cacheCleanEl.checked = config.cacheClean ?? false
+                cacheCleanEl.addEventListener("click", () => {
+                    cacheCleanEl.checked = !cacheCleanEl.checked
+                    cacheCleanEl.focus()
+                })
+            }
+            // Shifttimer
+            const shiftTimerEl = document.getElementById("setting-shift-timer")
+            if (shiftTimerEl instanceof HTMLInputElement) {
+                shiftTimerEl.value = `${config.shiftTimer || 0}`
+                shiftTimerEl.addEventListener("input", () => {
+                    const shiftLyricsEl = document.getElementById(
+                        "toggle-shift-lyrics")?.parentNode
+                    if (!(shiftLyricsEl instanceof HTMLLabelElement)) {
+                        return
+                    }
+                    const val = shiftTimerEl.value
+                    if (Number(val) > 0) {
+                        shiftLyricsEl.style.display = "none"
+                    } else {
+                        shiftLyricsEl.style.display = ""
+                    }
+                })
+            }
+            // Shiftlyrics
+            const shiftLyricsEl = document.getElementById("toggle-shift-lyrics")
+            if (shiftLyricsEl instanceof HTMLInputElement) {
+                shiftLyricsEl.checked = config.shiftLyrics
+                    || Boolean(config.shiftTimer)
+                if (shiftLyricsEl.parentNode instanceof HTMLLabelElement) {
+                    if (config.shiftTimer) {
+                        shiftLyricsEl.parentNode.style.display = "none"
+                    }
+                }
+            }
+            shiftLyricsEl?.parentNode?.addEventListener(
+                "click", () => toggleShiftLyrics())
+            // Fontsize
+            const fontsizeEl = document.getElementById("setting-fontsize")
+            if (fontsizeEl instanceof HTMLInputElement) {
+                fontsizeEl.value = `${config.fontSize || "14"}`
+            }
+            // Customtheme
+            if (config.customTheme) {
+                const styleEl = document.createElement("style")
+                styleEl.textContent = config.customTheme
+                document.head.appendChild(styleEl)
+                try {
+                    applyPrimaryColorToImages()
+                } catch {
+                // Should not prevent loading mpv and playing songs
+                }
+            }
+            // Usegenius
+            const toggleGeniusEl = document.getElementById("toggle-genius")
+            if (toggleGeniusEl instanceof HTMLInputElement) {
+                toggleGeniusEl.checked = config.useGenius ?? true
+                toggleGeniusEl.parentNode?.addEventListener(
+                    "click", () => toggleGenius())
+            }
+            // Set config dir
+            setStartupSettings(config.configDir)
+            // Mpv
+            const mpvEl = document.getElementById("setting-mpv")
+            if (mpvEl instanceof HTMLInputElement) {
+                mpvEl.value = config.mpv || ""
+            }
+            const {"init": startMpv} = require("./player")
+            let defaultMpv = "mpv"
+            if (process.platform === "win32") {
+                defaultMpv = "mpv.exe"
+            }
+            startMpv(config.mpv || defaultMpv, config.configDir)
+            // Fallback
+            const fallbackEl = document.getElementById("setting-fallback")
+            if (fallbackEl instanceof HTMLInputElement) {
+                fallbackEl.value = config.fallback || "order=shuffle"
+            }
+            // Autoplay
+            const autoplayEl = document.getElementById("toggle-autoplay")
+            if (autoplayEl instanceof HTMLInputElement) {
+                autoplayEl.parentNode?.addEventListener("click", () => {
+                    autoplayEl.checked = !autoplayEl.checked
+                    if (autoplayEl.parentNode instanceof HTMLLabelElement) {
+                        autoplayEl.parentNode.focus()
+                    }
+                })
+                autoplayEl.checked = config.autoplay ?? false
+            }
+            // Api key
+            const apikeyEl = document.getElementById("setting-apikey")
+            if (apikeyEl instanceof HTMLInputElement) {
+                apikeyEl.value = config.apiKey ?? ""
+            }
+            // Scan folder on startup
+            if (config.folder) {
+                setTimeout(async() => {
+                    const {scanner} = require("./songs")
+                    await scanner(config.folder, config.dumpLyrics)
+                    if (config.fallback) {
+                        const {setFallbackRule} = require("./playlist")
+                        setFallbackRule(config.fallback)
+                    }
+                    if (config.autoplay) {
+                        const {pause} = require("./player")
+                        pause()
+                    }
+                }, 10)
+            }
+        })
 }
 
 module.exports = {

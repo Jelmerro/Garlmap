@@ -23,6 +23,11 @@
 */
 "use strict"
 
+/**
+ * Compare two strings and return the match value between 0 and 1.
+ * @param {string} first
+ * @param {string} second
+ */
 const compareStrings = (first, second) => {
     if (first === second) {
         return 1

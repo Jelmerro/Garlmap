@@ -17,6 +17,45 @@
 */
 "use strict"
 
+/** @typedef {{
+ *   album: string,
+ *   artist: string,
+ *   bitrate: number,
+ *   date: string,
+ *   disc: number | null,
+ *   disctotal: number | null,
+ *   duration: number,
+ *   id: string,
+ *   lyrics: string,
+ *   path: string,
+ *   title: string,
+ *   track: number | null,
+ *   tracktotal: number | null
+ *   genre?: string,
+ *   composer?: string,
+ *   lyricist?: string,
+ *   writer?: string,
+ *   conductor?: string,
+ *   remixer?: string,
+ *   arranger?: string,
+ *   engineer?: string,
+ *   producer?: string,
+ *   technician?: string,
+ *   djmixer?: string,
+ *   mixer?: string,
+ *   label?: string,
+ *   grouping?: string,
+ *   subtitle?: string,
+ *   rating?: string,
+ *   bpm?: string,
+ *   mood?: string,
+ *   releasetype?: string,
+ *   originalalbum?: string,
+ *   originalartist?: string,
+ *   originaldate?: string
+ * }} Song
+ */
+
 const musicMetadata = require("music-metadata")
 const {ipcRenderer} = require("electron")
 const {
@@ -32,10 +71,13 @@ const {
     notify
 } = require("../util")
 
+/** @type {string|null} */
 let configDir = null
 let cache = "all"
 let ownCacheChange = true
+/** @type {Song[]} */
 let cachedSongs = []
+/** @type {Song[]} */
 let songs = []
 let failureCount = 0
 let processedFiles = 0
@@ -80,19 +122,35 @@ const extraProps = [
 const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
 const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
+/**
+ * Convert a string to all-lowercase.
+ * @param {string} s
+ */
 const low = s => s.toLowerCase()
 
+/**
+ * Sanitize the lyrics by removing extra newlines and adding ones as needed.
+ * @param {string|undefined} lyrics
+ */
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
+/**
+ * Process a file by path and id, then add it to the song data info.
+ * @param {string} path
+ * @param {string} id
+ */
 const processFile = async(path, id) => {
+    /** @type {Song|null} */
     let song = null
     let cacheIndex = -1
     if (cache !== "none") {
         song = cachedSongs.find(s => path === s.path)
             || cachedSongs.find(s => id.endsWith(s.id))
-            || cachedSongs.find(s => s.id.endsWith(id))
-        cacheIndex = cachedSongs.indexOf(song)
+            || cachedSongs.find(s => s.id.endsWith(id)) || null
+        if (song) {
+            cacheIndex = cachedSongs.indexOf(song)
+        }
     }
     if (cache === "lyrics" || !song) {
         document.getElementById("status-scan").textContent = `Reading ${path}`
@@ -108,17 +166,17 @@ const processFile = async(path, id) => {
             return
         }
         song = {
-            "album": details.common.album,
-            "artist": details.common.artist,
-            "bitrate": details.format.bitrate,
-            "date": details.common.date || details.common.year,
+            "album": details.common.album || "",
+            "artist": details.common.artist || "",
+            "bitrate": details.format.bitrate || 0,
+            "date": details.common.date || String(details.common.year) || "",
             "disc": details.common.disk.no,
             "disctotal": details.common.disk.of,
-            "duration": details.format.duration,
+            "duration": details.format.duration || 0,
             id,
             "lyrics": sanitizeLyrics(song?.lyrics),
             path,
-            "title": details.common.title,
+            "title": details.common.title || "",
             "track": details.common.track.no,
             "tracktotal": details.common.track.of
         }
@@ -130,7 +188,7 @@ const processFile = async(path, id) => {
         if (details.common.originaldate) {
             song.originaldate = details.common.originaldate
         } else if (details.common.originalyear) {
-            song.originaldate = details.common.originalyear
+            song.originaldate = String(details.common.originalyear)
         }
     }
     if (cacheIndex === -1) {
@@ -141,6 +199,10 @@ const processFile = async(path, id) => {
     songs.push(song)
 }
 
+/**
+ * Dump the lyrics for each song into a "Lyrics" folder with the same structure.
+ * @param {string} folder
+ */
 const dumpLyrics = folder => {
     const lyricsDir = joinPath(folder, "Lyrics")
     for (const song of songs) {
@@ -154,6 +216,19 @@ const dumpLyrics = folder => {
     ipcRenderer.send("destroy-window")
 }
 
+/** Update the cache file with new addition. */
+const updateCache = () => {
+    ownCacheChange = true
+    if (configDir) {
+        writeJSON(joinPath(configDir, "cache.json"), cachedSongs)
+    }
+}
+
+/**
+ * Scan a folder, optionally dump it and store it in cache, ready for play.
+ * @param {string} rawFolder
+ * @param {boolean} dumpOnly
+ */
 const scanner = async(rawFolder, dumpOnly = false) => {
     const folder = joinPath(rawFolder)
     processedFiles = 0
@@ -227,11 +302,10 @@ const scanner = async(rawFolder, dumpOnly = false) => {
     setTimeout(() => updateCache(), 1)
 }
 
-const updateCache = () => {
-    ownCacheChange = true
-    writeJSON(joinPath(configDir, "cache.json"), cachedSongs)
-}
-
+/**
+ * Query the song data by string to find matching songs.
+ * @param {string} search
+ */
 const query = search => {
     if (!search.trim()) {
         return []
@@ -242,9 +316,10 @@ const query = search => {
         "part": p.trim(),
         "value": p.trim().split(/([:=])/g).slice(2).join("")
     }))
+    /** @type {{"cased": boolean, "name": string, "part": string}|null} */
     let globalSearch = {"cased": false, "name": "", "part": ""}
     if (!validProps.includes(filters[0]?.name)) {
-        globalSearch = filters.shift()
+        globalSearch = filters.shift() ?? null
         globalSearch.cased = low(globalSearch.part) !== globalSearch.part
     }
     const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
@@ -347,7 +422,8 @@ const query = search => {
     if (order.endsWith("shuffle")) {
         filtered.sort(() => Math.random() - 0.5)
     }
-    let asc = filters.find(f => low(f.name) === "asc")?.value
+    /** @type {string|boolean} */
+    let asc = filters.find(f => low(f.name) === "asc")?.value ?? ""
     if (["true", "1", "yes", "0", "false", "no"].includes(asc)) {
         asc = asc === "true" || asc === "1" || asc === "yes"
     } else {
@@ -407,11 +483,11 @@ const query = search => {
             if (b.album && a.album && b.album === a.album) {
                 if (b.disc && a.disc) {
                     if (b.disc === a.disc) {
-                        return a.track - b.track
+                        return (a.track ?? 0) - (b.track ?? 0)
                     }
                     return a.disc - b.disc
                 }
-                return a.track - b.track
+                return (a.track ?? 0) - (b.track ?? 0)
             }
             return albums.indexOf(a.album) - albums.indexOf(b.album)
         }
@@ -460,7 +536,7 @@ const setStartupSettings = dir => {
                 .map(s => ({"id": s.id, "lyrics": s.lyrics, "path": s.path}))
         }
     }
-    watchFile(cachePath, {"interval": 1000}, () => {
+    watchFile(cachePath, () => {
         if (ownCacheChange) {
             ownCacheChange = false
             return
@@ -469,19 +545,36 @@ const setStartupSettings = dir => {
     })
 }
 
+/**
+ * Find a song by its unique id.
+ * @param {string} id
+ * @returns {Song|{}}
+ */
 const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
+/**
+ * Find a song by its unique id or path.
+ * @param {string} id
+ * @param {string} path
+ * @returns {Song|{}}
+ */
 const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id || s.path === path) || {}))
 
+/**
+ * Update the lyrics of a specific song by id or path.
+ * @param {string} id
+ * @param {string} path
+ * @param {string} lyrics
+ */
 const updateLyricsOfSong = (id, path, lyrics) => {
     songs.find(s => s.id === id || s.path === path).lyrics = lyrics
     cachedSongs.find(s => s.id === id || s.path === path).lyrics = lyrics
     return new Promise(res => {
         setTimeout(() => {
             updateCache()
-            res()
+            res(null)
         }, 1)
     })
 }

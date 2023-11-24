@@ -31,6 +31,10 @@ const {
     dirName
 } = require("./util")
 
+/**
+ * Apply some basic settings to the chromium devtools.
+ * @param {string} prefFile
+ */
 const applyDevtoolsSettings = prefFile => {
     makeDir(dirName(prefFile))
     const preferences = readJSON(prefFile) || {}
@@ -53,174 +57,29 @@ const applyDevtoolsSettings = prefFile => {
     writeJSON(prefFile, preferences)
 }
 
-const registerMediaKeys = () => {
-    systemPreferences.isTrustedAccessibilityClient?.(true)
-    globalShortcut.register("MediaPlayPause", () => {
-        mainWindow.webContents.send("media-pause")
-    })
-    globalShortcut.register("MediaNextTrack", () => {
-        mainWindow.webContents.send("media-next")
-    })
-    globalShortcut.register("MediaPreviousTrack", () => {
-        mainWindow.webContents.send("media-prev")
-    })
-    globalShortcut.register("MediaStop", () => {
-        mainWindow.webContents.send("media-stop")
-    })
+const version = process.env.npm_package_version || app.getVersion()
+const configDir = joinPath(app.getPath("appData"), "Garlmap")
+app.setPath("appData", configDir)
+app.setPath("userData", configDir)
+const tempDir = joinPath(app.getPath("temp"), "Garlmap")
+app.setPath("sessionData", tempDir)
+applyDevtoolsSettings(joinPath(tempDir, "Preferences"))
+/** @type {Electron.BrowserWindow|null} */
+let mainWindow = null
+
+/** Print the license information to the console and exit cleanly with 0. */
+const showLicense = () => {
+    console.info(`Garlmap is created by Jelmer van Arnhem
+Website: https://github.com/Jelmerro/Garlmap
+
+License: GNU GPL version 3 or later versions <http://gnu.org/licenses/gpl.html>
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+See the LICENSE file or the GNU website for details.`)
+    app.exit(0)
 }
 
-const logCustomSettings = config => {
-    let hasCustom = false
-    for (const [key, val] of Object.entries(config)) {
-        if (val !== null && val !== undefined) {
-            if (!hasCustom) {
-                console.info("Current custom settings:")
-                hasCustom = true
-            }
-            if (key === "customTheme") {
-                console.info(`- ${key}: ${joinPath(configDir, "theme.css")}`)
-            } else {
-                console.info(`- ${key}: ${val}`)
-            }
-        }
-    }
-    if (!hasCustom) {
-        console.info("No custom settings, all defaults")
-    }
-}
-
-const isTruthyArg = arg => {
-    const argStr = String(arg).trim().toLowerCase()
-    return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
-}
-
-const processStartupArgs = () => {
-    let args = process.argv.slice(1)
-    const exec = basePath(process.argv[0])
-    if (exec === "electron" || process.defaultApp && exec !== "garlmap") {
-        args = args.slice(1)
-    }
-    console.info(
-        "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
-    let config = {
-        "apiKey": process.env.GARLMAP_API_KEY?.trim().toLowerCase(),
-        "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
-        "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
-        "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
-        "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
-        "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
-        "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
-        "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
-        "customTheme": readFile(joinPath(configDir, "theme.css")),
-        "dumpLyrics": undefined,
-        "fallback": process.env.GARLMAP_FALLBACK?.trim().toLowerCase(),
-        "folder": process.env.GARLMAP_FOLDER?.trim(),
-        "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
-        "mpv": process.env.GARLMAP_MPV?.trim(),
-        "shiftLyrics": isTruthyArg(process.env.GARLMAP_SHIFT_LYRICS)
-            || undefined,
-        "shiftTimer": process.env.GARLMAP_SHIFT_TIMER?.trim().toLowerCase(),
-        "twoColumn": process.env.GARLMAP_TWO_COLUMN?.trim().toLowerCase(),
-        "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS) || undefined
-    }
-    const configFile = readJSON(joinPath(configDir, "settings.json"))
-    if (configFile) {
-        config = {...config, ...configFile, "dumpLyrics": undefined}
-    }
-    args.forEach(arg => {
-        if (arg.startsWith("-")) {
-            const [name] = arg.split("=")
-            const value = arg.split("=").slice(1).join("=").toLowerCase()
-            if (name === "--help") {
-                outputHelp()
-            } else if (name === "--version") {
-                outputVersion()
-            } else if (name === "--devtools") {
-                config.debug = true
-            } else if (name === "--cache") {
-                config.cache = value
-            } else if (name === "--cache-clean") {
-                config.cacheClean = isTruthyArg(value)
-                    || arg === "--cache-clean"
-            } else if (name === "--dump-lyrics") {
-                config.dumpLyrics = isTruthyArg(value)
-                    || arg === "--dump-lyrics"
-            } else if (name === "--mpv") {
-                config.mpv = value
-            } else if (name === "--shift-timer") {
-                config.shiftTimer = value
-            } else if (name === "--two-column") {
-                config.twoColumn = value
-            } else if (name === "--fallback") {
-                config.fallback = value
-            } else if (name === "--autoplay") {
-                config.autoplay = isTruthyArg(value)
-            } else if (name === "--api-key") {
-                config.apiKey = value
-            } else if (name === "--font-size") {
-                config.fontSize = value
-            } else if (name === "--auto-lyrics") {
-                config.autoLyrics = isTruthyArg(value)
-                    || arg === "--auto-lyrics"
-            } else if (name === "--auto-scroll") {
-                config.autoScroll = isTruthyArg(value)
-                    || arg === "--auto-scroll"
-            } else if (name === "--auto-close") {
-                config.autoClose = isTruthyArg(value) || arg === "--auto-close"
-            } else if (name === "--use-genius") {
-                config.useGenius = isTruthyArg(value) || arg === "--use-genius"
-            } else if (name === "--shift-lyrics") {
-                config.shiftLyrics = isTruthyArg(value)
-                    || arg === "--shift-lyrics"
-            } else if (name === "--auto-remove") {
-                config.autoRemove = isTruthyArg(value)
-                    || arg === "--auto-remove"
-            } else {
-                console.warn(`Error, unsupported argument '${arg}'`)
-                app.exit(1)
-            }
-        } else {
-            config.folder = arg
-        }
-    })
-    if (!["all", "songs", "lyrics", "none", undefined].includes(config.cache)) {
-        console.warn("Error, cache arg only accepts one of:")
-        console.warn("- all, songs, lyrics, none")
-        app.exit(1)
-    }
-    if (!["never", "mobile", "always", undefined].includes(config.twoColumn)) {
-        console.warn("Error, twoColumn arg only accepts one of:")
-        console.warn("- never, mobile, always")
-        app.exit(1)
-    }
-    if (["songs", "none"].includes(config.cache) && config.dumpLyrics) {
-        console.warn("Error, cache is set to songs only or none,")
-        console.warn("therefor there are no lyrics to be dumped.")
-        app.exit(1)
-    }
-    if (config.shiftTimer) {
-        const s = Number(config.shiftTimer)
-        if (isNaN(s) || s > 1000 || s < 0) {
-            console.warn("Shift timer must be a number between 0 and 1000")
-            app.exit(1)
-        }
-        config.shiftTimer = s
-    }
-    if (config.fontSize) {
-        const s = Number(config.fontSize)
-        if (isNaN(s) || s > 100 || s < 8 || Math.floor(s) !== s) {
-            console.warn("Font size must be a round number between 8 and 100.")
-            app.exit(1)
-        }
-        config.fontSize = s
-    }
-    if (config.folder && !isDirectory(config.folder)) {
-        console.warn(`Music dir '${config.folder}' could not be found`)
-        app.exit(1)
-    }
-    return config
-}
-
+/** Print the help information and usage. */
 const outputHelp = () => {
     console.info(`${`
 > garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \\
@@ -472,6 +331,7 @@ If this does not work, you can also supply the "--devtools" argument.
     showLicense()
 }
 
+/** Print version information and license. */
 const outputVersion = () => {
     console.info(`You are dealing with version ${version} of Garlmap`)
     console.info(`This release uses Electron ${
@@ -479,25 +339,186 @@ const outputVersion = () => {
     showLicense()
 }
 
-const showLicense = () => {
-    console.info(`Garlmap is created by Jelmer van Arnhem
-Website: https://github.com/Jelmerro/Garlmap
-
-License: GNU GPL version 3 or later versions <http://gnu.org/licenses/gpl.html>
-This is free software; you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-See the LICENSE file or the GNU website for details.`)
-    app.exit(0)
+/** Register global media keys for media playback. */
+const registerMediaKeys = () => {
+    systemPreferences.isTrustedAccessibilityClient?.(true)
+    globalShortcut.register("MediaPlayPause", () => {
+        mainWindow?.webContents.send("media-pause")
+    })
+    globalShortcut.register("MediaNextTrack", () => {
+        mainWindow?.webContents.send("media-next")
+    })
+    globalShortcut.register("MediaPreviousTrack", () => {
+        mainWindow?.webContents.send("media-prev")
+    })
+    globalShortcut.register("MediaStop", () => {
+        mainWindow?.webContents.send("media-stop")
+    })
 }
 
-const version = process.env.npm_package_version || app.getVersion()
-const configDir = joinPath(app.getPath("appData"), "Garlmap")
-app.setPath("appData", configDir)
-app.setPath("userData", configDir)
-const tempDir = joinPath(app.getPath("temp"), "Garlmap")
-app.setPath("sessionData", tempDir)
-applyDevtoolsSettings(joinPath(tempDir, "Preferences"))
-let mainWindow = null
+/**
+ * Log any custom settings to the console on startup.
+ * @param {import("./renderer/settings").Config} config
+ * */
+const logCustomSettings = config => {
+    let hasCustom = false
+    for (const [key, val] of Object.entries(config)) {
+        if (val !== null && val !== undefined) {
+            if (!hasCustom) {
+                console.info("Current custom settings:")
+                hasCustom = true
+            }
+            if (key === "customTheme") {
+                console.info(`- ${key}: ${joinPath(configDir, "theme.css")}`)
+            } else {
+                console.info(`- ${key}: ${val}`)
+            }
+        }
+    }
+    if (!hasCustom) {
+        console.info("No custom settings, all defaults")
+    }
+}
+
+/**
+ * Check if the provided string argument should be true or false as a boolean.
+ * @param {string|null} arg
+ */
+const isTruthyArg = (arg = null) => {
+    const argStr = String(arg).trim().toLowerCase()
+    return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
+}
+
+/** Process the startup args into a usable config object. */
+const processStartupArgs = () => {
+    let args = process.argv.slice(1)
+    const exec = basePath(process.argv[0])
+    if (exec === "electron" || process.defaultApp && exec !== "garlmap") {
+        args = args.slice(1)
+    }
+    console.info(
+        "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
+    /** @type {import("./renderer/settings").Config} */
+    let config = {
+        "apiKey": process.env.GARLMAP_API_KEY?.trim().toLowerCase(),
+        "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
+        "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
+        "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
+        "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
+        "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
+        "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
+        "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
+        "customTheme": readFile(joinPath(configDir, "theme.css")),
+        "dumpLyrics": undefined,
+        "fallback": process.env.GARLMAP_FALLBACK?.trim().toLowerCase(),
+        "folder": process.env.GARLMAP_FOLDER?.trim(),
+        "fontSize": process.env.GARLMAP_FONT_SIZE?.trim(),
+        "mpv": process.env.GARLMAP_MPV?.trim(),
+        "shiftLyrics": isTruthyArg(process.env.GARLMAP_SHIFT_LYRICS)
+            || undefined,
+        "shiftTimer": process.env.GARLMAP_SHIFT_TIMER?.trim().toLowerCase(),
+        "twoColumn": process.env.GARLMAP_TWO_COLUMN?.trim().toLowerCase(),
+        "useGenius": isTruthyArg(process.env.GARLMAP_USE_GENIUS) || undefined
+    }
+    const configFile = readJSON(joinPath(configDir, "settings.json"))
+    if (configFile) {
+        config = {...config, ...configFile, "dumpLyrics": undefined}
+    }
+    args.forEach(arg => {
+        if (arg.startsWith("-")) {
+            const [name] = arg.split("=")
+            const value = arg.split("=").slice(1).join("=").toLowerCase()
+            if (name === "--help") {
+                outputHelp()
+            } else if (name === "--version") {
+                outputVersion()
+            } else if (name === "--devtools") {
+                config.debug = true
+            } else if (name === "--cache") {
+                config.cache = value
+            } else if (name === "--cache-clean") {
+                config.cacheClean = isTruthyArg(value)
+                    || arg === "--cache-clean"
+            } else if (name === "--dump-lyrics") {
+                config.dumpLyrics = isTruthyArg(value)
+                    || arg === "--dump-lyrics"
+            } else if (name === "--mpv") {
+                config.mpv = value
+            } else if (name === "--shift-timer") {
+                config.shiftTimer = value
+            } else if (name === "--two-column") {
+                config.twoColumn = value
+            } else if (name === "--fallback") {
+                config.fallback = value
+            } else if (name === "--autoplay") {
+                config.autoplay = isTruthyArg(value)
+            } else if (name === "--api-key") {
+                config.apiKey = value
+            } else if (name === "--font-size") {
+                config.fontSize = value
+            } else if (name === "--auto-lyrics") {
+                config.autoLyrics = isTruthyArg(value)
+                    || arg === "--auto-lyrics"
+            } else if (name === "--auto-scroll") {
+                config.autoScroll = isTruthyArg(value)
+                    || arg === "--auto-scroll"
+            } else if (name === "--auto-close") {
+                config.autoClose = isTruthyArg(value) || arg === "--auto-close"
+            } else if (name === "--use-genius") {
+                config.useGenius = isTruthyArg(value) || arg === "--use-genius"
+            } else if (name === "--shift-lyrics") {
+                config.shiftLyrics = isTruthyArg(value)
+                    || arg === "--shift-lyrics"
+            } else if (name === "--auto-remove") {
+                config.autoRemove = isTruthyArg(value)
+                    || arg === "--auto-remove"
+            } else {
+                console.warn(`Error, unsupported argument '${arg}'`)
+                app.exit(1)
+            }
+        } else {
+            config.folder = arg
+        }
+    })
+    if (!["all", "songs", "lyrics", "none", undefined].includes(config.cache)) {
+        console.warn("Error, cache arg only accepts one of:")
+        console.warn("- all, songs, lyrics, none")
+        app.exit(1)
+    }
+    if (!["never", "mobile", "always", undefined].includes(config.twoColumn)) {
+        console.warn("Error, twoColumn arg only accepts one of:")
+        console.warn("- never, mobile, always")
+        app.exit(1)
+    }
+    if ((config.cache === "songs" || config.cache === "none")
+        && config.dumpLyrics) {
+        console.warn("Error, cache is set to songs only or none,")
+        console.warn("therefor there are no lyrics to be dumped.")
+        app.exit(1)
+    }
+    if (config.shiftTimer) {
+        const s = Number(config.shiftTimer)
+        if (isNaN(s) || s > 1000 || s < 0) {
+            console.warn("Shift timer must be a number between 0 and 1000")
+            app.exit(1)
+        }
+        config.shiftTimer = s
+    }
+    if (config.fontSize) {
+        const s = Number(config.fontSize)
+        if (isNaN(s) || s > 100 || s < 8 || Math.floor(s) !== s) {
+            console.warn("Font size must be a round number between 8 and 100.")
+            app.exit(1)
+        }
+        config.fontSize = s
+    }
+    if (config.folder && !isDirectory(config.folder)) {
+        console.warn(`Music dir '${config.folder}' could not be found`)
+        app.exit(1)
+    }
+    return config
+}
+
 app.on("ready", () => {
     const config = processStartupArgs()
     if (!app.requestSingleInstanceLock()) {
@@ -505,10 +526,10 @@ app.on("ready", () => {
         app.exit(0)
     }
     app.on("second-instance", () => {
-        if (mainWindow.isMinimized()) {
+        if (mainWindow?.isMinimized()) {
             mainWindow.restore()
         }
-        mainWindow.focus()
+        mainWindow?.focus()
     })
     const windowData = {
         "height": 700,
@@ -531,28 +552,28 @@ app.on("ready", () => {
     mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
     mainWindow.on("close", e => {
         e.preventDefault()
-        mainWindow.webContents.send("window-close")
+        mainWindow?.webContents.send("window-close")
     })
     mainWindow.on("closed", () => app.exit(0))
     mainWindow.webContents.once("did-finish-load", () => {
-        mainWindow.webContents.on("new-window", e => e.preventDefault())
-        mainWindow.webContents.on("will-navigate", e => e.preventDefault())
-        mainWindow.webContents.on("will-redirect", e => e.preventDefault())
+        mainWindow?.webContents.on("will-navigate", e => e.preventDefault())
+        mainWindow?.webContents.on("will-redirect", e => e.preventDefault())
         if (config.debug) {
             delete config.debug
-            mainWindow.webContents.openDevTools()
+            mainWindow?.webContents.openDevTools()
         }
         logCustomSettings(config)
         config.version = version
         config.configDir = configDir
-        mainWindow.webContents.send("config", config)
+        mainWindow?.webContents.send("config", config)
         if (!config.dumpLyrics) {
             registerMediaKeys()
-            mainWindow.show()
+            mainWindow?.show()
         }
     })
 })
-ipcMain.handle("toggle-devtools", () => mainWindow.webContents.toggleDevTools())
+ipcMain.handle("toggle-devtools",
+    () => mainWindow?.webContents.toggleDevTools())
 // #bug Setting the mainWindow will block interaction completely on second open,
 // but only when using Linux and GNOME (and forks like Cinnamon),
 // therefor we set it to null on linux to at least not break the app.
@@ -571,7 +592,7 @@ if (process.platform === "linux") {
         mainWindow, options))
 }
 ipcMain.on("destroy-window", (_, error) => {
-    if (error) {
+    if (error && mainWindow) {
         try {
             dialog.showMessageBoxSync(mainWindow, {
                 "buttons": ["Exit"],
@@ -585,12 +606,12 @@ ipcMain.on("destroy-window", (_, error) => {
         console.error("Mpv failed to start with error:")
         console.error(error)
     }
-    mainWindow.destroy()
+    mainWindow?.destroy()
     process.exit(0)
 })
 ipcMain.on("show-window", () => {
-    if (mainWindow.isMinimized()) {
-        mainWindow.restore()
+    if (mainWindow?.isMinimized()) {
+        mainWindow?.restore()
     }
-    mainWindow.focus()
+    mainWindow?.focus()
 })

@@ -17,7 +17,30 @@
 */
 "use strict"
 
+/**
+ * Check if a node is an element, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is Element}
+ */
+const isElement = el => {
+    if (el instanceof EventTarget && !(el instanceof Element)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.Element
+}
+
+/**
+ * Check if an event matchesa specific DOM query selector.
+ * @param {Event} e
+ * @param {string} query
+ */
 const queryMatch = (e, query) => e?.composedPath?.().find(el => {
+    if (!isElement(el)) {
+        return false
+    }
     try {
         return el.matches(query)
     } catch {
@@ -25,12 +48,19 @@ const queryMatch = (e, query) => e?.composedPath?.().find(el => {
     }
 })
 
+/**
+ * Format a number of seconds into minutes and hours as needed.
+ * @param {number|null|undefined} total
+ */
 const formatTime = total => {
-    if ([null, undefined].includes(total) || isNaN(Number(total))) {
+    if (total === null || total === undefined || isNaN(Number(total))) {
         return ""
     }
+    /** @type {string|number} */
     let hours = Math.floor(total / 3600)
+    /** @type {string|number} */
     let minutes = Math.floor((total - hours * 3600) / 60)
+    /** @type {string|number} */
     let seconds = Math.floor(total - hours * 3600 - minutes * 60)
     if (hours < 10) {
         hours = `0${hours}`
@@ -47,9 +77,87 @@ const formatTime = total => {
     return `${hours}:${minutes}:${seconds}`
 }
 
+/**
+ * Add padding zeroes to a number if needed.
+ * @param {number} num
+ */
+const padZero = num => {
+    if (num < 10) {
+        return `0${num}`
+    }
+    return String(num)
+}
+
+/**
+ * Format a date into a nice ISO timestring.
+ * @param {Date} d
+ */
+const formatDate = d => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${
+    padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${
+    padZero(d.getSeconds())}`
+
+/** @typedef {{
+ *   color: string,
+ *   msg: string,
+ *   time: Date,
+ *   type: "info"|"warn"|"err"|"success"
+ * }} NotificationEvent
+ */
+/** @type {NotificationEvent[]} */
 const displayNotificationStack = []
 let notificationReady = true
 
+/**
+ * Append a notification event to the history.
+ * @param {NotificationEvent} ev
+ */
+const appendEventToHistory = ev => {
+    const event = document.createElement("div")
+    event.classList.add("event")
+    const eventDate = document.createElement("span")
+    eventDate.classList.add("date")
+    eventDate.textContent = formatDate(ev.time)
+    event.append(eventDate)
+    const eventTitle = document.createElement("span")
+    eventTitle.classList.add("title")
+    eventTitle.style.color = ev.color
+    eventTitle.textContent = ev.msg
+    event.append(eventTitle)
+    document.getElementById("events-list")?.append(event)
+}
+
+/** Display the notifications on a timed queue and eventually hide again. */
+const displayNotificationTimer = () => {
+    if (notificationReady) {
+        notificationReady = false
+    } else {
+        return
+    }
+    const statusNotifyEl = document.getElementById("status-notify")
+    if (!statusNotifyEl) {
+        return
+    }
+    const currentNotify = displayNotificationStack.shift()
+    if (!currentNotify) {
+        statusNotifyEl.style.color = ""
+        statusNotifyEl.textContent = "No current events"
+        notificationReady = true
+        return
+    }
+    statusNotifyEl.style.color = currentNotify.color
+    statusNotifyEl.textContent = currentNotify.msg
+    setTimeout(() => {
+        notificationReady = true
+        displayNotificationTimer()
+    }, 4000)
+}
+
+/**
+ * Show a new notification via queue and add it to the history.
+ * @param {string} msg
+ * @param {NotificationEvent["type"]} type
+ * @param {boolean} linger
+ */
 const notify = (msg, type = "err", linger = true) => {
     let color = "var(--tertiary)"
     if (type.startsWith("info")) {
@@ -66,54 +174,10 @@ const notify = (msg, type = "err", linger = true) => {
     }
 }
 
-const displayNotificationTimer = () => {
-    if (notificationReady) {
-        notificationReady = false
-    } else {
-        return
-    }
-    const currentNotify = displayNotificationStack.shift()
-    if (!currentNotify) {
-        document.getElementById("status-notify").style.color = ""
-        document.getElementById("status-notify").textContent
-            = "No current events"
-        notificationReady = true
-        return
-    }
-    document.getElementById("status-notify").style.color = currentNotify.color
-    document.getElementById("status-notify").textContent = currentNotify.msg
-    setTimeout(() => {
-        notificationReady = true
-        displayNotificationTimer()
-    }, 4000)
-}
-
-const appendEventToHistory = ev => {
-    const event = document.createElement("div")
-    event.classList.add("event")
-    const eventDate = document.createElement("span")
-    eventDate.classList.add("date")
-    eventDate.textContent = formatDate(ev.time)
-    event.appendChild(eventDate)
-    const eventTitle = document.createElement("span")
-    eventTitle.classList.add("title")
-    eventTitle.style.color = ev.color
-    eventTitle.textContent = ev.msg
-    event.appendChild(eventTitle)
-    document.getElementById("events-list").appendChild(event)
-}
-
-const padZero = num => {
-    if (num < 10) {
-        return `0${num}`
-    }
-    return num
-}
-
-const formatDate = d => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${
-    padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${
-    padZero(d.getSeconds())}`
-
+/**
+ * Check if a path is a directory.
+ * @param {string} loc
+ */
 const isDirectory = loc => {
     const {statSync} = require("fs")
     try {
@@ -123,6 +187,10 @@ const isDirectory = loc => {
     }
 }
 
+/**
+ * Check if a path is a file.
+ * @param {string} loc
+ */
 const isFile = loc => {
     const {statSync} = require("fs")
     try {
@@ -132,24 +200,41 @@ const isFile = loc => {
     }
 }
 
-const joinPath = (...args) => {
+/**
+ * Join multiple path parts into a single resolved path.
+ * @param {string[]} paths
+ */
+const joinPath = (...paths) => {
     const {join, resolve} = require("path")
     if (process.platform === "win32") {
-        return resolve(join(...args)).replace(/\\/g, "/")
+        return resolve(join(...paths)).replace(/\\/g, "/")
     }
-    return resolve(join(...args))
+    return resolve(join(...paths))
 }
 
-const dirName = (...args) => {
+/**
+ * Return the directory name of the path.
+ * @param {string} loc
+ */
+const dirName = loc => {
     const {dirname} = require("path")
-    return dirname(...args)
+    return dirname(loc)
 }
 
-const basePath = (...args) => {
+/**
+ * Return the last part of the path, usually the filename.
+ * @param {string} loc
+ */
+const basePath = loc => {
     const {basename} = require("path")
-    return basename(...args)
+    return basename(loc)
 }
 
+/**
+ * Read the file contents of a file and parse it as JSON.
+ * @param {string} loc
+ * @returns {any|null}
+ */
 const readJSON = loc => {
     const {readFileSync} = require("fs")
     try {
@@ -159,6 +244,11 @@ const readJSON = loc => {
     }
 }
 
+/**
+ * Read the file contents of a file as a string.
+ * @param {string} loc
+ * @returns {string|null}
+ */
 const readFile = loc => {
     const {readFileSync} = require("fs")
     try {
@@ -168,16 +258,27 @@ const readFile = loc => {
     }
 }
 
+/**
+ * Write JSON data to a file, optionally with indentation.
+ * @param {string} loc
+ * @param {any} data
+ * @param {number | undefined | null} indent
+ */
 const writeJSON = (loc, data, indent = null) => {
     const {writeFileSync} = require("fs")
     try {
-        writeFileSync(loc, JSON.stringify(data, null, indent))
+        writeFileSync(loc, JSON.stringify(data, null, indent ?? undefined))
         return true
     } catch {
         return false
     }
 }
 
+/**
+ * Write data to a file.
+ * @param {string} loc
+ * @param {string|Buffer} data
+ */
 const writeFile = (loc, data) => {
     const {writeFileSync} = require("fs")
     try {
@@ -188,6 +289,10 @@ const writeFile = (loc, data) => {
     }
 }
 
+/**
+ * Make a directory at a location.
+ * @param {string} loc
+ */
 const makeDir = loc => {
     try {
         const {mkdirSync} = require("fs")
@@ -199,6 +304,10 @@ const makeDir = loc => {
     return false
 }
 
+/**
+ * Delete a folder at a location, forced and recursively.
+ * @param {string} loc
+ */
 const deleteFolder = loc => {
     try {
         const {rmSync} = require("fs")
@@ -210,6 +319,10 @@ const deleteFolder = loc => {
     return false
 }
 
+/**
+ * Delete a file at a location.
+ * @param {string} loc
+ */
 const deleteFile = loc => {
     try {
         const {unlinkSync} = require("fs")
@@ -221,13 +334,23 @@ const deleteFile = loc => {
     return false
 }
 
-const watchFile = (...args) => {
+/**
+ * Watch a specific file including the polling fallback of 500ms.
+ * @param {string} file
+ * @param {() => void} call
+ */
+const watchFile = (file, call) => {
     const {"watchFile": watchFileFS} = require("fs")
-    watchFileFS(...args)
+    watchFileFS(file, {"interval": 500}, call)
 }
 
+/**
+ * List all files in a folder recursively.
+ * @param {string} dir
+ */
 const listFiles = dir => {
     const {readdirSync} = require("fs")
+    /** @type {string[]} */
     const files = []
     readdirSync(dir, {"withFileTypes": true}).forEach(entry => {
         const loc = joinPath(dir, entry.name)
@@ -240,8 +363,13 @@ const listFiles = dir => {
     return files
 }
 
+/** Reset the welcome state of the app to the help section. */
 const resetWelcome = () => {
-    document.getElementById("song-info").textContent = `Welcome to Garlmap
+    const infoEl = document.getElementById("song-info")
+    if (!infoEl) {
+        return
+    }
+    infoEl.textContent = `Welcome to Garlmap
 
 You can jump focus between the search section and playlist with F2 and F3.
 Alternatively you can use Ctrl-f or Ctrl-l for the search and playlist sections.
