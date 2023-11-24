@@ -81,6 +81,7 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
+/** @type {(keyof Song)[]} */
 const mainProps = [
     "album",
     "artist",
@@ -96,6 +97,7 @@ const mainProps = [
     "track",
     "tracktotal"
 ]
+/** @type {(keyof Song)[]} */
 const extraProps = [
     "genre",
     "composer",
@@ -165,11 +167,29 @@ const processFile = async(path, id) => {
             notify(`Failed to scan: ${id}`, "err", false)
             return
         }
+        let date = details.common.date ?? String(details.common.year ?? "")
+        const tagTypes = details.format.tagTypes ?? []
+        const id3WithOldDate = tagTypes.some(
+            t => t === "ID3v2.2" || t === "ID3v2.3")
+        if (!details.common.date && id3WithOldDate) {
+            const nativeTag = details.native[tagTypes[0]]
+            const TYER = String(nativeTag.find(
+                t => t.id.startsWith("TYE"))?.value ?? "").trim()
+            const TDAT = String(nativeTag.find(
+                t => t.id.startsWith("TDA"))?.value ?? "").trim()
+            if (TYER.length >= 4 && TDAT.length === 4) {
+                const day = TDAT.slice(0, 2)
+                const month = TDAT.slice(2, 4)
+                date = `${TYER}-${month}-${day}`
+            } else if (TYER.length >= 4) {
+                date = TYER
+            }
+        }
         song = {
             "album": details.common.album || "",
             "artist": details.common.artist || "",
             "bitrate": details.format.bitrate || 0,
-            "date": details.common.date || String(details.common.year) || "",
+            date,
             "disc": details.common.disk.no,
             "disctotal": details.common.disk.of,
             "duration": details.format.duration || 0,
