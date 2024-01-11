@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ const init = (path, configDir) => {
         "args": [
             "--no-video", "--no-audio-display", "--no-config", "--idle=yes"
         ],
-        "options": {"detached": true, "shell": true},
+        "options": {"detached": true, "shell": false},
         path
     }).on("error", e => ipcRenderer.send("destroy-window", e))
     try {

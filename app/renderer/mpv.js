@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2023 Jelmer van Arnhem
+*  Copyright (C) 2023-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,17 @@ const {spawn} = require("child_process")
 const {platform} = require("os")
 const {EventEmitter} = require("events")
 
+/**
+ * Opens the socket to MPV at the location and send a signal on close.
+ * @param {string} path
+ * @param {(err?: Error) => void} close
+ */
 const MPVSocket = (path, close) => {
+    /** @type {Socket&{send?: (event: string, ...args: any[]) => void}} */
     const socket = new Socket()
     const requests = new Map()
     const start = Date.now()
+    /** @type {string[]} */
     let queue = []
     let uuid = 0
     let open = false
@@ -87,19 +94,31 @@ const MPVSocket = (path, close) => {
     return socket
 }
 
+/**
+ * Stats an MPV instance with the provided MPV args, options and mpv path.
+ * @param {{
+ *   args?: string[],
+ *   options?: {[key: string]: string|boolean},
+ *   path?: string
+ * }} config
+ * @throws {Error}
+ */
 const Mpv = ({args = [], options = {}, path} = {}) => {
-    args.shift()
+    if (!path) {
+        throw Error("Path is required")
+    }
+    /** @type {EventEmitter&{
+     *   command?: (event: string, ...args: any[]) => void
+     * }}
+     */
     const mpv = new EventEmitter()
-
-    const error = x => mpv.emit("error", x)
-
     let socketPath = "/tmp/mpvsocket"
     if (platform() === "win32") {
         socketPath = "\\\\.\\pipe\\mpvsocket"
     }
     socketPath += Math.random().toString().slice(2)
     args.push(`--input-ipc-server=${socketPath}`)
-    mpv.process = spawn(path, args, options)
+    const proc = spawn(path, args, options)
     const signals = [
         "beforeExit",
         "uncaughtException",
@@ -109,24 +128,24 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
         "SIGTERM",
         "SIGINT"
     ]
-    signals.forEach(sig => process.on(sig, () => mpv.process.kill()))
+    signals.forEach(sig => process.on(sig, () => proc.kill()))
     let lastStdErr = ""
-    mpv.process.on("exit", x => x !== 0 && error(lastStdErr || x))
-    mpv.process.stdout.setEncoding("utf8")
-    mpv.process.stderr.setEncoding("utf8")
-    mpv.process.stdout.on("data", x => {
+    proc.on("exit", x => x !== 0 && mpv.emit("error", lastStdErr || x))
+    proc.stdout.setEncoding("utf8")
+    proc.stderr.setEncoding("utf8")
+    proc.stdout.on("data", x => {
         lastStdErr = x
     })
-    mpv.process.stderr.on("data", () => null)
-    mpv.process.on("error", error)
-    mpv.socket = MPVSocket(socketPath, err => {
-        mpv.process.kill()
-        error(err)
+    proc.stderr.on("data", () => null)
+    proc.on("error", x => mpv.emit("error", x))
+    const socket = MPVSocket(socketPath, err => {
+        proc.kill()
+        mpv.emit("error", err)
     })
-    mpv.socket.on("event", (eventName, data) => mpv.emit(eventName, data))
-    mpv.command = mpv.socket.send
-    mpv.set = (...a) => mpv.socket.send("set_property", ...a)
-    mpv.get = (...a) => mpv.socket.send("get_property", ...a)
+    socket.on("event", (eventName, data) => mpv.emit(eventName, data))
+    mpv.command = socket.send ?? (() => null)
+    mpv.set = (...a) => socket.send?.("set_property", ...a)
+    mpv.get = val => socket.send?.("get_property", val)
     return mpv
 }
 

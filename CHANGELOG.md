@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Fixed
+
+- Shell and occasional video being shown next to the program since mpv rework
+
 ### Versions
 
 - Electron 27.0.0-alpha.5 (was 25.2.0)
