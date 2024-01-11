@@ -24,16 +24,16 @@
   "funding": "https://github.com/sponsors/Jelmerro/",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "27.0.0-alpha.5",
-    "electron-builder": "24.6.4",
-    "eslint": "8.48.0",
-    "eslint-plugin-jsdoc": "46.5.1",
+    "electron": "28.1.3",
+    "electron-builder": "24.9.1",
+    "eslint": "8.56.0",
+    "eslint-plugin-jsdoc": "48.0.2",
     "eslint-plugin-padding-lines": "github:Jelmerro/eslint-plugin-padding-lines",
     "eslint-plugin-sort-keys": "2.3.5",
-    "typescript": "5.2.2"
+    "typescript": "5.3.3"
   },
   "dependencies": {
-    "genius-lyrics": "4.4.3",
+    "genius-lyrics": "4.4.6",
     "mpris-service": "github:Jelmerro/mpris-service",
     "music-metadata": "7.13.0"
   }
