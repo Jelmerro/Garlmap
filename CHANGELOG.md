@@ -10,7 +10,11 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## [2.1.0](https://github.com/Jelmerro/Garlmap/compare/2.0.1...2.1.0) - 2024-01-11
 
-[code diff](https://github.com/Jelmerro/Garlmap/compare/2.0.1...2.0.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.1.0)
+[code diff](https://github.com/Jelmerro/Garlmap/compare/2.0.1...2.1.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.1.0)
+
+### Added
+
+- Month and day support for dates in mp3 files
 
 ### Fixed
 
