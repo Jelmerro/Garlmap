@@ -22,7 +22,7 @@ const {ipcRenderer} = require("electron")
 const {joinPath, formatTime, deleteFolder} = require("../util")
 
 let mpv = null
-let customMediaSesion = null
+let customMediaSession = null
 let volume = 100
 let lastPos = 0
 let hasAnySong = false
@@ -40,7 +40,7 @@ const init = (path, configDir) => {
         // This package takes care of connecting to the MPRIS D-Bus interface,
         // if possible on this OS, else the regular MediaSession API is used.
         const MPRIS = require("mpris-service")
-        customMediaSesion = MPRIS({
+        customMediaSession = MPRIS({
             "desktopEntry": "garlmap", "identity": "Garlmap", "name": "garlmap"
         })
     } catch (e) {
@@ -61,7 +61,7 @@ const init = (path, configDir) => {
             const {current} = currentAndNext()
             const {duration} = current
             lastPos = Math.floor(position * 1000000)
-            if (!customMediaSesion) {
+            if (!customMediaSession) {
                 navigator.mediaSession.setPositionState({
                     duration, "playbackRate": 1, position
                 })
@@ -123,34 +123,34 @@ const init = (path, configDir) => {
         mpv.command("quit").catch(() => null)
         ipcRenderer.send("destroy-window")
     })
-    if (customMediaSesion) {
-        customMediaSesion.getPosition = () => lastPos
-        customMediaSesion.on("raise", () => ipcRenderer.send("show-window"))
-        customMediaSesion.on("quit", () => {
+    if (customMediaSession) {
+        customMediaSession.getPosition = () => lastPos
+        customMediaSession.on("raise", () => ipcRenderer.send("show-window"))
+        customMediaSession.on("quit", () => {
             mpv.command("quit").catch(() => null)
             ipcRenderer.send("destroy-window")
         })
-        customMediaSesion.on("play", () => pause())
-        customMediaSesion.on("pause", () => pause())
-        customMediaSesion.on("playpause", () => pause())
-        customMediaSesion.on("stop", async() => {
+        customMediaSession.on("play", () => pause())
+        customMediaSession.on("pause", () => pause())
+        customMediaSession.on("playpause", () => pause())
+        customMediaSession.on("stop", async() => {
             const {stopAfterTrack} = require("./playlist")
             await stopAfterTrack()
-            customMediaSesion.seeked(lastPos)
+            customMediaSession.seeked(lastPos)
         })
-        customMediaSesion.on("position", details => {
+        customMediaSession.on("position", details => {
             mpv.command("seek", details.position / 1000000, "absolute")
-            customMediaSesion.seeked(details.position)
+            customMediaSession.seeked(details.position)
         })
-        customMediaSesion.on("previous", () => {
+        customMediaSession.on("previous", () => {
             const {decrement} = require("./playlist")
             decrement()
         })
-        customMediaSesion.on("next", () => {
+        customMediaSession.on("next", () => {
             const {increment} = require("./playlist")
             increment()
         })
-        customMediaSesion.playbackStatus = "Paused"
+        customMediaSession.playbackStatus = "Paused"
     } else {
         navigator.mediaSession.setActionHandler("play", pause)
         navigator.mediaSession.setActionHandler("pause", pause)
@@ -181,8 +181,8 @@ const updatePlayButton = async() => {
             = "../img/play.png"
         document.getElementById("fs-pause").querySelector("img").src
             = "../img/play.png"
-        if (customMediaSesion) {
-            customMediaSesion.playbackStatus = "Paused"
+        if (customMediaSession) {
+            customMediaSession.playbackStatus = "Paused"
         } else {
             navigator.mediaSession.playbackState = "paused"
             // #bug Workaround for playback state, using a fake audio element
@@ -197,8 +197,8 @@ const updatePlayButton = async() => {
             = "../img/pause.png"
         document.getElementById("fs-pause").querySelector("img").src
             = "../img/pause.png"
-        if (customMediaSesion) {
-            customMediaSesion.playbackStatus = "Playing"
+        if (customMediaSession) {
+            customMediaSession.playbackStatus = "Playing"
         } else {
             navigator.mediaSession.playbackState = "playing"
             // #bug Workaround for playback state, using a fake audio element
@@ -234,8 +234,8 @@ const seek = async percent => {
         const {current} = currentAndNext()
         const {duration} = current
         await mpv.command("seek", percent * duration / 100, "absolute")
-        if (customMediaSesion) {
-            customMediaSesion.seeked(percent * duration * 10000)
+        if (customMediaSession) {
+            customMediaSession.seeked(percent * duration * 10000)
         }
     }
 }
@@ -344,7 +344,7 @@ const displayCurrentSong = async song => {
     if (!song) {
         return
     }
-    if (!customMediaSesion) {
+    if (!customMediaSession) {
         // #bug Workaround for playback state, using a fake audio element
         try {
             document.body.removeChild(document.querySelector("audio"))
@@ -366,11 +366,11 @@ const displayCurrentSong = async song => {
         document.getElementById("song-cover").style.display = "initial"
         document.getElementById("fs-song-cover").src = cover
         document.getElementById("fs-song-cover").style.display = "initial"
-        if (customMediaSesion) {
-            customMediaSesion.metadata = {
+        if (customMediaSession) {
+            customMediaSession.metadata = {
                 "mpris:artUrl": cover,
                 "mpris:length": Math.floor(song.duration * 1000000),
-                "mpris:trackid": customMediaSesion.objectPath("track/0"),
+                "mpris:trackid": customMediaSession.objectPath("track/0"),
                 "xesam:album": song.album,
                 "xesam:artist": [song.artist],
                 "xesam:title": song.title
@@ -385,11 +385,11 @@ const displayCurrentSong = async song => {
         document.getElementById("song-cover").style.display = "none"
         document.getElementById("fs-song-cover").removeAttribute("src")
         document.getElementById("fs-song-cover").style.display = "none"
-        if (customMediaSesion) {
-            customMediaSesion.metadata = {
+        if (customMediaSession) {
+            customMediaSession.metadata = {
                 "mpris:artUrl": cover,
                 "mpris:length": Math.floor(song.duration * 1000000),
-                "mpris:trackid": customMediaSesion.objectPath("track/0"),
+                "mpris:trackid": customMediaSession.objectPath("track/0"),
                 "xesam:album": song.album,
                 "xesam:artist": [song.artist],
                 "xesam:title": song.title
