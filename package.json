@@ -5,9 +5,9 @@
   "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
   "main": "app/index.js",
   "scripts": {
-    "fix": "eslint --fix app .eslintrc.js build.js",
+    "fix": "eslint --fix app build.js",
     "lint": "npm run eslint && npm run tsc",
-    "eslint": "eslint app .eslintrc.js build.js",
+    "eslint": "eslint app build.js",
     "tsc": "tsc",
     "start": "electron app"
   },
@@ -26,10 +26,7 @@
   "devDependencies": {
     "electron": "30.0.1",
     "electron-builder": "24.13.3",
-    "eslint": "9.1.1",
-    "eslint-plugin-jsdoc": "48.2.3",
-    "eslint-plugin-padding-lines": "github:Jelmerro/eslint-plugin-padding-lines",
-    "eslint-plugin-sort-keys": "2.3.5",
+    "eslint-config": "github:Jelmerro/eslint-config",
     "typescript": "5.4.5"
   },
   "dependencies": {
