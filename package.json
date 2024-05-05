@@ -1,7 +1,7 @@
 {
   "name": "garlmap",
   "productName": "Garlmap",
-  "version": "2.1.1-dev",
+  "version": "2.2.0-dev",
   "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
   "main": "app/index.js",
   "scripts": {
@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "genius-lyrics": "4.4.7",
-    "mpris-service": "github:Jelmerro/mpris-service",
     "music-metadata": "7.13.0"
   }
 }

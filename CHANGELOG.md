@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Changed
+
+- Switch back to Chromium's MediaSession API instead of dedicated MPRIS D-bus API as issues are fixed
+
 ### Versions
 
 - Electron 30.0.2 (was 28.1.3)
