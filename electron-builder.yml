@@ -23,6 +23,9 @@ linux:
       arch:
         - x64
         - arm64
+    - target: snap
+      arch:
+        - x64
     - target: tar.gz
       arch:
         - x64

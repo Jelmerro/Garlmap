@@ -9,7 +9,8 @@
     "lint": "npm run eslint && npm run tsc",
     "eslint": "eslint app build.js",
     "tsc": "tsc",
-    "start": "electron app"
+    "start": "electron app",
+    "update": "npx -y jelmerro/nus"
   },
   "repository": "https://github.com/Jelmerro/Garlmap",
   "homepage": "https://github.com/Jelmerro/Garlmap",
@@ -24,7 +25,7 @@
   "funding": "https://github.com/sponsors/Jelmerro/",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "30.0.1",
+    "electron": "30.0.2",
     "electron-builder": "24.13.3",
     "eslint-config": "github:Jelmerro/eslint-config",
     "typescript": "5.4.5"
