@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+import {readdir, rmSync, unlinkSync} from "node:fs"
+import {build} from "electron-builder"
 
-const builder = require("electron-builder")
-const {rmSync, readdir, unlinkSync} = require("fs")
 const ebuilder = {"config": {
     /**
      * Remove all locales except English US from the build.
@@ -50,4 +49,4 @@ process.argv.slice(1).forEach(a => {
         ebuilder.mac = []
     }
 })
-builder.build(ebuilder).then(e => console.info(e)).catch(e => console.error(e))
+build(ebuilder).then(e => console.info(e)).catch(e => console.error(e))

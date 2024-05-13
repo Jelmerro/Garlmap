@@ -1,6 +1,6 @@
 /* MIT License
 *
-* Copyright (C) 2023 Jelmer van Arnhem
+* Copyright (C) 2023-2024 Jelmer van Arnhem
 * Copyright (c) 2018 Akash Kurdekar
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,14 +21,12 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-"use strict"
-
 /**
  * Compare two strings and return the match value between 0 and 1.
  * @param {string} first
  * @param {string} second
  */
-const compareStrings = (first, second) => {
+export const compareStrings = (first, second) => {
     if (first === second) {
         return 1
     }
@@ -58,5 +56,3 @@ const compareStrings = (first, second) => {
     }
     return 2.0 * intersectionSize / (first.length + second.length - 2)
 }
-
-module.exports = {compareStrings}

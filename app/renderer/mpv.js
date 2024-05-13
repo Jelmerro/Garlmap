@@ -15,12 +15,10 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
-
-const {Socket} = require("net")
-const {spawn} = require("child_process")
-const {platform} = require("os")
-const {EventEmitter} = require("events")
+import {EventEmitter} from "events"
+import {Socket} from "net"
+import {platform} from "os"
+import {spawn} from "child_process"
 
 /**
  * Opens the socket to MPV at the location and send a signal on close.
@@ -149,4 +147,4 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
     return mpv
 }
 
-module.exports = Mpv
+export default Mpv

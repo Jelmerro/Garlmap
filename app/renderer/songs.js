@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+
 
 /** @typedef {{
  *   album: string,
@@ -56,20 +56,22 @@
  * }} Song
  */
 
-const musicMetadata = require("music-metadata")
-const {ipcRenderer} = require("electron")
-const {
-    readJSON,
-    writeJSON,
-    joinPath,
-    isFile,
+import {
     dirName,
-    writeFile,
-    makeDir,
+    isFile,
+    joinPath,
     listFiles,
+    makeDir,
+    notify,
+    readJSON,
     watchFile,
-    notify
-} = require("../util")
+    writeFile,
+    writeJSON
+} from "../util.js"
+import {clearPlaylist} from "./playlist.js"
+import {ipcRenderer} from "electron"
+import musicMetadata from "music-metadata"
+import {stopPlayback} from "./player.js"
 
 /** @type {string|null} */
 let configDir = null
@@ -237,7 +239,7 @@ const dumpLyrics = folder => {
 }
 
 /** Update the cache file with new addition. */
-const updateCache = () => {
+export const updateCache = () => {
     ownCacheChange = true
     if (configDir) {
         writeJSON(joinPath(configDir, "cache.json"), cachedSongs)
@@ -249,7 +251,7 @@ const updateCache = () => {
  * @param {string} rawFolder
  * @param {boolean} dumpOnly
  */
-const scanner = async(rawFolder, dumpOnly = false) => {
+export const scanner = async(rawFolder, dumpOnly = false) => {
     const folder = joinPath(rawFolder)
     processedFiles = 0
     songs = []
@@ -260,9 +262,7 @@ const scanner = async(rawFolder, dumpOnly = false) => {
     document.getElementById("status-folder").style.color = "var(--primary)"
     document.getElementById("status-files").textContent = ""
     document.getElementById("status-notify").textContent = ""
-    const {stopPlayback} = require("./player")
     await stopPlayback()
-    const {clearPlaylist} = require("./playlist")
     await clearPlaylist()
     const fileExts = [
         "3gp",
@@ -326,7 +326,7 @@ const scanner = async(rawFolder, dumpOnly = false) => {
  * Query the song data by string to find matching songs.
  * @param {string} search
  */
-const query = search => {
+export const query = search => {
     if (!search.trim()) {
         return []
     }
@@ -523,7 +523,7 @@ const query = search => {
     return filtered
 }
 
-const coverArt = async p => {
+export const coverArt = async p => {
     try {
         const details = await musicMetadata.parseFile(p, {"skipCovers": false})
             .catch(() => null)
@@ -538,7 +538,7 @@ const coverArt = async p => {
     }
 }
 
-const setStartupSettings = dir => {
+export const setStartupSettings = dir => {
     configDir = dir
     cache = document.getElementById("setting-cache").value || "all"
     const cachePath = joinPath(configDir, "cache.json")
@@ -570,7 +570,7 @@ const setStartupSettings = dir => {
  * @param {string} id
  * @returns {Song|{}}
  */
-const songById = id => JSON.parse(JSON.stringify(
+export const songById = id => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id) || {}))
 
 /**
@@ -579,7 +579,7 @@ const songById = id => JSON.parse(JSON.stringify(
  * @param {string} path
  * @returns {Song|{}}
  */
-const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
+export const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
     songs.find(s => s.id === id || s.path === path) || {}))
 
 /**
@@ -588,7 +588,7 @@ const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
  * @param {string} path
  * @param {string} lyrics
  */
-const updateLyricsOfSong = (id, path, lyrics) => {
+export const updateLyricsOfSong = (id, path, lyrics) => {
     songs.find(s => s.id === id || s.path === path).lyrics = lyrics
     cachedSongs.find(s => s.id === id || s.path === path).lyrics = lyrics
     return new Promise(res => {
@@ -597,15 +597,4 @@ const updateLyricsOfSong = (id, path, lyrics) => {
             res(null)
         }, 1)
     })
-}
-
-module.exports = {
-    coverArt,
-    query,
-    scanner,
-    setStartupSettings,
-    songById,
-    songByIdOrPath,
-    updateCache,
-    updateLyricsOfSong
 }

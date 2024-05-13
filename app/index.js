@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,21 +15,21 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
 
-const {
-    app, BrowserWindow, systemPreferences, globalShortcut, ipcMain, dialog
-} = require("electron")
-const {
-    joinPath,
+
+import {
+    BrowserWindow, app, dialog, globalShortcut, ipcMain, systemPreferences
+} from "electron"
+import {
     basePath,
+    dirName,
     isDirectory,
-    readJSON,
-    writeJSON,
-    readFile,
+    joinPath,
     makeDir,
-    dirName
-} = require("./util")
+    readFile,
+    readJSON,
+    writeJSON
+} from "./util.js"
 
 /**
  * Apply some basic settings to the chromium devtools.
@@ -205,7 +205,7 @@ Garlmap can be started without any arguments, but it supports the following:
                    to then enable the shift lyrics option automatically.
                    If set to zero, it's disabled and no enable delay is used.
                    Any other number controls the amount of seconds to wait,
-                   and will ignore the shitLyrics value, as it's always enabled.
+                   and will ignore the shiftLyrics value as it's always enabled.
                    For example 5, will wait 5 seconds to re-enable shifting.
                    The argument should be provided with value to set it:
                    "--shift-timer=5", "--shift-timer=0" or "--shift-timer=60".
@@ -358,7 +358,7 @@ const registerMediaKeys = () => {
 
 /**
  * Log any custom settings to the console on startup.
- * @param {import("./renderer/settings").Config} config
+ * @param {import("./renderer/settings.js").Config} config
  * */
 const logCustomSettings = config => {
     let hasCustom = false
@@ -398,7 +398,7 @@ const processStartupArgs = () => {
     }
     console.info(
         "Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player")
-    /** @type {import("./renderer/settings").Config} */
+    /** @type {import("./renderer/settings.js").Config} */
     let config = {
         "apiKey": process.env.GARLMAP_API_KEY?.trim().toLowerCase(),
         "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
@@ -521,6 +521,7 @@ const processStartupArgs = () => {
 
 app.on("ready", () => {
     const config = processStartupArgs()
+    ipcMain.handle("config", () => config)
     if (!app.requestSingleInstanceLock()) {
         console.info(`Garlmap is a single instance app for performance reasons`)
         app.exit(0)
@@ -533,14 +534,13 @@ app.on("ready", () => {
     })
     const windowData = {
         "height": 700,
-        "icon": joinPath(__dirname, "img/icon/1024x1024.png"),
+        "icon": joinPath(import.meta.dirname, "img/icon/1024x1024.png"),
         "show": false,
         "title": app.getName(),
         "webPreferences": {
             "defaultFontSize": Number(config.fontSize) || 14,
             "defaultMonospaceFontSize": Number(config.fontSize) || 14,
-            "disableBlinkFeatures": "Auxclick",
-            "preload": joinPath(__dirname, "renderer/index.js"),
+            "preload": joinPath(import.meta.dirname, "renderer/index.mjs"),
             "sandbox": false,
             "spellcheck": false
         },
@@ -549,7 +549,8 @@ app.on("ready", () => {
     mainWindow = new BrowserWindow(windowData)
     mainWindow.removeMenu()
     mainWindow.setMinimumSize(320, 320)
-    mainWindow.loadURL(`file://${joinPath(__dirname, "renderer/index.html")}`)
+    mainWindow.loadURL(`file://${joinPath(
+        import.meta.dirname, "renderer/index.html")}`)
     mainWindow.on("close", e => {
         e.preventDefault()
         mainWindow?.webContents.send("window-close")
@@ -565,7 +566,6 @@ app.on("ready", () => {
         logCustomSettings(config)
         config.version = version
         config.configDir = configDir
-        mainWindow?.webContents.send("config", config)
         if (!config.dumpLyrics) {
             registerMediaKeys()
             mainWindow?.show()
@@ -574,23 +574,16 @@ app.on("ready", () => {
 })
 ipcMain.handle("toggle-devtools",
     () => mainWindow?.webContents.toggleDevTools())
-// #bug Setting the mainWindow will block interaction completely on second open,
-// but only when using Linux and GNOME (and forks like Cinnamon),
-// therefor we set it to null on linux to at least not break the app.
-// The modal position is incorrect as well on all systems, no workarounds known.
-// See this issue for more details:
-// https://github.com/electron/electron/issues/32857
-if (process.platform === "linux") {
-    ipcMain.handle("dialog-open", (_, options) => dialog.showOpenDialog(
-        null, options))
-    ipcMain.handle("dialog-save", (_, options) => dialog.showSaveDialog(
-        null, options))
-} else {
-    ipcMain.handle("dialog-open", (_, options) => dialog.showOpenDialog(
-        mainWindow, options))
-    ipcMain.handle("dialog-save", (_, options) => dialog.showSaveDialog(
-        mainWindow, options))
-}
+ipcMain.handle("dialog-open", (_, options) => {
+    if (mainWindow) {
+        dialog.showOpenDialog(mainWindow, options)
+    }
+})
+ipcMain.handle("dialog-save", (_, options) => {
+    if (mainWindow) {
+        dialog.showSaveDialog(mainWindow, options)
+    }
+})
 ipcMain.on("destroy-window", (_, error) => {
     if (error && mainWindow) {
         try {
@@ -608,10 +601,4 @@ ipcMain.on("destroy-window", (_, error) => {
     }
     mainWindow?.destroy()
     process.exit(0)
-})
-ipcMain.on("show-window", () => {
-    if (mainWindow?.isMinimized()) {
-        mainWindow?.restore()
-    }
-    mainWindow?.focus()
 })

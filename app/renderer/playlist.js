@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,21 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
-
-const {ipcRenderer} = require("electron")
-const {
+import {displayCurrentSong, load, queue} from "./player.js"
+import {
     formatTime,
-    queryMatch,
-    writeJSON,
-    readJSON,
     isDirectory,
     notify,
+    queryMatch,
     readFile,
-    writeFile
-} = require("../util")
+    readJSON,
+    writeFile,
+    writeJSON
+} from "../util.js"
+import {generateSongElement, switchFocus} from "./dom.js"
+import {query, scanner, songByIdOrPath} from "./songs.js"
+import {resetShowingLyrics, showLyrics} from "./lyrics.js"
+import {ipcRenderer} from "electron"
 
 let rulelist = []
 let ruleIdx = 0
@@ -64,14 +66,13 @@ const generatePlaylistView = () => {
         info.textContent = `${item.songs.length} songs - ${
             formatTime(item.duration)}`
         mainContainer.appendChild(info)
-        const {switchFocus, generateSongElement} = require("./dom")
         if (item.rule) {
             mainContainer.addEventListener("mousedown", e => {
                 if (e.button === 1) {
                     switchFocus("playlist")
                     selectedRuleIdx = index
                     selectedPathIdx = null
-                    deleteSelected()
+                    deleteSelectedPlaylist()
                 } else if (queryMatch(e, "img") || e.button === 2) {
                     item.open = !item.open
                     generatePlaylistView()
@@ -118,7 +119,7 @@ const generatePlaylistView = () => {
                         switchFocus("playlist")
                         selectedRuleIdx = index
                         selectedPathIdx = songIdx
-                        deleteSelected()
+                        deleteSelectedPlaylist()
                     } else if (e.button === 2) {
                         song.stopAfter = !song.stopAfter
                         playFromPlaylist(false)
@@ -159,7 +160,7 @@ const generatePlaylistView = () => {
     })
 }
 
-const playSelectedSong = async() => {
+export const playSelectedSong = async() => {
     if (selectedRuleIdx !== null && selectedPathIdx !== null) {
         ruleIdx = selectedRuleIdx
         pathIdx = selectedPathIdx
@@ -167,8 +168,7 @@ const playSelectedSong = async() => {
     }
 }
 
-const currentAndNext = () => {
-    const {query} = require("./songs")
+export const currentAndNext = () => {
     const fallbackRule = document.getElementById("fallback-rule").textContent
     let current = rulelist[ruleIdx]?.songs[pathIdx]
     if (!current) {
@@ -244,7 +244,7 @@ const currentAndNext = () => {
     return {current, next}
 }
 
-const decrement = async() => {
+export const decrementSong = async() => {
     if (upcomingPlaybackRuleIdx !== null && upcomingPlaybackPathIdx !== null) {
         ruleIdx = upcomingPlaybackRuleIdx
         pathIdx = upcomingPlaybackPathIdx
@@ -259,7 +259,7 @@ const decrement = async() => {
     await playFromPlaylist()
 }
 
-const increment = async(user = true) => {
+export const incrementSong = async(user = true) => {
     if (upcomingPlaybackRuleIdx !== null && upcomingPlaybackPathIdx !== null) {
         ruleIdx = upcomingPlaybackRuleIdx
         pathIdx = upcomingPlaybackPathIdx
@@ -274,7 +274,7 @@ const increment = async(user = true) => {
     await playFromPlaylist(user)
 }
 
-const decrementSelected = () => {
+export const decrementSelectedPlaylist = () => {
     if (selectedPathIdx > 0) {
         selectedPathIdx -= 1
     } else if (selectedPathIdx === 0 && rulelist[selectedRuleIdx]?.rule) {
@@ -294,10 +294,10 @@ const decrementSelected = () => {
     if (!rulelist[selectedRuleIdx]?.rule) {
         selectedPathIdx = 0
     }
-    updateSelected()
+    updateSelectedPlaylist()
 }
 
-const incrementSelected = () => {
+export const incrementSelectedPlaylist = () => {
     if (selectedRuleIdx === null && selectedPathIdx === null) {
         selectedRuleIdx = 0
     } else if (selectedPathIdx === null
@@ -315,10 +315,10 @@ const incrementSelected = () => {
     if (!rulelist[selectedRuleIdx]?.rule) {
         selectedPathIdx = 0
     }
-    updateSelected()
+    updateSelectedPlaylist()
 }
 
-const updateSelected = () => {
+const updateSelectedPlaylist = () => {
     document.querySelector("#main-playlist .selected")
         ?.classList.remove("selected")
     if (selectedPathIdx === null) {
@@ -334,7 +334,7 @@ const updateSelected = () => {
     })
 }
 
-const topSelected = () => {
+export const topSelectedPlaylist = () => {
     selectedRuleIdx = null
     selectedPathIdx = null
     if (rulelist.length > 0) {
@@ -344,10 +344,10 @@ const topSelected = () => {
         selectedPathIdx = 0
     }
     topScroll()
-    updateSelected()
+    updateSelectedPlaylist()
 }
 
-const bottomSelected = () => {
+export const bottomSelectedPlaylist = () => {
     selectedRuleIdx = null
     selectedPathIdx = null
     if (rulelist.length > 0) {
@@ -359,19 +359,19 @@ const bottomSelected = () => {
         }
     }
     bottomScroll()
-    updateSelected()
+    updateSelectedPlaylist()
 }
 
-const topScroll = () => {
+export const topScroll = () => {
     document.getElementById("main-playlist").scrollTo(0, 0)
 }
 
-const bottomScroll = () => {
+export const bottomScroll = () => {
     document.getElementById("main-playlist").scrollTo(
         0, Number.MAX_SAFE_INTEGER)
 }
 
-const closeSelectedRule = () => {
+export const closeSelectedRule = () => {
     if (selectedRuleIdx === null) {
         selectedRuleIdx = 0
     }
@@ -382,7 +382,7 @@ const closeSelectedRule = () => {
     generatePlaylistView()
 }
 
-const openSelectedRule = () => {
+export const openSelectedRule = () => {
     if (selectedRuleIdx === null) {
         selectedRuleIdx = 0
     }
@@ -392,13 +392,11 @@ const openSelectedRule = () => {
     generatePlaylistView()
 }
 
-const playFromPlaylist = async(switchNow = true) => {
+export const playFromPlaylist = async(switchNow = true) => {
     const {current, next} = currentAndNext()
-    const {load, queue, displayCurrentSong} = require("./player")
     if (current) {
         if (switchNow) {
             await load(current.path)
-            const {showLyrics} = require("./lyrics")
             showLyrics(current.id)
         }
         await queue(next?.path)
@@ -423,9 +421,8 @@ const playFromPlaylist = async(switchNow = true) => {
     }
 }
 
-const append = (item, upNext = false, updateList = true) => {
+export const append = (item, upNext = false, updateList = true) => {
     if (!item.songs) {
-        const {query} = require("./songs")
         item.songs = JSON.parse(JSON.stringify(query(item.rule)))
         if (item.songs.length === 0) {
             return
@@ -460,7 +457,7 @@ const append = (item, upNext = false, updateList = true) => {
     }
 }
 
-const stopAfterTrack = async(track = null) => {
+export const stopAfterTrack = async(track = null) => {
     if (rulelist.length === 0) {
         return
     }
@@ -474,7 +471,7 @@ const stopAfterTrack = async(track = null) => {
     await playFromPlaylist(false)
 }
 
-const stopAfterLastTrackOfRule = () => {
+export const stopAfterLastTrackOfRule = () => {
     if (rulelist[ruleIdx]) {
         rulelist[ruleIdx].songs.at(-1).stopAfter
             = !rulelist[ruleIdx].songs.at(-1).stopAfter
@@ -482,7 +479,7 @@ const stopAfterLastTrackOfRule = () => {
     playFromPlaylist(false)
 }
 
-const deleteSelected = () => {
+export const deleteSelectedPlaylist = () => {
     if (selectedRuleIdx === null) {
         return
     }
@@ -528,7 +525,7 @@ const deleteSelected = () => {
     playFromPlaylist(false)
 }
 
-const setFallbackRule = rule => {
+export const setFallbackRule = rule => {
     const filters = rule.split(/(?= \w+[:=])/g).map(p => ({
         "name": p.trim().split(/[:=]/g)[0].toLowerCase(),
         "value": p.trim().split(/[:=]/g)[1]?.toLowerCase()
@@ -547,7 +544,6 @@ const setFallbackRule = rule => {
         }
         return
     }
-    const {query} = require("./songs")
     if (query(rule).length < 2) {
         notify("Fallback rule must match at least 2 tracks or be playback")
         return
@@ -557,7 +553,7 @@ const setFallbackRule = rule => {
     playFromPlaylist(false)
 }
 
-const toggleAutoScroll = () => {
+export const toggleAutoScroll = () => {
     document.getElementById("toggle-autoscroll").checked
         = !document.getElementById("toggle-autoscroll").checked
     if (document.getElementById("toggle-autoscroll").checked) {
@@ -565,7 +561,7 @@ const toggleAutoScroll = () => {
     }
 }
 
-const toggleAutoClose = () => {
+export const toggleAutoClose = () => {
     document.getElementById("toggle-autoclose").checked
         = !document.getElementById("toggle-autoclose").checked
     if (document.getElementById("toggle-autoclose").checked) {
@@ -573,7 +569,7 @@ const toggleAutoClose = () => {
     }
 }
 
-const toggleAutoRemove = () => {
+export const toggleAutoRemove = () => {
     document.getElementById("toggle-autoremove").checked
         = !document.getElementById("toggle-autoremove").checked
     if (document.getElementById("toggle-autoremove").checked) {
@@ -581,7 +577,7 @@ const toggleAutoRemove = () => {
     }
 }
 
-const autoPlayOpts = (singleOpt = false) => {
+export const autoPlayOpts = (singleOpt = false) => {
     const autoRemove = document.getElementById("toggle-autoremove").checked
     if (autoRemove && [false, "remove"].includes(singleOpt)) {
         rulelist = rulelist.filter((_, index) => index >= ruleIdx)
@@ -615,7 +611,7 @@ const autoPlayOpts = (singleOpt = false) => {
     }
 }
 
-const exportList = () => {
+export const exportList = () => {
     const folder = document.getElementById("status-folder").textContent.trim()
     if (folder === "No folder selected") {
         notify("No folder open yet, nothing to export")
@@ -664,7 +660,7 @@ const exportList = () => {
     })
 }
 
-const importList = () => {
+export const importList = () => {
     ipcRenderer.invoke("dialog-open", {
         "filters": [{
             "extensions": ["m3u", "m3u8", "garlmap.json"],
@@ -676,7 +672,6 @@ const importList = () => {
         if (info.canceled) {
             return
         }
-        const {songByIdOrPath} = require("./songs")
         if (info.filePaths[0]?.endsWith(".garlmap.json")) {
             const imported = readJSON(info.filePaths[0])
             if (!imported?.list || !imported?.folder) {
@@ -687,7 +682,6 @@ const importList = () => {
                 notify("Playlist base folder could not be found")
                 return
             }
-            const {scanner} = require("./songs")
             await scanner(imported.folder)
             imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
                 const songs = r.songs?.map(s => songByIdOrPath(s?.id, s?.path))
@@ -709,43 +703,13 @@ const importList = () => {
     })
 }
 
-const clearPlaylist = async() => {
+export const clearPlaylist = async() => {
     rulelist = []
     ruleIdx = 0
     selectedRuleIdx = null
     selectedPathIdx = null
     pathIdx = 0
     generatePlaylistView()
-    const {displayCurrentSong} = require("./player")
     await displayCurrentSong(null)
-    const {resetShowingLyrics} = require("./lyrics")
     resetShowingLyrics()
-}
-
-module.exports = {
-    append,
-    autoPlayOpts,
-    bottomScroll,
-    bottomSelected,
-    clearPlaylist,
-    closeSelectedRule,
-    currentAndNext,
-    decrement,
-    decrementSelected,
-    deleteSelected,
-    exportList,
-    importList,
-    increment,
-    incrementSelected,
-    openSelectedRule,
-    playFromPlaylist,
-    playSelectedSong,
-    setFallbackRule,
-    stopAfterLastTrackOfRule,
-    stopAfterTrack,
-    toggleAutoClose,
-    toggleAutoRemove,
-    toggleAutoScroll,
-    topScroll,
-    topSelected
 }

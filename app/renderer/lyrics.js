@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2022-2023 Jelmer van Arnhem
+*  Copyright (C) 2022-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,29 +15,26 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+import {
+    basePath, dirName, joinPath, notify, readFile, resetWelcome
+} from "../util.js"
+import {songById, songByIdOrPath, updateLyricsOfSong} from "./songs.js"
+import {compareStrings} from "./compare-strings.js"
+import {currentAndNext} from "./playlist.js"
+import geniusLyrics from "genius-lyrics"
+import {isAlive} from "./player.js"
+import {switchFocus} from "./dom.js"
 
-const {compareStrings} = require("./compare-strings")
-const {Client} = require("genius-lyrics")
-const {songByIdOrPath, updateLyricsOfSong, songById} = require("./songs")
-const {
-    joinPath, dirName, basePath, readFile, notify, resetWelcome
-} = require("../util")
-
-let shitLyricsTimeout = null
+let shiftLyricsTimeout = null
 let showingLyrics = false
 let lyricsSearchCache = []
-// Fixes IPV6 issues: https://github.com/zyrouge/node-genius-lyrics/issues/47
-// Only needed in NodeJS < 20, will be removed when no longer needed
-const dns = require("dns")
-dns.setDefaultResultOrder("ipv4first")
 
 const low = s => s.toLowerCase()
 
-const sanitizeLyrics = lyrics => lyrics?.trim()
+export const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
-const fetchLyrics = async(req, force = false, originalReq = false) => {
+export const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache
     const cachedLyrics = songByIdOrPath(req.id, req.path).lyrics
     if (cachedLyrics && !force) {
@@ -60,7 +57,6 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         joinPath(req.path.replace(req.id, ""), "Lyrics", txtId),
         joinPath(req.path.replace(req.id, ""), "Tracklists", txtId)
     ]
-    const {currentAndNext} = require("./playlist")
     for (const file of files) {
         const lyrics = sanitizeLyrics(readFile(file))
         if (lyrics) {
@@ -79,7 +75,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
         return
     }
     const apiKey = document.getElementById("setting-apikey").value || undefined
-    const genius = new Client(apiKey)
+    const genius = new geniusLyrics.Client(apiKey)
     try {
         notify(`Searching Genius for the song lyrics of: ${
             req.title} ${req.artist}`, "info")
@@ -151,7 +147,7 @@ const fetchLyrics = async(req, force = false, originalReq = false) => {
     }
 }
 
-const shiftLyricsByPercentage = current => {
+export const shiftLyricsByPercentage = current => {
     const lyricsContainers = [document.getElementById("fs-lyrics")]
     if (showingLyrics) {
         lyricsContainers.push(document.getElementById("song-info"))
@@ -184,31 +180,31 @@ const shiftLyricsByPercentage = current => {
     }
 }
 
-const stunShiftLyrics = () => {
+export const stunShiftLyrics = () => {
     if (!showingLyrics) {
         if (document.body.getAttribute("focus-el") !== "fullscreen") {
             return
         }
     }
-    if (shitLyricsTimeout) {
-        clearTimeout(shitLyricsTimeout)
+    if (shiftLyricsTimeout) {
+        clearTimeout(shiftLyricsTimeout)
     }
     document.getElementById("toggle-shift-lyrics").checked = false
     if (Number(document.getElementById("setting-shift-timer").value) > 0) {
-        shitLyricsTimeout = setTimeout(() => {
+        shiftLyricsTimeout = setTimeout(() => {
             document.getElementById("toggle-shift-lyrics").checked = true
         }, Number(document.getElementById("setting-shift-timer").value) * 1000)
     }
 }
 
-const searchLyrics = async searchString => {
+export const searchLyrics = async searchString => {
     if (!searchString.trim()) {
         return
     }
     const resultsContainer = document.getElementById("lyrics-results")
     resultsContainer.textContent = "Searching Genius..."
     const apiKey = document.getElementById("setting-apikey").value || undefined
-    const genius = new Client(apiKey)
+    const genius = new geniusLyrics.Client(apiKey)
     const results = await genius.songs.search(searchString.trim()).catch(e => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
         console.warn(e)
@@ -223,15 +219,13 @@ const searchLyrics = async searchString => {
             resultsContainer.querySelector(".selected")
                 ?.classList.remove("selected")
             el.classList.add("selected")
-            const {switchFocus} = require("./dom")
             switchFocus("lyrics")
         })
         el.addEventListener("dblclick", () => selectLyricsFromResults())
     })
 }
 
-const saveLyrics = async() => {
-    const {currentAndNext} = require("./playlist")
+export const saveLyrics = async() => {
     const {current} = currentAndNext()
     if (!current) {
         return
@@ -241,7 +235,7 @@ const saveLyrics = async() => {
     showLyrics(current.id)
 }
 
-const selectLyricsFromResults = async() => {
+export const selectLyricsFromResults = async() => {
     const resultsContainer = document.getElementById("lyrics-results")
     const selected = resultsContainer.querySelector(".selected")
     const index = [...resultsContainer.children].indexOf(selected)
@@ -266,13 +260,13 @@ const selectLyricsFromResults = async() => {
     }
 }
 
-const resetShowingLyrics = () => {
+export const resetShowingLyrics = () => {
     resetWelcome()
     document.getElementById("song-info").scrollTo(0, 0)
     showingLyrics = false
 }
 
-const showLyrics = async p => {
+export const showLyrics = async p => {
     if (showingLyrics) {
         resetShowingLyrics()
     }
@@ -292,10 +286,8 @@ const showLyrics = async p => {
     }
 }
 
-const switchToLyrics = async(forceFetch = false) => {
-    const {isAlive} = require("./player")
+export const switchToLyrics = async(forceFetch = false) => {
     if (isAlive()) {
-        const {currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
         if (current) {
             await fetchLyrics(current, forceFetch)
@@ -304,9 +296,8 @@ const switchToLyrics = async(forceFetch = false) => {
     }
 }
 
-const decrementSelectedLyrics = () => {
+export const decrementSelectedLyrics = () => {
     const selected = document.querySelector("#lyrics-results .selected")
-    const {switchFocus} = require("./dom")
     if (!selected) {
         switchFocus("lyricssearch")
     }
@@ -318,7 +309,7 @@ const decrementSelectedLyrics = () => {
     }
 }
 
-const incrementSelectedLyrics = () => {
+export const incrementSelectedLyrics = () => {
     const selected = document.querySelector("#lyrics-results .selected")
     if (selected) {
         if (selected.nextSibling) {
@@ -329,21 +320,5 @@ const incrementSelectedLyrics = () => {
         document.querySelector("#lyrics-results > *")
             ?.classList.add("selected")
     }
-    const {switchFocus} = require("./dom")
     switchFocus("lyrics")
-}
-
-module.exports = {
-    decrementSelectedLyrics,
-    fetchLyrics,
-    incrementSelectedLyrics,
-    resetShowingLyrics,
-    sanitizeLyrics,
-    saveLyrics,
-    searchLyrics,
-    selectLyricsFromResults,
-    shiftLyricsByPercentage,
-    showLyrics,
-    stunShiftLyrics,
-    switchToLyrics
 }

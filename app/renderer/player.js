@@ -15,11 +15,19 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
-
-const mpvAPI = require("./mpv")
-const {ipcRenderer} = require("electron")
-const {joinPath, formatTime, deleteFolder} = require("../util")
+import {
+    autoPlayOpts,
+    currentAndNext,
+    decrementSong,
+    incrementSong,
+    playFromPlaylist,
+    stopAfterTrack
+} from "./playlist.js"
+import {deleteFolder, formatTime, joinPath} from "../util.js"
+import {shiftLyricsByPercentage, showLyrics} from "./lyrics.js"
+import {coverArt} from "./songs.js"
+import {ipcRenderer} from "electron"
+import mpvAPI from "./mpv.js"
 
 let mpv = null
 let volume = 100
@@ -30,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(audioEl)
 })
 
-const init = (path, configDir) => {
+export const init = (path, configDir) => {
     mpv = mpvAPI({
         "args": [
             "--no-video", "--no-audio-display", "--no-config", "--idle=yes"
@@ -48,7 +56,6 @@ const init = (path, configDir) => {
         }
         if (info.name === "playback-time" && info.data >= 0) {
             const position = info.data
-            const {currentAndNext} = require("./playlist")
             const {current} = currentAndNext()
             const {duration} = current
             navigator.mediaSession.setPositionState({
@@ -64,22 +71,17 @@ const init = (path, configDir) => {
             document.getElementById("fs-progress-played").style.width = perc
             document.getElementById("fs-progress-string").textContent = played
             if (document.getElementById("toggle-shift-lyrics").checked) {
-                const {shiftLyricsByPercentage} = require("./lyrics")
                 shiftLyricsByPercentage(parseFloat(perc))
             }
             return
         }
         if (info.name === "playlist-pos" && info.data === 1) {
-            const {increment} = require("./playlist")
-            await increment(false)
-            const {showLyrics} = require("./lyrics")
-            const {currentAndNext, autoPlayOpts} = require("./playlist")
+            await incrementSong(false)
             const {current} = currentAndNext()
             await showLyrics(current.id)
             autoPlayOpts()
         }
         if (info.name === "playlist-pos" && info.data === -1) {
-            const {currentAndNext, playFromPlaylist} = require("./playlist")
             const {current} = currentAndNext()
             current.stopAfter = false
             stoppedAfterTrack = true
@@ -95,15 +97,12 @@ const init = (path, configDir) => {
     // Listen for media and such
     ipcRenderer.on("media-pause", pause)
     ipcRenderer.on("media-prev", () => {
-        const {decrement} = require("./playlist")
-        decrement()
+        decrementSong()
     })
     ipcRenderer.on("media-next", () => {
-        const {increment} = require("./playlist")
-        increment()
+        incrementSong()
     })
     ipcRenderer.on("media-stop", () => {
-        const {stopAfterTrack} = require("./playlist")
         stopAfterTrack()
     })
     ipcRenderer.on("window-close", () => {
@@ -114,7 +113,6 @@ const init = (path, configDir) => {
     navigator.mediaSession.setActionHandler("play", pause)
     navigator.mediaSession.setActionHandler("pause", pause)
     navigator.mediaSession.setActionHandler("stop", () => {
-        const {stopAfterTrack} = require("./playlist")
         stopAfterTrack()
     })
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
@@ -122,17 +120,15 @@ const init = (path, configDir) => {
     navigator.mediaSession.setActionHandler("seekto",
         details => mpv.command("seek", details.seekTime, "absolute"))
     navigator.mediaSession.setActionHandler("previoustrack", () => {
-        const {decrement} = require("./playlist")
-        decrement()
+        decrementSong()
     })
     navigator.mediaSession.setActionHandler("nexttrack", () => {
-        const {increment} = require("./playlist")
-        increment()
+        incrementSong()
     })
     navigator.mediaSession.playbackState = "paused"
 }
 
-const isAlive = () => hasAnySong && mpv
+export const isAlive = () => hasAnySong && mpv
 
 const updatePlayButton = async() => {
     if (!isAlive() || await mpv.get("pause")) {
@@ -152,33 +148,31 @@ const updatePlayButton = async() => {
     }
 }
 
-const pause = async() => {
+export const pause = async() => {
     if (isAlive() && !stoppedAfterTrack) {
         await mpv.set("pause", !await mpv.get("pause"))
     } else {
-        const {playFromPlaylist} = require("./playlist")
         playFromPlaylist()
         stoppedAfterTrack = false
     }
     updatePlayButton()
 }
 
-const relativeSeek = async seconds => {
+export const relativeSeek = async seconds => {
     if (isAlive() && !stoppedAfterTrack) {
         await mpv.command("seek", seconds, "relative")
     }
 }
 
-const seek = async percent => {
+export const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
-        const {currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
         const {duration} = current
         await mpv.command("seek", percent * duration / 100, "absolute")
     }
 }
 
-const load = async file => {
+export const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
     document.getElementById("volume-slider").disabled = null
@@ -187,24 +181,24 @@ const load = async file => {
     await mpv.set("pause", false)
 }
 
-const queue = async file => {
+export const queue = async file => {
     await mpv.command("playlist-clear")
     if (file) {
         await mpv.command("loadfile", file, "append")
     }
 }
 
-const volumeSet = async vol => {
+export const volumeSet = async vol => {
     volume = Math.min(130, Math.max(0, vol))
     await updateVolume()
 }
 
-const volumeUp = async() => {
+export const volumeUp = async() => {
     volume = Math.min(130, volume + 10)
     await updateVolume()
 }
 
-const volumeDown = async() => {
+export const volumeDown = async() => {
     volume = Math.max(0, volume - 10)
     await updateVolume()
 }
@@ -226,20 +220,20 @@ const updateVolume = async() => {
     }
 }
 
-const toggleMute = async() => {
+export const toggleMute = async() => {
     if (isAlive()) {
         await mpv.set("mute", !await mpv.get("mute"))
     }
     await updateVolume()
 }
 
-const stopPlayback = async() => {
+export const stopPlayback = async() => {
     if (isAlive()) {
         await mpv.command("stop").catch(() => null)
     }
 }
 
-const displayCurrentSong = async song => {
+export const displayCurrentSong = async song => {
     const els = [
         document.getElementById("current-song"),
         document.getElementById("fs-current-song")
@@ -283,7 +277,6 @@ const displayCurrentSong = async song => {
         return
     }
     // MediaSession details
-    const {coverArt} = require("./songs")
     const cover = await coverArt(song.path)
     if (cover) {
         document.getElementById("song-cover").src = cover
@@ -305,21 +298,4 @@ const displayCurrentSong = async song => {
     audioEl.pause()
     await audioEl.play().catch(() => null)
     updatePlayButton()
-}
-
-module.exports = {
-    displayCurrentSong,
-    init,
-    isAlive,
-    load,
-    pause,
-    queue,
-    relativeSeek,
-    seek,
-    stopPlayback,
-    toggleMute,
-    updatePlayButton,
-    volumeDown,
-    volumeSet,
-    volumeUp
 }

@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2022 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+import {append, currentAndNext} from "./playlist.js"
+import {formatTime} from "../util.js"
+import {songById} from "./songs.js"
 
-const {formatTime} = require("../util")
-
-const generateSongElement = song => {
+export const generateSongElement = song => {
     const songContainer = document.createElement("div")
     songContainer.setAttribute("song-id", song.id)
     songContainer.className = "song"
@@ -59,7 +59,7 @@ const generateSongElement = song => {
     return songContainer
 }
 
-const setFullscreenLayout = async(browserFS, layoutFS) => {
+export const setFullscreenLayout = async(browserFS, layoutFS) => {
     const currentFocus = document.body.getAttribute("focus-el")
     if (document.fullscreenElement) {
         await document.exitFullscreen()
@@ -67,7 +67,7 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
     if (layoutFS) {
         await switchFocus("fullscreen")
         if (browserFS) {
-            document.getElementById("fullscreen").requestFullscreen()
+            document.getElementById("fullscreen")?.requestFullscreen()
         }
         return
     }
@@ -79,9 +79,8 @@ const setFullscreenLayout = async(browserFS, layoutFS) => {
     }
 }
 
-const showSongInfo = position => {
+export const showSongInfo = position => {
     let song = null
-    const {songById} = require("./songs")
     if (position === "playlist") {
         const songEl = document.querySelector("#playlist-container .selected")
         if (songEl) {
@@ -95,7 +94,6 @@ const showSongInfo = position => {
         }
     }
     if (position === "current") {
-        const {currentAndNext} = require("./playlist")
         const {current} = currentAndNext()
         song = songById(current?.id)
     }
@@ -106,11 +104,11 @@ const showSongInfo = position => {
     }
 }
 
-const closeSpecialMode = async() => {
+export const closeSpecialMode = async() => {
     await switchFocus(document.body.getAttribute("last-main-focus") || "search")
 }
 
-const switchFocus = async newFocus => {
+export const switchFocus = async newFocus => {
     // Valid focus points for the entire app are:
     // - playlist (playlist section to highlight songs/rules to play or remove)
     // - search (search section results, not the search box itself)
@@ -128,7 +126,7 @@ const switchFocus = async newFocus => {
     document.body.setAttribute("focus-el", newFocus.replace("box", ""))
     if (newFocus === "playlist") {
         document.body.setAttribute("last-main-focus", "playlist")
-        document.getElementById("playlist-container").focus()
+        document.getElementById("playlist-container")?.focus()
     }
     if (newFocus === "events") {
         document.getElementById("events").style.display = "flex"
@@ -149,15 +147,15 @@ const switchFocus = async newFocus => {
         document.getElementById("lyrics-editor").style.display = "flex"
         const selected = document.querySelector("#lyrics-results .selected")
         if (newFocus === "lyricseditor") {
-            document.getElementById("lyrics-edit-field").focus()
+            document.getElementById("lyrics-edit-field")?.focus()
         } else if (!selected || newFocus.endsWith("search")) {
             selected?.classList.remove("selected")
             document.body.setAttribute("focus-el", "lyricssearch")
-            document.getElementById("lyrics-search").focus()
+            document.getElementById("lyrics-search")?.focus()
         } else {
             selected.scrollIntoView({"block": "nearest"})
-            document.getElementById("lyrics-edit-field").blur()
-            document.getElementById("lyrics-search").blur()
+            document.getElementById("lyrics-edit-field")?.blur()
+            document.getElementById("lyrics-search")?.blur()
         }
     } else {
         document.getElementById("lyrics-editor").style.display = "none"
@@ -166,7 +164,7 @@ const switchFocus = async newFocus => {
         document.getElementById("fullscreen").style.display = "flex"
         if (document.fullscreenElement) {
             await document.exitFullscreen()
-            document.getElementById("fullscreen").requestFullscreen()
+            document.getElementById("fullscreen")?.requestFullscreen()
         }
     } else if (currentFocus === "fullscreen") {
         document.getElementById("fullscreen").style.display = "none"
@@ -181,12 +179,12 @@ const switchFocus = async newFocus => {
         if (!selected || newFocus.endsWith("box")) {
             selected?.classList.remove("selected")
             document.body.setAttribute("focus-el", "search")
-            document.getElementById("rule-search").focus()
+            document.getElementById("rule-search")?.focus()
         } else {
             selected.scrollIntoView({"block": "nearest"})
         }
     } else {
-        document.getElementById("rule-search").blur()
+        document.getElementById("rule-search")?.blur()
     }
     updateAddSongsButton()
 }
@@ -199,13 +197,13 @@ const updateAddSongsButton = () => {
     }
 }
 
-const decrementSelected = () => {
+export const decrementSelectedSearch = () => {
     const selected = document.querySelector("#search-results .selected.song")
     if (selected) {
         if (selected.previousSibling) {
             selected.previousSibling.classList.add("selected")
         } else {
-            document.getElementById("rule-search").focus()
+            document.getElementById("rule-search")?.focus()
         }
         selected.classList.remove("selected")
     }
@@ -214,7 +212,7 @@ const decrementSelected = () => {
     updateAddSongsButton()
 }
 
-const incrementSelected = () => {
+export const incrementSelectedSearch = () => {
     const selected = document.querySelector("#search-results .selected.song")
     if (selected) {
         if (selected.nextSibling) {
@@ -225,7 +223,7 @@ const incrementSelected = () => {
         const song = document.querySelector("#search-results .song")
         if (song) {
             song.classList.add("selected")
-            document.getElementById("rule-search").blur()
+            document.getElementById("rule-search")?.blur()
         }
     }
     document.querySelector("#search-results .selected")
@@ -233,22 +231,9 @@ const incrementSelected = () => {
     updateAddSongsButton()
 }
 
-const appendSelectedSong = (upNext = false) => {
+export const appendSelectedSong = (upNext = false) => {
     const song = document.querySelector("#search-results .selected.song")
     if (song) {
-        const {append} = require("./playlist")
-        const {songById} = require("./songs")
         append({"songs": [songById(song.getAttribute("song-id"))]}, upNext)
     }
-}
-
-module.exports = {
-    appendSelectedSong,
-    closeSpecialMode,
-    decrementSelected,
-    generateSongElement,
-    incrementSelected,
-    setFullscreenLayout,
-    showSongInfo,
-    switchFocus
 }

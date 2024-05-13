@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
-
-const {ipcRenderer} = require("electron")
-const {deleteFile, notify, joinPath, writeJSON} = require("../util")
+import {deleteFile, joinPath, notify, writeJSON} from "../util.js"
+import {pause, init as startMpv} from "./player.js"
+import {scanner, setStartupSettings} from "./songs.js"
+import {
+    setFallbackRule, toggleAutoClose, toggleAutoRemove, toggleAutoScroll
+} from "./playlist.js"
+import {ipcRenderer} from "electron"
 
 /** @typedef {{
  *   apiKey: string | undefined,
@@ -45,10 +48,8 @@ const {deleteFile, notify, joinPath, writeJSON} = require("../util")
  * }} Config
  */
 
-let startupConfigDir = ""
-
 /** Toggle the auto lyrics feature. */
-const toggleAutoLyrics = () => {
+export const toggleAutoLyrics = () => {
     const autoLyricsEl = document.getElementById("toggle-autolyrics")
     if (autoLyricsEl instanceof HTMLInputElement) {
         autoLyricsEl.checked = !autoLyricsEl.checked
@@ -56,7 +57,7 @@ const toggleAutoLyrics = () => {
 }
 
 /** Toggle the shift lyrics feature. */
-const toggleShiftLyrics = () => {
+export const toggleShiftLyrics = () => {
     const timingEl = document.getElementById("setting-shift-timer")
     const toggleEl = document.getElementById("toggle-shift-lyrics")
     if (timingEl instanceof HTMLInputElement) {
@@ -70,7 +71,7 @@ const toggleShiftLyrics = () => {
 }
 
 /** Toggle the automatic invocation of the Genius API. */
-const toggleGenius = () => {
+export const toggleGenius = () => {
     const toggleGeniusEl = document.getElementById("toggle-genius")
     if (toggleGeniusEl instanceof HTMLInputElement) {
         toggleGeniusEl.checked = !toggleGeniusEl.checked
@@ -78,9 +79,10 @@ const toggleGenius = () => {
 }
 
 /** Save the currently active settings to disk inside the configdir. */
-const saveSettings = () => {
+export const saveSettings = () => {
     /** @type {Partial<Config>} */
     const config = {}
+    const startupConfigDir = localStorage.getItem("startup-config-dir")
     if (!startupConfigDir) {
         return
     }
@@ -172,7 +174,6 @@ const saveSettings = () => {
         notify("Failed to save current settings")
     }
 }
-
 /** @type {{[key: string]: string | undefined}} */
 const cssColors = {
     "aliceblue": "#f0f8ff",
@@ -355,16 +356,14 @@ const applyPrimaryColorToImages = () => {
 }
 
 /** Initialize the settings by waiting for the config from main. */
-const init = () => {
-    ipcRenderer.on("config",
+export const init = () => {
+    ipcRenderer.invoke("config").then(
         /**
          * Load the config, set interface according and load folder if present.
-         * @param {any} _
          * @param {Config} config
          */
-        (_, config) => {
-            startupConfigDir = config.configDir ?? ""
-            const {setStartupSettings} = require("./songs")
+        config => {
+            localStorage.setItem("startup-config-dir", config.configDir ?? "")
             // Two column
             document.body.setAttribute(
                 "two-column", config.twoColumn || "mobile")
@@ -383,7 +382,6 @@ const init = () => {
             if (autoCloseEl instanceof HTMLInputElement) {
                 autoCloseEl.checked = config.autoClose ?? false
                 autoCloseEl.parentNode?.addEventListener("click", () => {
-                    const {toggleAutoClose} = require("./playlist")
                     toggleAutoClose()
                 })
             }
@@ -399,7 +397,6 @@ const init = () => {
             if (autoRemoveEl instanceof HTMLInputElement) {
                 autoRemoveEl.checked = config.autoRemove ?? false
                 autoRemoveEl.parentNode?.addEventListener("click", () => {
-                    const {toggleAutoRemove} = require("./playlist")
                     toggleAutoRemove()
                 })
             }
@@ -408,7 +405,6 @@ const init = () => {
             if (autoScrollEl instanceof HTMLInputElement) {
                 autoScrollEl.checked = config.autoScroll ?? false
                 autoScrollEl.parentNode?.addEventListener("click", () => {
-                    const {toggleAutoScroll} = require("./playlist")
                     toggleAutoScroll()
                 })
             }
@@ -487,7 +483,6 @@ const init = () => {
             if (mpvEl instanceof HTMLInputElement) {
                 mpvEl.value = config.mpv || ""
             }
-            const {"init": startMpv} = require("./player")
             let defaultMpv = "mpv"
             if (process.platform === "win32") {
                 defaultMpv = "mpv.exe"
@@ -517,21 +512,14 @@ const init = () => {
             // Scan folder on startup
             if (config.folder) {
                 setTimeout(async() => {
-                    const {scanner} = require("./songs")
                     await scanner(config.folder, config.dumpLyrics)
                     if (config.fallback) {
-                        const {setFallbackRule} = require("./playlist")
                         setFallbackRule(config.fallback)
                     }
                     if (config.autoplay) {
-                        const {pause} = require("./player")
                         pause()
                     }
                 }, 10)
             }
         })
-}
-
-module.exports = {
-    init, saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
 }

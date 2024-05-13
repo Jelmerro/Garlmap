@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,67 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+import {
+    append,
+    bottomScroll,
+    bottomSelectedPlaylist,
+    closeSelectedRule,
+    decrementSelectedPlaylist,
+    decrementSong,
+    deleteSelectedPlaylist,
+    exportList,
+    importList,
+    incrementSelectedPlaylist,
+    incrementSong,
+    openSelectedRule,
+    playFromPlaylist,
+    playSelectedSong,
+    setFallbackRule,
+    stopAfterLastTrackOfRule,
+    stopAfterTrack,
+    toggleAutoClose,
+    toggleAutoRemove,
+    toggleAutoScroll,
+    topScroll,
+    topSelectedPlaylist
+} from "./playlist.js"
+import {
+    appendSelectedSong,
+    closeSpecialMode,
+    decrementSelectedSearch,
+    generateSongElement,
+    incrementSelectedSearch,
+    setFullscreenLayout,
+    showSongInfo,
+    switchFocus
+} from "./dom.js"
+import {clipboard, ipcRenderer} from "electron"
+import {
+    decrementSelectedLyrics,
+    incrementSelectedLyrics,
+    resetShowingLyrics,
+    saveLyrics,
+    searchLyrics,
+    selectLyricsFromResults,
+    stunShiftLyrics,
+    switchToLyrics
+} from "./lyrics.js"
+import {
+    pause,
+    relativeSeek,
+    seek,
+    toggleMute,
+    volumeDown,
+    volumeSet,
+    volumeUp
+} from "./player.js"
+import {query, scanner} from "./songs.js"
+import {
+    saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
+} from "./settings.js"
+import {queryMatch} from "../util.js"
 
-const {ipcRenderer, clipboard} = require("electron")
-const {queryMatch} = require("../util")
-const {switchFocus, setFullscreenLayout, closeSpecialMode} = require("./dom")
-
-const init = () => {
+export const init = () => {
     window.addEventListener("keydown", e => handleKeyboard(e))
     window.addEventListener("keypress", e => {
         const id = toIdentifier(e)
@@ -60,13 +114,11 @@ const init = () => {
     })
     window.addEventListener("touchmove", e => {
         if (queryMatch(e, "#song-info, #fs-lyrics")) {
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         }
     })
     window.addEventListener("mousewheel", e => {
         if (queryMatch(e, "#song-info, #fs-lyrics")) {
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         }
     })
@@ -75,7 +127,6 @@ const init = () => {
             if (!isReady()) {
                 return
             }
-            const {volumeSet} = require("./player")
             volumeSet(vol.value)
         })
         vol.addEventListener("mousedown", e => {
@@ -83,10 +134,8 @@ const init = () => {
                 return
             }
             if (e.button === 2) {
-                const {volumeSet} = require("./player")
                 volumeSet(100)
             } else if (e.button === 1) {
-                const {toggleMute} = require("./player")
                 toggleMute()
             }
         })
@@ -100,14 +149,11 @@ const init = () => {
         if (search !== document.getElementById("rule-search").value) {
             document.getElementById("rule-search").value = search
         }
-        const {query} = require("./songs")
         document.getElementById("search-results").textContent = ""
-        const {generateSongElement} = require("./dom")
         query(search).slice(0, 100).forEach(song => {
             const el = generateSongElement(song)
             document.getElementById("search-results").appendChild(el)
             el.addEventListener("dblclick", () => {
-                const {append} = require("./playlist")
                 append({"songs": [JSON.parse(JSON.stringify(song))]})
             })
             el.addEventListener("mousedown", mouseEv => {
@@ -116,7 +162,6 @@ const init = () => {
                 el.classList.add("selected")
                 el?.scrollIntoView({"block": "nearest"})
                 if (mouseEv.button !== 0) {
-                    const {append} = require("./playlist")
                     append(
                         {"songs": [JSON.parse(JSON.stringify(song))]},
                         mouseEv.button === 1)
@@ -133,7 +178,6 @@ const init = () => {
             if (!isReady()) {
                 return
             }
-            const {seek} = require("./player")
             const x = e.pageX - element.offsetLeft
                 - element.offsetParent.offsetLeft
             let percentage = x / element.getBoundingClientRect().width * 100
@@ -174,7 +218,6 @@ const init = () => {
             }
         }
     })
-    const {resetShowingLyrics} = require("./lyrics")
     resetShowingLyrics()
 }
 
@@ -182,16 +225,13 @@ const isReady = () => document.getElementById(
     "status-current").textContent === "Ready"
 
 const openFolder = () => {
-    const {scanner} = require("./songs")
     ipcRenderer.invoke("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
     }).then(async info => {
         if (!info.canceled) {
             await scanner(info.filePaths[0])
             if (document.getElementById("toggle-autoplay").checked) {
-                const {playFromPlaylist} = require("./playlist")
                 playFromPlaylist(true)
-                const {pause} = require("./player")
                 pause()
             }
         }
@@ -256,161 +296,124 @@ const mappings = {
     },
     "fullscreen": {
         " ": () => {
-            const {pause} = require("./player")
             pause()
         },
         "<ArrowDown>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(-60)
         },
         "<ArrowLeft>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(-6)
         },
         "<ArrowRight>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(6)
         },
         "<ArrowUp>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(60)
         },
         "<C-ArrowLeft>": () => {
-            const {decrement} = require("./playlist")
-            decrement()
+            decrementSong()
         },
         "<C-ArrowRight>": () => {
-            const {increment} = require("./playlist")
-            increment()
+            incrementSong()
         },
         "<F9>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<PageDown>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<PageUp>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<S-F9>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, 1000)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<S-F10>": () => {
             document.getElementById("fs-lyrics").scrollBy(0, -1000)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "=": () => {
-            const {volumeUp} = require("./player")
             volumeUp()
         },
         "-": () => {
-            const {volumeDown} = require("./player")
             volumeDown()
         },
         "0": () => {
-            const {volumeSet} = require("./player")
             volumeSet(100)
         },
         "m": () => {
-            const {toggleMute} = require("./player")
             toggleMute()
         },
         "q": () => setFullscreenLayout(false, false),
         "s": () => {
-            const {stopAfterTrack} = require("./playlist")
             stopAfterTrack()
         }
     },
     "global": {
         "<C-+>": () => {
-            const {volumeUp} = require("./player")
             volumeUp()
         },
         "<C-/>": () => switchFocus("settingseditor"),
         "<C-=>": () => {
-            const {volumeUp} = require("./player")
             volumeUp()
         },
         "<C-[>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(-6)
         },
         "<C-]>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(6)
         },
         "<C-_>": () => {
-            const {volumeDown} = require("./player")
             volumeDown()
         },
         "<C-`>": () => {
-            const {seek} = require("./player")
             seek(0)
         },
         "<C-{>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(-60)
         },
         "<C-}>": () => {
-            const {relativeSeek} = require("./player")
             relativeSeek(60)
         },
         "<C-->": () => {
-            const {volumeDown} = require("./player")
             volumeDown()
         },
         "<C-0>": () => {
-            const {volumeSet} = require("./player")
             volumeSet(100)
         },
         "<C-1>": () => {
-            const {seek} = require("./player")
             seek(10)
         },
         "<C-2>": () => {
-            const {seek} = require("./player")
             seek(20)
         },
         "<C-3>": () => {
-            const {seek} = require("./player")
             seek(30)
         },
         "<C-4>": () => {
-            const {seek} = require("./player")
             seek(40)
         },
         "<C-5>": () => {
-            const {seek} = require("./player")
             seek(50)
         },
         "<C-6>": () => {
-            const {seek} = require("./player")
             seek(60)
         },
         "<C-7>": () => {
-            const {seek} = require("./player")
             seek(70)
         },
         "<C-8>": () => {
-            const {seek} = require("./player")
             seek(80)
         },
         "<C-9>": () => {
-            const {seek} = require("./player")
             seek(90)
         },
         "<C-E>": () => switchFocus("events"),
@@ -425,70 +428,55 @@ const mappings = {
         },
         "<C-f>": () => switchFocus("search"),
         "<C-g>": () => {
-            const {toggleGenius} = require("./settings")
             toggleGenius()
         },
         "<C-h>": () => {
-            const {toggleShiftLyrics} = require("./settings")
             toggleShiftLyrics()
         },
         "<C-i>": () => {
-            const {showSongInfo} = require("./dom")
             showSongInfo("current")
         },
         "<C-l>": () => switchFocus("playlist"),
         "<C-m>": () => {
-            const {toggleMute} = require("./player")
             toggleMute()
         },
         "<C-o>": () => openFolder(),
         "<C-r>": () => {
-            const {importList} = require("./playlist")
             importList()
         },
         "<C-s>": () => {
-            const {saveSettings} = require("./settings")
             saveSettings()
         },
         "<C-t>": () => {
-            const {exportList} = require("./playlist")
             exportList()
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => {
-            const {resetShowingLyrics} = require("./lyrics")
             resetShowingLyrics()
         },
         "<F2>": () => switchFocus("search"),
         "<F3>": () => switchFocus("playlist"),
         "<F4>": () => {
-            const {switchToLyrics} = require("./lyrics")
             switchToLyrics()
         },
         "<F5>": () => {
-            const {pause} = require("./player")
             pause()
         },
         "<F6>": () => {
-            const {stopAfterTrack} = require("./playlist")
             stopAfterTrack()
         },
         "<F7>": () => {
-            const {decrement} = require("./playlist")
-            decrement()
+            decrementSong()
         },
         "<F8>": () => {
-            const {increment} = require("./playlist")
-            increment()
+            incrementSong()
         },
         "<F9>": () => {
             document.getElementById("song-info").scrollBy(0, 100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<F10>": () => {
             document.getElementById("song-info").scrollBy(0, -100)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<F11>": () => {
@@ -498,21 +486,17 @@ const mappings = {
         },
         "<F12>": () => ipcRenderer.invoke("toggle-devtools"),
         "<S-F4>": () => {
-            const {switchToLyrics} = require("./lyrics")
             switchToLyrics(true)
         },
         "<S-F6>": () => {
-            const {stopAfterLastTrackOfRule} = require("./playlist")
             stopAfterLastTrackOfRule()
         },
         "<S-F9>": () => {
             document.getElementById("song-info").scrollBy(0, 1000)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<S-F10>": () => {
             document.getElementById("song-info").scrollBy(0, -1000)
-            const {stunShiftLyrics} = require("./lyrics")
             stunShiftLyrics()
         },
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
@@ -552,29 +536,23 @@ const mappings = {
     },
     "lyrics": {
         "<ArrowDown>": () => {
-            const {incrementSelectedLyrics} = require("./lyrics")
             incrementSelectedLyrics()
         },
         "<ArrowUp>": () => {
-            const {decrementSelectedLyrics} = require("./lyrics")
             decrementSelectedLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
-            const {incrementSelectedLyrics} = require("./lyrics")
             incrementSelectedLyrics()
         },
         "<C-p>": () => {
-            const {decrementSelectedLyrics} = require("./lyrics")
             decrementSelectedLyrics()
         },
         "<C-s>": () => {
-            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Enter>": () => {
-            const {selectLyricsFromResults} = require("./lyrics")
             selectLyricsFromResults()
         },
         "<Escape>": () => closeSpecialMode(),
@@ -582,13 +560,11 @@ const mappings = {
     },
     "lyricseditor": {
         "<C-Enter>": () => {
-            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
         "<C-Tab>": () => switchFocus("lyrics"),
         "<C-s>": () => {
-            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Escape>": () => closeSpecialMode(),
@@ -608,11 +584,9 @@ const mappings = {
             switchFocus("lyrics")
         },
         "<C-s>": () => {
-            const {saveLyrics} = require("./lyrics")
             saveLyrics()
         },
         "<Enter>": () => {
-            const {searchLyrics} = require("./lyrics")
             searchLyrics(document.getElementById("lyrics-search").value)
         },
         "<Escape>": () => closeSpecialMode(),
@@ -620,58 +594,48 @@ const mappings = {
     },
     "playlist": {
         "<ArrowDown>": () => {
-            const {incrementSelected} = require("./playlist")
-            incrementSelected()
+            incrementSelectedPlaylist()
         },
         "<ArrowLeft>": () => {
-            const {closeSelectedRule} = require("./playlist")
             closeSelectedRule()
         },
         "<ArrowRight>": () => {
-            const {openSelectedRule} = require("./playlist")
             openSelectedRule()
         },
         "<ArrowUp>": () => {
-            const {decrementSelected} = require("./playlist")
-            decrementSelected()
+            decrementSelectedPlaylist()
         },
         "<C-ArrowDown>": () => {
-            const {incrementSelected} = require("./playlist")
             let i = 0
             while (i < 10) {
-                incrementSelected()
+                incrementSelectedPlaylist()
                 i += 1
             }
         },
         "<C-ArrowUp>": () => {
-            const {decrementSelected} = require("./playlist")
             let i = 0
             while (i < 10) {
-                decrementSelected()
+                decrementSelectedPlaylist()
                 i += 1
             }
         },
         "<C-End>": () => {
-            const {bottomSelected} = require("./playlist")
-            bottomSelected()
+            bottomSelectedPlaylist()
         },
         "<C-Home>": () => {
-            const {topSelected} = require("./playlist")
-            topSelected()
+            topSelectedPlaylist()
         },
         "<C-PageDown>": () => {
-            const {incrementSelected} = require("./playlist")
             let i = 0
             while (i < 10) {
-                incrementSelected()
+                incrementSelectedPlaylist()
                 i += 1
             }
         },
         "<C-PageUp>": () => {
-            const {decrementSelected} = require("./playlist")
             let i = 0
             while (i < 10) {
-                decrementSelected()
+                decrementSelectedPlaylist()
                 i += 1
             }
         },
@@ -680,30 +644,24 @@ const mappings = {
             document.getElementById("main-playlist").scrollBy(0, 50)
         },
         "<C-n>": () => {
-            const {incrementSelected} = require("./playlist")
-            incrementSelected()
+            incrementSelectedPlaylist()
         },
         "<C-p>": () => {
-            const {decrementSelected} = require("./playlist")
-            decrementSelected()
+            decrementSelectedPlaylist()
         },
         "<C-y>": () => {
             document.getElementById("main-playlist").scrollBy(0, -50)
         },
         "<Delete>": () => {
-            const {deleteSelected} = require("./playlist")
-            deleteSelected()
+            deleteSelectedPlaylist()
         },
         "<End>": () => {
-            const {bottomScroll} = require("./playlist")
             bottomScroll()
         },
         "<Enter>": async() => {
-            const {playSelectedSong} = require("./playlist")
             await playSelectedSong()
         },
         "<Home>": () => {
-            const {topScroll} = require("./playlist")
             topScroll()
         },
         "<PageDown>": () => {
@@ -713,90 +671,71 @@ const mappings = {
             document.getElementById("main-playlist").scrollBy(0, -300)
         },
         "S": () => {
-            const {stopAfterLastTrackOfRule} = require("./playlist")
             stopAfterLastTrackOfRule()
         },
         "a": () => {
-            const {toggleAutoScroll} = require("./playlist")
             toggleAutoScroll()
         },
         "c": () => {
-            const {toggleAutoClose} = require("./playlist")
             toggleAutoClose()
         },
         "d": () => {
-            const {deleteSelected} = require("./playlist")
-            deleteSelected()
+            deleteSelectedPlaylist()
         },
         "h": () => {
-            const {closeSelectedRule} = require("./playlist")
             closeSelectedRule()
         },
         "i": () => {
-            const {showSongInfo} = require("./dom")
             showSongInfo("playlist")
         },
         "j": () => {
-            const {incrementSelected} = require("./playlist")
-            incrementSelected()
+            incrementSelectedPlaylist()
         },
         "k": () => {
-            const {decrementSelected} = require("./playlist")
-            decrementSelected()
+            decrementSelectedPlaylist()
         },
         "l": () => {
-            const {openSelectedRule} = require("./playlist")
             openSelectedRule()
         },
         "r": () => {
-            const {toggleAutoRemove} = require("./playlist")
             toggleAutoRemove()
         },
         "s": () => {
-            const {stopAfterTrack} = require("./playlist")
             stopAfterTrack("selected")
         },
         "t": () => {
-            const {toggleAutoLyrics} = require("./settings")
             toggleAutoLyrics()
         }
     },
     "search": {
         "<ArrowDown>": () => {
-            const {incrementSelected} = require("./dom")
-            incrementSelected()
+            incrementSelectedSearch()
         },
         "<ArrowUp>": () => {
-            const {decrementSelected} = require("./dom")
-            decrementSelected()
+            decrementSelectedSearch()
         },
         "<C-PageDown>": () => {
-            const {incrementSelected} = require("./dom")
             let i = 0
             while (i < 10) {
-                incrementSelected()
+                incrementSelectedSearch()
                 i += 1
             }
         },
         "<C-PageUp>": () => {
-            const {decrementSelected} = require("./dom")
             let i = 0
             while (i < 10) {
-                decrementSelected()
+                decrementSelectedSearch()
                 i += 1
             }
         },
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
-            const {incrementSelected} = require("./dom")
-            incrementSelected()
+            incrementSelectedSearch()
         },
         "<C-p>": () => {
-            const {decrementSelected} = require("./dom")
-            decrementSelected()
+            decrementSelectedSearch()
         },
         "<Enter>": () => {
-            const {appendSelectedSong} = require("./dom")
             appendSelectedSong()
         },
         "<PageDown>": () => {
@@ -806,40 +745,33 @@ const mappings = {
             document.getElementById("search-results").scrollBy(0, -300)
         },
         "<S-Enter>": () => {
-            const {appendSelectedSong} = require("./dom")
             appendSelectedSong(true)
         },
         "i": () => {
-            const {showSongInfo} = require("./dom")
             showSongInfo("search")
         }
     },
     "searchbox": {
         "<ArrowDown>": () => {
-            const {incrementSelected} = require("./dom")
-            incrementSelected()
+            incrementSelectedSearch()
         },
         "<C-Enter>": () => {
             const search = document.getElementById("rule-search").value
-            const {setFallbackRule} = require("./playlist")
             setFallbackRule(search)
         },
         "<C-PageDown>": () => {
-            const {incrementSelected} = require("./dom")
             let i = 0
             while (i < 10) {
-                incrementSelected()
+                incrementSelectedSearch()
                 i += 1
             }
         },
         "<C-Tab>": () => switchFocus("playlist"),
         "<C-n>": () => {
-            const {incrementSelected} = require("./dom")
-            incrementSelected()
+            incrementSelectedSearch()
         },
         "<Enter>": () => {
             const search = document.getElementById("rule-search").value
-            const {append} = require("./playlist")
             append({"rule": search})
         },
         "<PageDown>": () => {
@@ -850,7 +782,6 @@ const mappings = {
         },
         "<S-Enter>": () => {
             const search = document.getElementById("rule-search").value
-            const {append} = require("./playlist")
             append({"rule": search}, true)
         }
     },
@@ -879,12 +810,10 @@ const mappings = {
             }
         },
         "<C-Enter>": () => {
-            const {saveSettings} = require("./settings")
             saveSettings()
             closeSpecialMode()
         },
         "<C-s>": () => {
-            const {saveSettings} = require("./settings")
             saveSettings()
             closeSpecialMode()
         },
@@ -945,7 +874,6 @@ const handleMouse = e => {
         e.preventDefault()
     }
     if (queryMatch(e, "#song-info, #fs-lyrics")) {
-        const {stunShiftLyrics} = require("./lyrics")
         stunShiftLyrics()
     }
     let mode = document.body.getAttribute("focus-el")
@@ -983,18 +911,15 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#make-fallback")) {
         const search = document.getElementById("rule-search").value
-        const {setFallbackRule} = require("./playlist")
         setFallbackRule(search)
         return
     }
     if (queryMatch(e, "#add-songs")) {
         const search = document.getElementById("rule-search").value
         if (mode === "searchbox") {
-            const {append} = require("./playlist")
             append({"rule": search})
         }
         if (mode === "search") {
-            const {appendSelectedSong} = require("./dom")
             appendSelectedSong()
         }
     }
@@ -1013,48 +938,39 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#export-playlist")) {
-        const {exportList} = require("./playlist")
         exportList()
         return
     }
     if (queryMatch(e, "#import-playlist")) {
-        const {importList} = require("./playlist")
         importList()
         return
     }
     if (queryMatch(e, ".save-settings")) {
-        const {saveSettings} = require("./settings")
         saveSettings()
         closeSpecialMode()
         return
     }
     if (queryMatch(e, "#prev, #fs-prev")) {
-        const {decrement} = require("./playlist")
-        decrement()
+        decrementSong()
         return
     }
     if (queryMatch(e, "#pause, #fs-pause")) {
-        const {pause} = require("./player")
         pause()
         return
     }
     if (queryMatch(e, "#next, #fs-next")) {
-        const {increment} = require("./playlist")
-        increment()
+        incrementSong()
         return
     }
     if (queryMatch(e, "#show-help")) {
-        const {resetShowingLyrics} = require("./lyrics")
         resetShowingLyrics()
         return
     }
     if (queryMatch(e, "#show-lyrics")) {
-        const {switchToLyrics} = require("./lyrics")
         switchToLyrics()
         return
     }
     if (queryMatch(e, "#fetch-lyrics")) {
-        const {switchToLyrics} = require("./lyrics")
         switchToLyrics(true)
         return
     }
@@ -1075,12 +991,10 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#lyrics-query")) {
-        const {searchLyrics} = require("./lyrics")
         searchLyrics(document.getElementById("lyrics-search").value)
         return
     }
     if (queryMatch(e, "#lyrics-save")) {
-        const {saveLyrics} = require("./lyrics")
         saveLyrics()
         return
     }
@@ -1096,5 +1010,3 @@ const handleMouse = e => {
         switchFocus("lyrics")
     }
 }
-
-module.exports = {init}

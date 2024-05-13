@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2023 Jelmer van Arnhem
+*  Copyright (C) 2021-2024 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,17 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-"use strict"
+import {basename, dirname, join, resolve} from "node:path"
+import {
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+    statSync,
+    unlinkSync,
+    watchFile as watchFileFS,
+    writeFileSync
+} from "node:fs"
 
 /**
  * Check if a node is an element, taking subframes into account.
@@ -37,7 +47,7 @@ const isElement = el => {
  * @param {Event} e
  * @param {string} query
  */
-const queryMatch = (e, query) => e?.composedPath?.().find(el => {
+export const queryMatch = (e, query) => e?.composedPath?.().find(el => {
     if (!isElement(el)) {
         return false
     }
@@ -52,7 +62,7 @@ const queryMatch = (e, query) => e?.composedPath?.().find(el => {
  * Format a number of seconds into minutes and hours as needed.
  * @param {number|null|undefined} total
  */
-const formatTime = total => {
+export const formatTime = total => {
     if (total === null || total === undefined || isNaN(Number(total))) {
         return ""
     }
@@ -158,7 +168,7 @@ const displayNotificationTimer = () => {
  * @param {NotificationEvent["type"]} type
  * @param {boolean} linger
  */
-const notify = (msg, type = "err", linger = true) => {
+export const notify = (msg, type = "err", linger = true) => {
     let color = "var(--tertiary)"
     if (type.startsWith("info")) {
         color = "var(--primary)"
@@ -178,8 +188,7 @@ const notify = (msg, type = "err", linger = true) => {
  * Check if a path is a directory.
  * @param {string} loc
  */
-const isDirectory = loc => {
-    const {statSync} = require("fs")
+export const isDirectory = loc => {
     try {
         return statSync(loc).isDirectory()
     } catch {
@@ -191,8 +200,7 @@ const isDirectory = loc => {
  * Check if a path is a file.
  * @param {string} loc
  */
-const isFile = loc => {
-    const {statSync} = require("fs")
+export const isFile = loc => {
     try {
         return statSync(loc).isFile()
     } catch {
@@ -204,8 +212,7 @@ const isFile = loc => {
  * Join multiple path parts into a single resolved path.
  * @param {string[]} paths
  */
-const joinPath = (...paths) => {
-    const {join, resolve} = require("path")
+export const joinPath = (...paths) => {
     if (process.platform === "win32") {
         return resolve(join(...paths)).replace(/\\/g, "/")
     }
@@ -216,27 +223,20 @@ const joinPath = (...paths) => {
  * Return the directory name of the path.
  * @param {string} loc
  */
-const dirName = loc => {
-    const {dirname} = require("path")
-    return dirname(loc)
-}
+export const dirName = loc => dirname(loc)
 
 /**
  * Return the last part of the path, usually the filename.
  * @param {string} loc
  */
-const basePath = loc => {
-    const {basename} = require("path")
-    return basename(loc)
-}
+export const basePath = loc => basename(loc)
 
 /**
  * Read the file contents of a file and parse it as JSON.
  * @param {string} loc
  * @returns {any|null}
  */
-const readJSON = loc => {
-    const {readFileSync} = require("fs")
+export const readJSON = loc => {
     try {
         return JSON.parse(readFileSync(loc).toString())
     } catch {
@@ -249,8 +249,7 @@ const readJSON = loc => {
  * @param {string} loc
  * @returns {string|null}
  */
-const readFile = loc => {
-    const {readFileSync} = require("fs")
+export const readFile = loc => {
     try {
         return readFileSync(loc).toString()
     } catch {
@@ -264,8 +263,7 @@ const readFile = loc => {
  * @param {any} data
  * @param {number | undefined | null} indent
  */
-const writeJSON = (loc, data, indent = null) => {
-    const {writeFileSync} = require("fs")
+export const writeJSON = (loc, data, indent = null) => {
     try {
         writeFileSync(loc, JSON.stringify(data, null, indent ?? undefined))
         return true
@@ -279,8 +277,7 @@ const writeJSON = (loc, data, indent = null) => {
  * @param {string} loc
  * @param {string|Buffer} data
  */
-const writeFile = (loc, data) => {
-    const {writeFileSync} = require("fs")
+export const writeFile = (loc, data) => {
     try {
         writeFileSync(loc, data)
         return true
@@ -293,9 +290,8 @@ const writeFile = (loc, data) => {
  * Make a directory at a location.
  * @param {string} loc
  */
-const makeDir = loc => {
+export const makeDir = loc => {
     try {
-        const {mkdirSync} = require("fs")
         mkdirSync(loc, {"recursive": true})
         return true
     } catch {
@@ -308,9 +304,8 @@ const makeDir = loc => {
  * Delete a folder at a location, forced and recursively.
  * @param {string} loc
  */
-const deleteFolder = loc => {
+export const deleteFolder = loc => {
     try {
-        const {rmSync} = require("fs")
         rmSync(loc, {"force": true, "recursive": true})
         return true
     } catch {
@@ -323,9 +318,8 @@ const deleteFolder = loc => {
  * Delete a file at a location.
  * @param {string} loc
  */
-const deleteFile = loc => {
+export const deleteFile = loc => {
     try {
-        const {unlinkSync} = require("fs")
         unlinkSync(loc)
         return true
     } catch {
@@ -339,8 +333,7 @@ const deleteFile = loc => {
  * @param {string} file
  * @param {() => void} call
  */
-const watchFile = (file, call) => {
-    const {"watchFile": watchFileFS} = require("fs")
+export const watchFile = (file, call) => {
     watchFileFS(file, {"interval": 500}, call)
 }
 
@@ -348,8 +341,7 @@ const watchFile = (file, call) => {
  * List all files in a folder recursively.
  * @param {string} dir
  */
-const listFiles = dir => {
-    const {readdirSync} = require("fs")
+export const listFiles = dir => {
     /** @type {string[]} */
     const files = []
     readdirSync(dir, {"withFileTypes": true}).forEach(entry => {
@@ -364,7 +356,7 @@ const listFiles = dir => {
 }
 
 /** Reset the welcome state of the app to the help section. */
-const resetWelcome = () => {
+export const resetWelcome = () => {
     const infoEl = document.getElementById("song-info")
     if (!infoEl) {
         return
@@ -619,25 +611,4 @@ even after reading this entire section and the startup help using "--help",
 you are more than welcome to reach out on Github.
 Please visit Jelmerro/Garlmap and make an issue with your question or request.
 `.split("\n").map(l => l || "\n\n").join(" ")
-}
-
-module.exports = {
-    basePath,
-    deleteFile,
-    deleteFolder,
-    dirName,
-    formatTime,
-    isDirectory,
-    isFile,
-    joinPath,
-    listFiles,
-    makeDir,
-    notify,
-    queryMatch,
-    readFile,
-    readJSON,
-    resetWelcome,
-    watchFile,
-    writeFile,
-    writeJSON
 }
