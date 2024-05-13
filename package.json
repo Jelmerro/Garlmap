@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "genius-lyrics": "4.4.7",
-    "music-metadata": "7.13.0"
+    "music-metadata": "7.14.0"
   },
   "engines": {
     "node": ">=20"
