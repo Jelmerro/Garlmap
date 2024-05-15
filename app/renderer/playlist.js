@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {displayCurrentSong, load, queue} from "./player.js"
+import {displayCurrentSong, load, queue, stopPlayback} from "./player.js"
 import {
     formatTime,
     isDirectory,
@@ -625,7 +625,7 @@ export const exportList = () => {
         }],
         "title": "Export playlist"
     }).then(info => {
-        if (info.canceled) {
+        if (!info || info?.canceled) {
             return
         }
         let file = String(info.filePath)
@@ -660,6 +660,17 @@ export const exportList = () => {
     })
 }
 
+export const clearPlaylist = async() => {
+    rulelist = []
+    ruleIdx = 0
+    selectedRuleIdx = null
+    selectedPathIdx = null
+    pathIdx = 0
+    generatePlaylistView()
+    await displayCurrentSong(null)
+    resetShowingLyrics()
+}
+
 export const importList = () => {
     ipcRenderer.invoke("dialog-open", {
         "filters": [{
@@ -669,7 +680,7 @@ export const importList = () => {
         "properties": ["openFile"],
         "title": "Import playlist"
     }).then(async info => {
-        if (info.canceled) {
+        if (!info || info?.canceled) {
             return
         }
         if (info.filePaths[0]?.endsWith(".garlmap.json")) {
@@ -682,7 +693,13 @@ export const importList = () => {
                 notify("Playlist base folder could not be found")
                 return
             }
-            await scanner(imported.folder)
+            const currentFolder = document.getElementById("status-folder")
+            if (currentFolder?.textContent === imported.folder) {
+                await stopPlayback()
+                await clearPlaylist()
+            } else {
+                await scanner(imported.folder)
+            }
             imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
                 const songs = r.songs?.map(s => songByIdOrPath(s?.id, s?.path))
                     .filter(s => s?.id)
@@ -701,15 +718,4 @@ export const importList = () => {
             playFromPlaylist(document.getElementById("toggle-autoplay").checked)
         }
     })
-}
-
-export const clearPlaylist = async() => {
-    rulelist = []
-    ruleIdx = 0
-    selectedRuleIdx = null
-    selectedPathIdx = null
-    pathIdx = 0
-    generatePlaylistView()
-    await displayCurrentSong(null)
-    resetShowingLyrics()
 }

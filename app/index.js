@@ -576,13 +576,15 @@ ipcMain.handle("toggle-devtools",
     () => mainWindow?.webContents.toggleDevTools())
 ipcMain.handle("dialog-open", (_, options) => {
     if (mainWindow) {
-        dialog.showOpenDialog(mainWindow, options)
+        return dialog.showOpenDialog(mainWindow, options)
     }
+    return null
 })
 ipcMain.handle("dialog-save", (_, options) => {
     if (mainWindow) {
-        dialog.showSaveDialog(mainWindow, options)
+        return dialog.showSaveDialog(mainWindow, options)
     }
+    return null
 })
 ipcMain.on("destroy-window", (_, error) => {
     if (error && mainWindow) {

@@ -14,11 +14,13 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 - Switch back to Chromium's MediaSession API instead of dedicated MPRIS D-bus API as issues are fixed
 - All code to use ESM instead of CommonJS
+- Dialogs are now proper modals again as upstream bugs are fixed
+- If a playlist file is loaded for the same folder, scanning is now skipped
 
 ### Versions
 
-- Electron 30.0.3 (was 28.1.3)
-- Chromium 124.0.6367.119 (was 120.0.6099.199)
+- Electron 30.0.6 (was 28.1.3)
+- Chromium 124.0.6367.207 (was 120.0.6099.199)
 
 ## [2.1.0](https://github.com/Jelmerro/Garlmap/compare/2.0.1...2.1.0) - 2024-01-11
 
