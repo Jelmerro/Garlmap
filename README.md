@@ -35,7 +35,7 @@ I host a custom DNF repository that you can use for Garlmap,
 or you can download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
 
 ```bash
-sudo dnf config-manager --add-repo https://jelmerro.nl/fedora/jelmerro.repo
+sudo dnf config-manager addrepo --from-repofile=https://jelmerro.nl/fedora/jelmerro.repo
 sudo dnf install garlmap
 ```
 

@@ -29,10 +29,72 @@ const ebuilder = {"config": {
             files?.filter(f => !f.match(/en-US\.pak/))
                 .forEach(f => unlinkSync(localeDir + f))
         })
+    },
+    "appId": "com.github.Jelmerro.garlmap",
+    "copyright": "Copyright @ Jelmer van Arnhem | "
+        + "Licensed as free software (GPL-3.0 or later)",
+    "deb": {
+        "afterInstall": "./after-install.sh",
+        "fpm": ["--after-upgrade=./after-install.sh", "-d mpv"]
+    },
+    "files": [
+        "app/img/*.png",
+        "app/img/icon/1024x1024.png",
+        "app/*.js",
+        "app/renderer/*"
+    ],
+    "linux": {
+        "category": "Audio;AudioVideo;Player;",
+        "executableArgs": ["--ozone-platform-hint=auto"],
+        "executableName": "garlmap",
+        "icon": "app/img/icon",
+        "maintainer": "Jelmer van Arnhem",
+        "publish": null,
+        "target": [
+            {"arch": ["arm64", "x64"], "target": "AppImage"},
+            {"arch": ["arm64", "x64"], "target": "deb"},
+            {"arch": ["arm64", "x64"], "target": "pacman"},
+            {"arch": ["arm64", "x64"], "target": "rpm"},
+            {"arch": ["x64"], "target": "snap"},
+            {"arch": ["arm64", "x64"], "target": "tar.gz"}
+        ]
+    },
+    "mac": {
+        "category": "public.app-category.music",
+        "icon": "app/img/icon",
+        "publish": null,
+        "target": [
+            {"arch": ["arm64", "x64"], "target": "zip"}
+        ]
+    },
+    "nsis": {
+        "differentialPackage": false,
+        "license": "LICENSE",
+        "oneClick": false
+    },
+    "pacman": {"fpm": ["-d mpv"]},
+    "productName": "Garlmap",
+    "rpm": {
+        "afterInstall": "./after-install.sh",
+        "fpm": [
+            "--rpm-rpmbuild-define=_build_id_links none",
+            "--after-upgrade=./after-install.sh",
+            "-d mpv"
+        ]
+    },
+    "win": {
+        "icon": "app/img/icon/512x512.png",
+        "legalTrademarks": "Copyright @ Jelmer van Arnhem | "
+            + "Licensed as free software (GPL-3.0 or later)",
+        "publish": null,
+        "target": [
+            {"arch": ["x64"], "target": "nsis"},
+            {"arch": ["x64"], "target": "portable"},
+            {"arch": ["arm64", "x64"], "target": "zip"}
+        ]
     }
 }}
-rmSync("dist/", {"force": true, "recursive": true})
-process.argv.slice(1).forEach(a => {
+process.argv.slice(2).forEach(a => {
     if (a === "--help") {
         console.info("Basic Garlmap build script, these are its options:")
         console.info(" --all, --linux, --win, --mac")
@@ -49,4 +111,5 @@ process.argv.slice(1).forEach(a => {
         ebuilder.mac = []
     }
 })
+rmSync("dist/", {"force": true, "recursive": true})
 build(ebuilder).then(e => console.info(e)).catch(e => console.error(e))
