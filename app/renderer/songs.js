@@ -70,7 +70,7 @@ import {
 } from "../util.js"
 import {clearPlaylist} from "./playlist.js"
 import {ipcRenderer} from "electron"
-import musicMetadata from "music-metadata"
+import {parseFile} from "music-metadata"
 import {stopPlayback} from "./player.js"
 
 /** @type {string|null} */
@@ -158,10 +158,10 @@ const processFile = async(path, id) => {
     }
     if (cache === "lyrics" || !song) {
         document.getElementById("status-scan").textContent = `Reading ${path}`
-        let details = await musicMetadata.parseFile(path, {"skipCovers": true})
+        let details = await parseFile(path, {"skipCovers": true})
             .catch(() => null)
         if (!details?.format?.duration) {
-            details = await musicMetadata.parseFile(
+            details = await parseFile(
                 path, {"duration": true, "skipCovers": true}).catch(() => null)
         }
         if (!details?.format?.duration) {
@@ -339,7 +339,7 @@ export const query = search => {
     /** @type {{"cased": boolean, "name": string, "part": string}|null} */
     let globalSearch = {"cased": false, "name": "", "part": ""}
     if (!validProps.includes(filters[0]?.name)) {
-        globalSearch = filters.shift() ?? null
+        globalSearch = filters.shift() ?? globalSearch
         globalSearch.cased = low(globalSearch.part) !== globalSearch.part
     }
     const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
@@ -525,7 +525,7 @@ export const query = search => {
 
 export const coverArt = async p => {
     try {
-        const details = await musicMetadata.parseFile(p, {"skipCovers": false})
+        const details = await parseFile(p, {"skipCovers": false})
             .catch(() => null)
         const pic = details?.common?.picture?.[0]
         if (pic) {
