@@ -26,7 +26,11 @@ import {spawn} from "child_process"
  * @param {(err?: Error) => void} close
  */
 const MPVSocket = (path, close) => {
-    /** @type {Socket&{send?: (event: string, ...args: any[]) => void}} */
+    /** @type {Socket&{
+     *   send?: (event: string, ...args: any[]) => void
+     * }|{
+     *   send?: (get: "get_property", val: string) => string | Promise<string>
+     * }} */
     const socket = new Socket()
     const requests = new Map()
     const start = Date.now()
@@ -106,7 +110,9 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
         throw Error("Path is required")
     }
     /** @type {EventEmitter&{
-     *   command?: (event: string, ...args: any[]) => void
+     *   command: (event: string, ...args: any[]) => void | Promise<void>
+     *   set: (...args: any[]) => void | Promise<void>
+     *   get: (val: string) => string | Promise<string> | null
      * }}
      */
     const mpv = new EventEmitter()
@@ -143,7 +149,7 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
     socket.on("event", (eventName, data) => mpv.emit(eventName, data))
     mpv.command = socket.send ?? (() => null)
     mpv.set = (...a) => socket.send?.("set_property", ...a)
-    mpv.get = val => socket.send?.("get_property", val)
+    mpv.get = val => socket.send?.("get_property", val) ?? null
     return mpv
 }
 

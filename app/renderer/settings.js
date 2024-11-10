@@ -15,7 +15,15 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {deleteFile, joinPath, notify, writeJSON} from "../util.js"
+import {
+    deleteFile,
+    isHTMLInputElement,
+    isHTMLLabelElement,
+    isHTMLSelectElement,
+    joinPath,
+    notify,
+    writeJSON
+} from "../util.js"
 import {pause, init as startMpv} from "./player.js"
 import {scanner, setStartupSettings} from "./songs.js"
 import {
@@ -32,7 +40,7 @@ import {ipcRenderer} from "electron"
  *   autoplay?: boolean | undefined,
  *   cache: string | undefined,
  *   cacheClean?: boolean | undefined,
- *   configDir?: string | undefined,
+ *   configDir: string,
  *   customTheme: string | null,
  *   debug?: boolean | undefined,
  *   dumpLyrics?: boolean | undefined,
@@ -51,7 +59,7 @@ import {ipcRenderer} from "electron"
 /** Toggle the auto lyrics feature. */
 export const toggleAutoLyrics = () => {
     const autoLyricsEl = document.getElementById("toggle-autolyrics")
-    if (autoLyricsEl instanceof HTMLInputElement) {
+    if (isHTMLInputElement(autoLyricsEl)) {
         autoLyricsEl.checked = !autoLyricsEl.checked
     }
 }
@@ -60,11 +68,11 @@ export const toggleAutoLyrics = () => {
 export const toggleShiftLyrics = () => {
     const timingEl = document.getElementById("setting-shift-timer")
     const toggleEl = document.getElementById("toggle-shift-lyrics")
-    if (timingEl instanceof HTMLInputElement) {
+    if (isHTMLInputElement(timingEl)) {
         if (Number(timingEl.value) > 0) {
             return
         }
-        if (toggleEl instanceof HTMLInputElement) {
+        if (isHTMLInputElement(toggleEl)) {
             toggleEl.checked = !toggleEl.checked
         }
     }
@@ -73,7 +81,7 @@ export const toggleShiftLyrics = () => {
 /** Toggle the automatic invocation of the Genius API. */
 export const toggleGenius = () => {
     const toggleGeniusEl = document.getElementById("toggle-genius")
-    if (toggleGeniusEl instanceof HTMLInputElement) {
+    if (isHTMLInputElement(toggleGeniusEl)) {
         toggleGeniusEl.checked = !toggleGeniusEl.checked
     }
 }
@@ -91,24 +99,24 @@ export const saveSettings = () => {
     if (folder && folder !== "No folder selected") {
         config.folder = folder
     }
-    config.autoScroll = document.getElementById("toggle-autoscroll").checked
-    config.autoClose = document.getElementById("toggle-autoclose").checked
-    config.autoRemove = document.getElementById("toggle-autoremove").checked
-    config.autoLyrics = document.getElementById("toggle-autolyrics").checked
-    config.useGenius = document.getElementById("toggle-genius").checked
+    config.autoScroll = document.getElementById("toggle-autoscroll")?.checked
+    config.autoClose = document.getElementById("toggle-autoclose")?.checked
+    config.autoRemove = document.getElementById("toggle-autoremove")?.checked
+    config.autoLyrics = document.getElementById("toggle-autolyrics")?.checked
+    config.useGenius = document.getElementById("toggle-genius")?.checked
     config.shiftTimer = Number(document.getElementById(
-        "setting-shift-timer").value) || 0
-    config.shiftLyrics = document.getElementById("toggle-shift-lyrics").checked
+        "setting-shift-timer")?.value) || 0
+    config.shiftLyrics = document.getElementById("toggle-shift-lyrics")?.checked
         && config.shiftTimer === 0
-    config.cacheClean = document.getElementById("toggle-cache-clean").checked
-    config.cache = document.getElementById("setting-cache").value
-    config.twoColumn = document.getElementById("setting-two-column").value
+    config.cacheClean = document.getElementById("toggle-cache-clean")?.checked
+    config.cache = document.getElementById("setting-cache")?.value
+    config.twoColumn = document.getElementById("setting-two-column")?.value
     config.fontSize = Number(document.getElementById(
-        "setting-fontsize").value) || 14
-    config.mpv = document.getElementById("setting-mpv").value
-    config.fallback = document.getElementById("setting-fallback").value
-    config.autoplay = document.getElementById("toggle-autoplay").checked
-    config.apiKey = document.getElementById("setting-apikey").value
+        "setting-fontsize")?.value) || 14
+    config.mpv = document.getElementById("setting-mpv")?.value
+    config.fallback = document.getElementById("setting-fallback")?.value
+    config.autoplay = document.getElementById("toggle-autoplay")?.checked
+    config.apiKey = document.getElementById("setting-apikey")?.value
     if (!config.autoScroll) {
         delete config.autoScroll
     }
@@ -363,15 +371,15 @@ export const init = () => {
          * @param {Config} config
          */
         config => {
-            localStorage.setItem("startup-config-dir", config.configDir ?? "")
+            localStorage.setItem("startup-config-dir", config.configDir)
             // Two column
             document.body.setAttribute(
                 "two-column", config.twoColumn || "mobile")
             const twoColumnEl = document.getElementById("setting-two-column")
-            if (twoColumnEl instanceof HTMLSelectElement) {
+            if (isHTMLSelectElement(twoColumnEl)) {
                 twoColumnEl.value = config.twoColumn || "mobile"
                 twoColumnEl.addEventListener("input", () => {
-                    if (twoColumnEl instanceof HTMLSelectElement) {
+                    if (isHTMLSelectElement(twoColumnEl)) {
                         document.body.setAttribute(
                             "two-column", twoColumnEl.value)
                     }
@@ -379,7 +387,7 @@ export const init = () => {
             }
             // Autoclose
             const autoCloseEl = document.getElementById("toggle-autoclose")
-            if (autoCloseEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(autoCloseEl)) {
                 autoCloseEl.checked = config.autoClose ?? false
                 autoCloseEl.parentNode?.addEventListener("click", () => {
                     toggleAutoClose()
@@ -387,14 +395,14 @@ export const init = () => {
             }
             // Autolyrics
             const autoLyricsEl = document.getElementById("toggle-autolyrics")
-            if (autoLyricsEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(autoLyricsEl)) {
                 autoLyricsEl.checked = config.autoLyrics ?? false
                 autoLyricsEl.parentNode?.addEventListener(
                     "click", () => toggleAutoLyrics())
             }
             // Autoremove
             const autoRemoveEl = document.getElementById("toggle-autoremove")
-            if (autoRemoveEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(autoRemoveEl)) {
                 autoRemoveEl.checked = config.autoRemove ?? false
                 autoRemoveEl.parentNode?.addEventListener("click", () => {
                     toggleAutoRemove()
@@ -402,7 +410,7 @@ export const init = () => {
             }
             // Autoscroll
             const autoScrollEl = document.getElementById("toggle-autoscroll")
-            if (autoScrollEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(autoScrollEl)) {
                 autoScrollEl.checked = config.autoScroll ?? false
                 autoScrollEl.parentNode?.addEventListener("click", () => {
                     toggleAutoScroll()
@@ -410,12 +418,12 @@ export const init = () => {
             }
             // Cache
             const settingCacheEl = document.getElementById("setting-cache")
-            if (settingCacheEl instanceof HTMLSelectElement) {
+            if (isHTMLSelectElement(settingCacheEl)) {
                 settingCacheEl.value = config.cache || "all"
             }
             // Cacheclean
             const cacheCleanEl = document.getElementById("setting-cache-clean")
-            if (cacheCleanEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(cacheCleanEl)) {
                 cacheCleanEl.checked = config.cacheClean ?? false
                 cacheCleanEl.addEventListener("click", () => {
                     cacheCleanEl.checked = !cacheCleanEl.checked
@@ -424,12 +432,12 @@ export const init = () => {
             }
             // Shifttimer
             const shiftTimerEl = document.getElementById("setting-shift-timer")
-            if (shiftTimerEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(shiftTimerEl)) {
                 shiftTimerEl.value = `${config.shiftTimer || 0}`
                 shiftTimerEl.addEventListener("input", () => {
                     const shiftLyricsEl = document.getElementById(
                         "toggle-shift-lyrics")?.parentNode
-                    if (!(shiftLyricsEl instanceof HTMLLabelElement)) {
+                    if (!isHTMLLabelElement(shiftLyricsEl)) {
                         return
                     }
                     const val = shiftTimerEl.value
@@ -442,10 +450,10 @@ export const init = () => {
             }
             // Shiftlyrics
             const shiftLyricsEl = document.getElementById("toggle-shift-lyrics")
-            if (shiftLyricsEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(shiftLyricsEl)) {
                 shiftLyricsEl.checked = config.shiftLyrics
                     || Boolean(config.shiftTimer)
-                if (shiftLyricsEl.parentNode instanceof HTMLLabelElement) {
+                if (isHTMLLabelElement(shiftLyricsEl.parentNode)) {
                     if (config.shiftTimer) {
                         shiftLyricsEl.parentNode.style.display = "none"
                     }
@@ -455,7 +463,7 @@ export const init = () => {
                 "click", () => toggleShiftLyrics())
             // Fontsize
             const fontsizeEl = document.getElementById("setting-fontsize")
-            if (fontsizeEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(fontsizeEl)) {
                 fontsizeEl.value = `${config.fontSize || "14"}`
             }
             // Customtheme
@@ -471,7 +479,7 @@ export const init = () => {
             }
             // Usegenius
             const toggleGeniusEl = document.getElementById("toggle-genius")
-            if (toggleGeniusEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(toggleGeniusEl)) {
                 toggleGeniusEl.checked = config.useGenius ?? true
                 toggleGeniusEl.parentNode?.addEventListener(
                     "click", () => toggleGenius())
@@ -480,7 +488,7 @@ export const init = () => {
             setStartupSettings(config.configDir)
             // Mpv
             const mpvEl = document.getElementById("setting-mpv")
-            if (mpvEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(mpvEl)) {
                 mpvEl.value = config.mpv || ""
             }
             let defaultMpv = "mpv"
@@ -490,15 +498,15 @@ export const init = () => {
             startMpv(config.mpv || defaultMpv, config.configDir)
             // Fallback
             const fallbackEl = document.getElementById("setting-fallback")
-            if (fallbackEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(fallbackEl)) {
                 fallbackEl.value = config.fallback || "order=shuffle"
             }
             // Autoplay
             const autoplayEl = document.getElementById("toggle-autoplay")
-            if (autoplayEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(autoplayEl)) {
                 autoplayEl.parentNode?.addEventListener("click", () => {
                     autoplayEl.checked = !autoplayEl.checked
-                    if (autoplayEl.parentNode instanceof HTMLLabelElement) {
+                    if (isHTMLLabelElement(autoplayEl.parentNode)) {
                         autoplayEl.parentNode.focus()
                     }
                 })
@@ -506,12 +514,12 @@ export const init = () => {
             }
             // Api key
             const apikeyEl = document.getElementById("setting-apikey")
-            if (apikeyEl instanceof HTMLInputElement) {
+            if (isHTMLInputElement(apikeyEl)) {
                 apikeyEl.value = config.apiKey ?? ""
             }
             // Scan folder on startup
-            if (config.folder) {
-                setTimeout(async() => {
+            setTimeout(async() => {
+                if (config.folder) {
                     await scanner(config.folder, config.dumpLyrics)
                     if (config.fallback) {
                         setFallbackRule(config.fallback)
@@ -519,7 +527,7 @@ export const init = () => {
                     if (config.autoplay) {
                         pause()
                     }
-                }, 10)
-            }
+                }
+            }, 10)
         })
 }

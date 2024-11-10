@@ -29,14 +29,188 @@ import {coverArt} from "./songs.js"
 import {ipcRenderer} from "electron"
 import mpvAPI from "./mpv.js"
 
+/** @type {ReturnType<typeof mpvAPI>|null} */
 let mpv = null
 let volume = 100
 let hasAnySong = false
 let stoppedAfterTrack = false
 const audioEl = document.createElement("audio")
 document.addEventListener("DOMContentLoaded", () => {
-    document.body.appendChild(audioEl)
+    document.body.append(audioEl)
 })
+
+/** Checks if there are songs queued and mpv is defined. */
+export const isAlive = () => hasAnySong && mpv
+
+const updatePlayButton = async() => {
+    if (!isAlive() || await mpv?.get("pause")) {
+        document.getElementById("pause").querySelector("img").src
+            = "../img/play.png"
+        document.getElementById("fs-pause").querySelector("img").src
+            = "../img/play.png"
+        navigator.mediaSession.playbackState = "paused"
+        audioEl.pause()
+    } else {
+        document.getElementById("pause").querySelector("img").src
+            = "../img/pause.png"
+        document.getElementById("fs-pause").querySelector("img").src
+            = "../img/pause.png"
+        navigator.mediaSession.playbackState = "playing"
+        audioEl.play().catch(() => null)
+    }
+}
+
+export const pause = async() => {
+    if (isAlive() && !stoppedAfterTrack) {
+        await mpv?.set("pause", !await mpv.get("pause"))
+    } else {
+        playFromPlaylist()
+        stoppedAfterTrack = false
+    }
+    updatePlayButton()
+}
+
+export const relativeSeek = async seconds => {
+    if (isAlive() && !stoppedAfterTrack) {
+        await mpv?.command("seek", seconds, "relative")
+    }
+}
+
+export const seek = async percent => {
+    if (isAlive() && !stoppedAfterTrack) {
+        const {current} = currentAndNext()
+        const {duration} = current
+        await mpv?.command("seek", percent * duration / 100, "absolute")
+    }
+}
+
+export const load = async file => {
+    hasAnySong = true
+    stoppedAfterTrack = false
+    document.getElementById("volume-slider").disabled = null
+    document.getElementById("fs-volume-slider").disabled = null
+    await mpv?.command("loadfile", file)
+    await mpv?.set("pause", false)
+}
+
+export const queue = async file => {
+    await mpv?.command("playlist-clear")
+    if (file) {
+        await mpv?.command("loadfile", file, "append")
+    }
+}
+
+const updateVolume = async() => {
+    if (isAlive()) {
+        await mpv?.set("volume", volume)
+    } else {
+        volume = 100
+    }
+    document.getElementById("volume-slider").value = volume
+    document.getElementById("fs-volume-slider").value = volume
+    if (isAlive() && await mpv?.get("mute")) {
+        document.getElementById("volume-slider").className = "muted"
+        document.getElementById("fs-volume-slider").className = "muted"
+    } else {
+        document.getElementById("volume-slider").className = ""
+        document.getElementById("fs-volume-slider").className = ""
+    }
+}
+
+export const volumeSet = async vol => {
+    volume = Math.min(130, Math.max(0, vol))
+    await updateVolume()
+}
+
+export const volumeUp = async() => {
+    volume = Math.min(130, volume + 10)
+    await updateVolume()
+}
+
+export const volumeDown = async() => {
+    volume = Math.max(0, volume - 10)
+    await updateVolume()
+}
+
+export const toggleMute = async() => {
+    if (isAlive()) {
+        await mpv?.set("mute", !await mpv.get("mute"))
+    }
+    await updateVolume()
+}
+
+export const stopPlayback = async() => {
+    if (isAlive()) {
+        await mpv?.command("stop")?.catch(() => null)
+    }
+}
+
+export const displayCurrentSong = async song => {
+    const els = [
+        document.getElementById("current-song"),
+        document.getElementById("fs-current-song")
+    ].flatMap(e => e ?? [])
+    for (const songContainer of els) {
+        if (!song) {
+            songContainer.textContent = "Welcome to Garlmap"
+            continue
+        }
+        songContainer.textContent = ""
+        const titleEl = document.createElement("span")
+        titleEl.className = "title"
+        titleEl.textContent = song.title
+        songContainer.append(titleEl)
+        if (!song.title || !song.artist) {
+            titleEl.textContent = song.id
+            continue
+        }
+        const artistEl = document.createElement("span")
+        artistEl.className = "artist"
+        artistEl.textContent = song.artist
+        songContainer.append(artistEl)
+        const otherInfo = document.createElement("span")
+        otherInfo.className = "other-info"
+        const albumEl = document.createElement("span")
+        albumEl.className = "album"
+        albumEl.textContent = song.album
+        otherInfo.append(albumEl)
+        const bundledInfo = document.createElement("span")
+        if (song.track || song.disc) {
+            bundledInfo.textContent = ` ${song.track || "?"}/${song.tracktotal
+                || "?"} on CD ${song.disc || "?"}/${song.disctotal || "?"}`
+        }
+        if (song.date) {
+            bundledInfo.textContent += ` from ${song.date}`
+        }
+        otherInfo.append(bundledInfo)
+        songContainer.append(otherInfo)
+    }
+    if (!song) {
+        return
+    }
+    // MediaSession details
+    const cover = await coverArt(song.path)
+    if (cover) {
+        document.getElementById("song-cover").src = cover
+        document.getElementById("song-cover").style.display = "initial"
+        document.getElementById("fs-song-cover").src = cover
+        document.getElementById("fs-song-cover").style.display = "initial"
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+            ...song, "artwork": [{"src": cover}]
+        })
+    } else {
+        document.getElementById("song-cover").removeAttribute("src")
+        document.getElementById("song-cover").style.display = "none"
+        document.getElementById("fs-song-cover").removeAttribute("src")
+        document.getElementById("fs-song-cover").style.display = "none"
+        navigator.mediaSession.metadata = new window.MediaMetadata({...song})
+    }
+    audioEl.src = "./empty.mp3"
+    audioEl.loop = true
+    audioEl.pause()
+    await audioEl.play().catch(() => null)
+    updatePlayButton()
+}
 
 export const init = (path, configDir) => {
     mpv = mpvAPI({
@@ -70,7 +244,7 @@ export const init = (path, configDir) => {
             document.getElementById("fs-progress-played").textContent = played
             document.getElementById("fs-progress-played").style.width = perc
             document.getElementById("fs-progress-string").textContent = played
-            if (document.getElementById("toggle-shift-lyrics").checked) {
+            if (document.getElementById("toggle-shift-lyrics")?.checked) {
                 shiftLyricsByPercentage(parseFloat(perc))
             }
             return
@@ -86,8 +260,8 @@ export const init = (path, configDir) => {
             current.stopAfter = false
             stoppedAfterTrack = true
             await playFromPlaylist(false)
-            await mpv.set("pause",
-                !document.getElementById("toggle-autoplay").checked)
+            await mpv?.set("pause",
+                !document.getElementById("toggle-autoplay")?.checked)
             updatePlayButton()
         }
     })
@@ -107,7 +281,7 @@ export const init = (path, configDir) => {
     })
     ipcRenderer.on("window-close", () => {
         deleteFolder(joinPath(configDir, "Crashpad"))
-        mpv.command("quit").catch(() => null)
+        mpv?.command("quit")?.catch(() => null)
         ipcRenderer.send("destroy-window")
     })
     navigator.mediaSession.setActionHandler("play", pause)
@@ -118,7 +292,7 @@ export const init = (path, configDir) => {
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
     navigator.mediaSession.setActionHandler("seekforward", () => null)
     navigator.mediaSession.setActionHandler("seekto",
-        details => mpv.command("seek", details.seekTime, "absolute"))
+        details => mpv?.command("seek", details.seekTime, "absolute"))
     navigator.mediaSession.setActionHandler("previoustrack", () => {
         decrementSong()
     })
@@ -126,176 +300,4 @@ export const init = (path, configDir) => {
         incrementSong()
     })
     navigator.mediaSession.playbackState = "paused"
-}
-
-export const isAlive = () => hasAnySong && mpv
-
-const updatePlayButton = async() => {
-    if (!isAlive() || await mpv.get("pause")) {
-        document.getElementById("pause").querySelector("img").src
-            = "../img/play.png"
-        document.getElementById("fs-pause").querySelector("img").src
-            = "../img/play.png"
-        navigator.mediaSession.playbackState = "paused"
-        audioEl.pause()
-    } else {
-        document.getElementById("pause").querySelector("img").src
-            = "../img/pause.png"
-        document.getElementById("fs-pause").querySelector("img").src
-            = "../img/pause.png"
-        navigator.mediaSession.playbackState = "playing"
-        audioEl.play().catch(() => null)
-    }
-}
-
-export const pause = async() => {
-    if (isAlive() && !stoppedAfterTrack) {
-        await mpv.set("pause", !await mpv.get("pause"))
-    } else {
-        playFromPlaylist()
-        stoppedAfterTrack = false
-    }
-    updatePlayButton()
-}
-
-export const relativeSeek = async seconds => {
-    if (isAlive() && !stoppedAfterTrack) {
-        await mpv.command("seek", seconds, "relative")
-    }
-}
-
-export const seek = async percent => {
-    if (isAlive() && !stoppedAfterTrack) {
-        const {current} = currentAndNext()
-        const {duration} = current
-        await mpv.command("seek", percent * duration / 100, "absolute")
-    }
-}
-
-export const load = async file => {
-    hasAnySong = true
-    stoppedAfterTrack = false
-    document.getElementById("volume-slider").disabled = null
-    document.getElementById("fs-volume-slider").disabled = null
-    await mpv.command("loadfile", file)
-    await mpv.set("pause", false)
-}
-
-export const queue = async file => {
-    await mpv.command("playlist-clear")
-    if (file) {
-        await mpv.command("loadfile", file, "append")
-    }
-}
-
-export const volumeSet = async vol => {
-    volume = Math.min(130, Math.max(0, vol))
-    await updateVolume()
-}
-
-export const volumeUp = async() => {
-    volume = Math.min(130, volume + 10)
-    await updateVolume()
-}
-
-export const volumeDown = async() => {
-    volume = Math.max(0, volume - 10)
-    await updateVolume()
-}
-
-const updateVolume = async() => {
-    if (isAlive()) {
-        await mpv.set("volume", volume)
-    } else {
-        volume = 100
-    }
-    document.getElementById("volume-slider").value = volume
-    document.getElementById("fs-volume-slider").value = volume
-    if (isAlive() && await mpv.get("mute")) {
-        document.getElementById("volume-slider").className = "muted"
-        document.getElementById("fs-volume-slider").className = "muted"
-    } else {
-        document.getElementById("volume-slider").className = ""
-        document.getElementById("fs-volume-slider").className = ""
-    }
-}
-
-export const toggleMute = async() => {
-    if (isAlive()) {
-        await mpv.set("mute", !await mpv.get("mute"))
-    }
-    await updateVolume()
-}
-
-export const stopPlayback = async() => {
-    if (isAlive()) {
-        await mpv.command("stop").catch(() => null)
-    }
-}
-
-export const displayCurrentSong = async song => {
-    const els = [
-        document.getElementById("current-song"),
-        document.getElementById("fs-current-song")
-    ]
-    for (const songContainer of els) {
-        if (!song) {
-            songContainer.textContent = "Welcome to Garlmap"
-            continue
-        }
-        songContainer.textContent = ""
-        const titleEl = document.createElement("span")
-        titleEl.className = "title"
-        titleEl.textContent = song.title
-        songContainer.appendChild(titleEl)
-        if (!song.title || !song.artist) {
-            titleEl.textContent = song.id
-            continue
-        }
-        const artistEl = document.createElement("span")
-        artistEl.className = "artist"
-        artistEl.textContent = song.artist
-        songContainer.appendChild(artistEl)
-        const otherInfo = document.createElement("span")
-        otherInfo.className = "other-info"
-        const albumEl = document.createElement("span")
-        albumEl.className = "album"
-        albumEl.textContent = song.album
-        otherInfo.appendChild(albumEl)
-        const bundledInfo = document.createElement("span")
-        if (song.track || song.disc) {
-            bundledInfo.textContent = ` ${song.track || "?"}/${song.tracktotal
-                || "?"} on CD ${song.disc || "?"}/${song.disctotal || "?"}`
-        }
-        if (song.date) {
-            bundledInfo.textContent += ` from ${song.date}`
-        }
-        otherInfo.appendChild(bundledInfo)
-        songContainer.appendChild(otherInfo)
-    }
-    if (!song) {
-        return
-    }
-    // MediaSession details
-    const cover = await coverArt(song.path)
-    if (cover) {
-        document.getElementById("song-cover").src = cover
-        document.getElementById("song-cover").style.display = "initial"
-        document.getElementById("fs-song-cover").src = cover
-        document.getElementById("fs-song-cover").style.display = "initial"
-        navigator.mediaSession.metadata = new window.MediaMetadata({
-            ...song, "artwork": [{"src": cover}]
-        })
-    } else {
-        document.getElementById("song-cover").removeAttribute("src")
-        document.getElementById("song-cover").style.display = "none"
-        document.getElementById("fs-song-cover").removeAttribute("src")
-        document.getElementById("fs-song-cover").style.display = "none"
-        navigator.mediaSession.metadata = new window.MediaMetadata({...song})
-    }
-    audioEl.src = "./empty.mp3"
-    audioEl.loop = true
-    audioEl.pause()
-    await audioEl.play().catch(() => null)
-    updatePlayButton()
 }

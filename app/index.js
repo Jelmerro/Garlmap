@@ -408,6 +408,7 @@ const processStartupArgs = () => {
         "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
+        configDir,
         "customTheme": readFile(joinPath(configDir, "theme.css")),
         "dumpLyrics": undefined,
         "fallback": process.env.GARLMAP_FALLBACK?.trim().toLowerCase(),
@@ -565,7 +566,6 @@ app.on("ready", () => {
         }
         logCustomSettings(config)
         config.version = version
-        config.configDir = configDir
         if (!config.dumpLyrics) {
             registerMediaKeys()
             mainWindow?.show()

@@ -16,7 +16,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 import {
-    basePath, dirName, joinPath, notify, readFile, resetWelcome
+    basePath,
+    dirName,
+    isElement,
+    isHTMLTextAreaElement,
+    joinPath,
+    notify,
+    readFile,
+    resetWelcome
 } from "../util.js"
 import {songById, songByIdOrPath, updateLyricsOfSong} from "./songs.js"
 import {compareStrings} from "./compare-strings.js"
@@ -25,15 +32,31 @@ import geniusLyrics from "genius-lyrics"
 import {isAlive} from "./player.js"
 import {switchFocus} from "./dom.js"
 
+/** @type {number|null} */
 let shiftLyricsTimeout = null
 let showingLyrics = false
+/** @type {import("genius-lyrics").Song[]} */
 let lyricsSearchCache = []
 
+/**
+ * Short alias for lowercasing a string.
+ * @param {string} s
+ */
 const low = s => s.toLowerCase()
 
+/**
+ * Sanitize the lyrics (if found) by resetting the newlines.
+ * @param {string|null} lyrics
+ */
 export const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
+/**
+ * Fetch lyrics for a given song TODO.
+ * @param {import("./songs.js").Song} req
+ * @param {boolean} force
+ * @param {import("./songs.js").Song|false} originalReq
+ */
 export const fetchLyrics = async(req, force = false, originalReq = false) => {
     // Use cache
     const cachedLyrics = songByIdOrPath(req.id, req.path).lyrics
@@ -71,7 +94,7 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
         }
     }
     // Fetch it from Genius
-    if (!document.getElementById("toggle-genius").checked) {
+    if (!document.getElementById("toggle-genius")?.checked) {
         return
     }
     const apiKey = document.getElementById("setting-apikey").value || undefined
@@ -79,6 +102,7 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
     try {
         notify(`Searching Genius for the song lyrics of: ${
             req.title} ${req.artist}`, "info")
+        /** @type {(import("genius-lyrics").Song & {score?: number})[]} */
         const results = await genius.songs.search(`${req.title} ${req.artist}`)
         results.forEach(s => {
             s.score = compareStrings(low(s.title), low(req.title))
@@ -104,9 +128,9 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
                 }
             }
         })
-        results.sort((a, b) => b.score - a.score)
+        results.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
         const [song] = results
-        if (song && song.score > 1.6) {
+        if (song && (song.score ?? 0) > 1.6) {
             let lyrics = "[Instrumental]"
             if (!song.instrumental) {
                 lyrics = sanitizeLyrics(await song.lyrics())
@@ -147,13 +171,17 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
     }
 }
 
+/**
+ * Shift the lyrics pane by a certain percentage.
+ * @param {number} current
+ */
 export const shiftLyricsByPercentage = current => {
     const lyricsContainers = [document.getElementById("fs-lyrics")]
     if (showingLyrics) {
         lyricsContainers.push(document.getElementById("song-info"))
     }
     const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
-    for (const el of lyricsContainers.filter(e => e.scrollHeight)) {
+    for (const el of lyricsContainers.filter(e => e?.scrollHeight)) {
         const scrollableHeight = el.scrollHeight - el.clientHeight
         const pad = Math.max(0, Math.min(
             el.clientHeight / el.scrollHeight * 50, 30))
@@ -191,19 +219,19 @@ export const stunShiftLyrics = () => {
     }
     document.getElementById("toggle-shift-lyrics").checked = false
     if (Number(document.getElementById("setting-shift-timer").value) > 0) {
-        shiftLyricsTimeout = setTimeout(() => {
+        shiftLyricsTimeout = window.setTimeout(() => {
             document.getElementById("toggle-shift-lyrics").checked = true
         }, Number(document.getElementById("setting-shift-timer").value) * 1000)
     }
 }
 
 export const searchLyrics = async searchString => {
-    if (!searchString.trim()) {
+    const resultsContainer = document.getElementById("lyrics-results")
+    if (!searchString.trim() || !resultsContainer) {
         return
     }
-    const resultsContainer = document.getElementById("lyrics-results")
     resultsContainer.textContent = "Searching Genius..."
-    const apiKey = document.getElementById("setting-apikey").value || undefined
+    const apiKey = document.getElementById("setting-apikey")?.value || undefined
     const genius = new geniusLyrics.Client(apiKey)
     const results = await genius.songs.search(searchString.trim()).catch(e => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
@@ -231,16 +259,24 @@ export const saveLyrics = async() => {
         return
     }
     const editor = document.getElementById("lyrics-edit-field")
-    await updateLyricsOfSong(current.id, current.path, editor.value)
+    if (isHTMLTextAreaElement(editor)) {
+        await updateLyricsOfSong(current.id, current.path, editor.value)
+    }
     showLyrics(current.id)
 }
 
 export const selectLyricsFromResults = async() => {
     const resultsContainer = document.getElementById("lyrics-results")
-    const selected = resultsContainer.querySelector(".selected")
+    const selected = resultsContainer?.querySelector(".selected")
+    if (!resultsContainer || !selected) {
+        return
+    }
     const index = [...resultsContainer.children].indexOf(selected)
     if (lyricsSearchCache[index]) {
         const editor = document.getElementById("lyrics-edit-field")
+        if (!isHTMLTextAreaElement(editor)) {
+            return
+        }
         const previousLyrics = editor.value
         editor.value = "Fetching lyrics..."
         const cacheEntry = lyricsSearchCache[index]
@@ -262,7 +298,7 @@ export const selectLyricsFromResults = async() => {
 
 export const resetShowingLyrics = () => {
     resetWelcome()
-    document.getElementById("song-info").scrollTo(0, 0)
+    document.getElementById("song-info")?.scrollTo(0, 0)
     showingLyrics = false
 }
 
@@ -270,7 +306,7 @@ export const showLyrics = async p => {
     if (showingLyrics) {
         resetShowingLyrics()
     }
-    if (!document.getElementById("toggle-autolyrics").checked) {
+    if (!document.getElementById("toggle-autolyrics")?.checked) {
         return
     }
     document.getElementById("fs-lyrics").scrollTo(0, 0)
@@ -291,7 +327,7 @@ export const switchToLyrics = async(forceFetch = false) => {
         const {current} = currentAndNext()
         if (current) {
             await fetchLyrics(current, forceFetch)
-            document.getElementById("song-info").scrollTo(0, 0)
+            document.getElementById("song-info")?.scrollTo(0, 0)
         }
     }
 }
@@ -301,7 +337,7 @@ export const decrementSelectedLyrics = () => {
     if (!selected) {
         switchFocus("lyricssearch")
     }
-    if (selected.previousSibling) {
+    if (isElement(selected?.previousSibling)) {
         selected.classList.remove("selected")
         selected.previousSibling.classList.add("selected")
     } else {
@@ -312,7 +348,7 @@ export const decrementSelectedLyrics = () => {
 export const incrementSelectedLyrics = () => {
     const selected = document.querySelector("#lyrics-results .selected")
     if (selected) {
-        if (selected.nextSibling) {
+        if (isElement(selected.nextSibling)) {
             selected.classList.remove("selected")
             selected.nextSibling.classList.add("selected")
         }

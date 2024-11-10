@@ -22,6 +22,7 @@
         "./node_modules"
     ],
     "include": [
-        "./app/**/*"
+        "./app/**/*",
+        "main.d.ts"
     ]
 }

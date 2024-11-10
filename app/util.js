@@ -28,11 +28,11 @@ import {
 } from "node:fs"
 
 /**
- * Check if a node is an element, taking subframes into account.
+ * Check if a node is an Element, taking subframes into account.
  * @param {Node|EventTarget|null|undefined} el
  * @returns {el is Element}
  */
-const isElement = el => {
+export const isElement = el => {
     if (el instanceof EventTarget && !(el instanceof Element)) {
         return false
     }
@@ -40,6 +40,81 @@ const isElement = el => {
         return false
     }
     return el instanceof el.ownerDocument.defaultView.Element
+}
+
+/**
+ * Check if a node is an HTMLElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLElement}
+ */
+export const isHTMLElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLElement
+}
+
+/**
+ * Check if a node is an HTMLInputElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLInputElement}
+ */
+export const isHTMLInputElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLInputElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLInputElement
+}
+
+/**
+ * Check if a node is an HTMLTextAreaElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLTextAreaElement}
+ */
+export const isHTMLTextAreaElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLTextAreaElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLTextAreaElement
+}
+
+/**
+ * Check if a node is an HTMLLabelElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLLabelElement}
+ */
+export const isHTMLLabelElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLLabelElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLLabelElement
+}
+
+/**
+ * Check if a node is an HTMLSelectElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLSelectElement}
+ */
+export const isHTMLSelectElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLSelectElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLSelectElement
 }
 
 /**

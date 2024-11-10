@@ -73,153 +73,9 @@ import {query, scanner} from "./songs.js"
 import {
     saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
 } from "./settings.js"
-import {queryMatch} from "../util.js"
-
-export const init = () => {
-    window.addEventListener("keydown", e => handleKeyboard(e))
-    window.addEventListener("keypress", e => {
-        const id = toIdentifier(e)
-        if (e.key === "Tab" || id.length > 1) {
-            if (e.key === "Enter") {
-                if (!queryMatch(e, "#lyrics-edit-field")) {
-                    e.preventDefault()
-                }
-            } else {
-                e.preventDefault()
-            }
-        }
-    })
-    window.addEventListener("keyup", e => {
-        const id = toIdentifier(e)
-        if (e.key === "Tab" || id.length > 1) {
-            if (e.key === "Enter") {
-                if (!queryMatch(e, "#lyrics-edit-field")) {
-                    e.preventDefault()
-                }
-            } else {
-                e.preventDefault()
-            }
-        }
-    })
-    window.addEventListener("click", e => {
-        if (!queryMatch(e, "input, select")) {
-            e.preventDefault()
-        }
-    })
-    window.addEventListener("mousedown", handleMouse)
-    window.addEventListener("mouseup", e => {
-        if (!queryMatch(e, "input, textarea, #song-info, select, #fs-lyrics")) {
-            e.preventDefault()
-        }
-    })
-    window.addEventListener("touchmove", e => {
-        if (queryMatch(e, "#song-info, #fs-lyrics")) {
-            stunShiftLyrics()
-        }
-    })
-    window.addEventListener("mousewheel", e => {
-        if (queryMatch(e, "#song-info, #fs-lyrics")) {
-            stunShiftLyrics()
-        }
-    })
-    for (const vol of [...document.querySelectorAll("input[type='range']")]) {
-        vol.addEventListener("input", () => {
-            if (!isReady()) {
-                return
-            }
-            volumeSet(vol.value)
-        })
-        vol.addEventListener("mousedown", e => {
-            if (!isReady()) {
-                return
-            }
-            if (e.button === 2) {
-                volumeSet(100)
-            } else if (e.button === 1) {
-                toggleMute()
-            }
-        })
-    }
-    document.getElementById("rule-search").addEventListener("input", () => {
-        if (!isReady()) {
-            return
-        }
-        const search = document.getElementById("rule-search").value
-            .replace(/\n/g, "\\n")
-        if (search !== document.getElementById("rule-search").value) {
-            document.getElementById("rule-search").value = search
-        }
-        document.getElementById("search-results").textContent = ""
-        query(search).slice(0, 100).forEach(song => {
-            const el = generateSongElement(song)
-            document.getElementById("search-results").appendChild(el)
-            el.addEventListener("dblclick", () => {
-                append({"songs": [JSON.parse(JSON.stringify(song))]})
-            })
-            el.addEventListener("mousedown", mouseEv => {
-                document.querySelector("#search-results .selected")
-                    ?.classList.remove("selected")
-                el.classList.add("selected")
-                el?.scrollIntoView({"block": "nearest"})
-                if (mouseEv.button !== 0) {
-                    append(
-                        {"songs": [JSON.parse(JSON.stringify(song))]},
-                        mouseEv.button === 1)
-                }
-            })
-        })
-    })
-    const progressContainers = [
-        document.getElementById("progress-container"),
-        document.getElementById("fs-progress-container")
-    ]
-    for (const element of progressContainers) {
-        element.addEventListener("mousedown", e => {
-            if (!isReady()) {
-                return
-            }
-            const x = e.pageX - element.offsetLeft
-                - element.offsetParent.offsetLeft
-            let percentage = x / element.getBoundingClientRect().width * 100
-            if (percentage < 1) {
-                percentage = 0
-            }
-            seek(percentage)
-        })
-    }
-    const coverartEls = [
-        document.getElementById("song-cover"),
-        document.getElementById("fs-song-cover")
-    ]
-    for (const element of coverartEls) {
-        element.addEventListener("mousedown", e => {
-            if (!isReady()) {
-                return
-            }
-            if (e.button === 0) {
-                const isFullscreened = document.fullscreenElement
-                    || document.body.getAttribute("focus-el") === "fullscreen"
-                setFullscreenLayout(!isFullscreened, !isFullscreened)
-            }
-            if (e.button === 1) {
-                setFullscreenLayout(document.fullscreenElement,
-                    document.body.getAttribute("focus-el") !== "fullscreen")
-            }
-            if (e.button === 2) {
-                setFullscreenLayout(!document.fullscreenElement,
-                    document.body.getAttribute("focus-el") === "fullscreen")
-            }
-        })
-    }
-    document.getElementById("fullscreen").addEventListener("mousedown", e => {
-        if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
-            if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
-                document.exitFullscreen().catch(() => closeSpecialMode())
-            }
-        }
-    })
-    resetShowingLyrics()
-}
+import {
+    isHTMLElement, isHTMLInputElement, isHTMLTextAreaElement, queryMatch
+} from "../util.js"
 
 const isReady = () => document.getElementById(
     "status-current").textContent === "Ready"
@@ -266,31 +122,31 @@ const toIdentifier = e => {
 const mappings = {
     "events": {
         "<ArrowDown>": () => {
-            document.getElementById("events-list").scrollBy(0, 100)
+            document.getElementById("events-list")?.scrollBy(0, 100)
         },
         "<ArrowUp>": () => {
-            document.getElementById("events-list").scrollBy(0, -100)
+            document.getElementById("events-list")?.scrollBy(0, -100)
         },
         "<C-E>": () => closeSpecialMode(),
         "<End>": () => {
-            document.getElementById("events-list").scrollTo(
+            document.getElementById("events-list")?.scrollTo(
                 0, Number.MAX_SAFE_INTEGER)
         },
         "<Escape>": () => closeSpecialMode(),
         "<Home>": () => {
-            document.getElementById("events-list").scrollTo(0, 0)
+            document.getElementById("events-list")?.scrollTo(0, 0)
         },
         "<PageDown>": () => {
-            document.getElementById("events-list").scrollBy(0, 500)
+            document.getElementById("events-list")?.scrollBy(0, 500)
         },
         "<PageUp>": () => {
-            document.getElementById("events-list").scrollBy(0, -500)
+            document.getElementById("events-list")?.scrollBy(0, -500)
         },
         "j": () => {
-            document.getElementById("events-list").scrollBy(0, 100)
+            document.getElementById("events-list")?.scrollBy(0, 100)
         },
         "k": () => {
-            document.getElementById("events-list").scrollBy(0, -100)
+            document.getElementById("events-list")?.scrollBy(0, -100)
         },
         "q": () => closeSpecialMode()
     },
@@ -317,27 +173,27 @@ const mappings = {
             incrementSong()
         },
         "<F9>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, 100)
+            document.getElementById("fs-lyrics")?.scrollBy(0, 100)
             stunShiftLyrics()
         },
         "<F10>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, -100)
+            document.getElementById("fs-lyrics")?.scrollBy(0, -100)
             stunShiftLyrics()
         },
         "<PageDown>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, 100)
+            document.getElementById("fs-lyrics")?.scrollBy(0, 100)
             stunShiftLyrics()
         },
         "<PageUp>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, -100)
+            document.getElementById("fs-lyrics")?.scrollBy(0, -100)
             stunShiftLyrics()
         },
         "<S-F9>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, 1000)
+            document.getElementById("fs-lyrics")?.scrollBy(0, 1000)
             stunShiftLyrics()
         },
         "<S-F10>": () => {
-            document.getElementById("fs-lyrics").scrollBy(0, -1000)
+            document.getElementById("fs-lyrics")?.scrollBy(0, -1000)
             stunShiftLyrics()
         },
         "=": () => {
@@ -472,11 +328,11 @@ const mappings = {
             incrementSong()
         },
         "<F9>": () => {
-            document.getElementById("song-info").scrollBy(0, 100)
+            document.getElementById("song-info")?.scrollBy(0, 100)
             stunShiftLyrics()
         },
         "<F10>": () => {
-            document.getElementById("song-info").scrollBy(0, -100)
+            document.getElementById("song-info")?.scrollBy(0, -100)
             stunShiftLyrics()
         },
         "<F11>": () => {
@@ -492,11 +348,11 @@ const mappings = {
             stopAfterLastTrackOfRule()
         },
         "<S-F9>": () => {
-            document.getElementById("song-info").scrollBy(0, 1000)
+            document.getElementById("song-info")?.scrollBy(0, 1000)
             stunShiftLyrics()
         },
         "<S-F10>": () => {
-            document.getElementById("song-info").scrollBy(0, -1000)
+            document.getElementById("song-info")?.scrollBy(0, -1000)
             stunShiftLyrics()
         },
         "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
@@ -505,32 +361,32 @@ const mappings = {
     },
     "infopanel": {
         "<ArrowDown>": () => {
-            document.getElementById("infopanel-details").scrollBy(0, 100)
+            document.getElementById("infopanel-details")?.scrollBy(0, 100)
         },
         "<ArrowUp>": () => {
-            document.getElementById("infopanel-details").scrollBy(0, -100)
+            document.getElementById("infopanel-details")?.scrollBy(0, -100)
         },
         "<C-i>": () => closeSpecialMode(),
         "<End>": () => {
-            document.getElementById("infopanel-details").scrollTo(
+            document.getElementById("infopanel-details")?.scrollTo(
                 0, Number.MAX_SAFE_INTEGER)
         },
         "<Escape>": () => closeSpecialMode(),
         "<Home>": () => {
-            document.getElementById("infopanel-details").scrollTo(0, 0)
+            document.getElementById("infopanel-details")?.scrollTo(0, 0)
         },
         "<PageDown>": () => {
-            document.getElementById("infopanel-details").scrollBy(0, 500)
+            document.getElementById("infopanel-details")?.scrollBy(0, 500)
         },
         "<PageUp>": () => {
-            document.getElementById("infopanel-details").scrollBy(0, -500)
+            document.getElementById("infopanel-details")?.scrollBy(0, -500)
         },
         "i": () => closeSpecialMode(),
         "j": () => {
-            document.getElementById("infopanel-details").scrollBy(0, 100)
+            document.getElementById("infopanel-details")?.scrollBy(0, 100)
         },
         "k": () => {
-            document.getElementById("infopanel-details").scrollBy(0, -100)
+            document.getElementById("infopanel-details")?.scrollBy(0, -100)
         },
         "q": () => closeSpecialMode()
     },
@@ -641,7 +497,7 @@ const mappings = {
         },
         "<C-Tab>": () => switchFocus("search"),
         "<C-e>": () => {
-            document.getElementById("main-playlist").scrollBy(0, 50)
+            document.getElementById("main-playlist")?.scrollBy(0, 50)
         },
         "<C-n>": () => {
             incrementSelectedPlaylist()
@@ -650,7 +506,7 @@ const mappings = {
             decrementSelectedPlaylist()
         },
         "<C-y>": () => {
-            document.getElementById("main-playlist").scrollBy(0, -50)
+            document.getElementById("main-playlist")?.scrollBy(0, -50)
         },
         "<Delete>": () => {
             deleteSelectedPlaylist()
@@ -665,10 +521,10 @@ const mappings = {
             topScroll()
         },
         "<PageDown>": () => {
-            document.getElementById("main-playlist").scrollBy(0, 300)
+            document.getElementById("main-playlist")?.scrollBy(0, 300)
         },
         "<PageUp>": () => {
-            document.getElementById("main-playlist").scrollBy(0, -300)
+            document.getElementById("main-playlist")?.scrollBy(0, -300)
         },
         "S": () => {
             stopAfterLastTrackOfRule()
@@ -739,10 +595,10 @@ const mappings = {
             appendSelectedSong()
         },
         "<PageDown>": () => {
-            document.getElementById("search-results").scrollBy(0, 300)
+            document.getElementById("search-results")?.scrollBy(0, 300)
         },
         "<PageUp>": () => {
-            document.getElementById("search-results").scrollBy(0, -300)
+            document.getElementById("search-results")?.scrollBy(0, -300)
         },
         "<S-Enter>": () => {
             appendSelectedSong(true)
@@ -775,10 +631,10 @@ const mappings = {
             append({"rule": search})
         },
         "<PageDown>": () => {
-            document.getElementById("search-results").scrollBy(0, 300)
+            document.getElementById("search-results")?.scrollBy(0, 300)
         },
         "<PageUp>": () => {
-            document.getElementById("search-results").scrollBy(0, -300)
+            document.getElementById("search-results")?.scrollBy(0, -300)
         },
         "<S-Enter>": () => {
             const search = document.getElementById("rule-search").value
@@ -831,14 +687,18 @@ const mappings = {
         },
         "<Escape>": () => closeSpecialMode(),
         "<PageDown>": () => {
-            document.getElementById("settings-container").scrollBy(0, 300)
+            document.getElementById("settings-container")?.scrollBy(0, 300)
         },
         "<PageUp>": () => {
-            document.getElementById("settings-container").scrollBy(0, -300)
+            document.getElementById("settings-container")?.scrollBy(0, -300)
         }
     }
 }
 
+/**
+ * Handle all keyboard presses based on event key and mode.
+ * @param {KeyboardEvent} e
+ */
 const handleKeyboard = async e => {
     if (e.key === "Tab" || !queryMatch(e, "textarea, input, select")) {
         e.preventDefault()
@@ -847,7 +707,7 @@ const handleKeyboard = async e => {
         return
     }
     const id = toIdentifier(e)
-    if (id === "<Enter>" && queryMatch("select")) {
+    if (id === "<Enter>" && queryMatch(e, "select")) {
         return
     }
     let mode = document.body.getAttribute("focus-el")
@@ -864,6 +724,10 @@ const handleKeyboard = async e => {
     }
 }
 
+/**
+ * Handle all mouse movements based on event position and mode.
+ * @param {MouseEvent} e
+ */
 const handleMouse = e => {
     if (!isReady()) {
         return
@@ -896,7 +760,7 @@ const handleMouse = e => {
             closeSpecialMode()
         }
     }
-    if (mode.startsWith("lyrics")) {
+    if (mode?.startsWith("lyrics")) {
         if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
             closeSpecialMode()
         }
@@ -909,13 +773,13 @@ const handleMouse = e => {
         switchFocus("search")
         return
     }
-    if (queryMatch(e, "#make-fallback")) {
-        const search = document.getElementById("rule-search").value
+    if (queryMatch(e, "#make-fallback") && isHTMLTextAreaElement(searchbox)) {
+        const search = searchbox.value
         setFallbackRule(search)
         return
     }
-    if (queryMatch(e, "#add-songs")) {
-        const search = document.getElementById("rule-search").value
+    if (queryMatch(e, "#add-songs") && isHTMLTextAreaElement(searchbox)) {
+        const search = searchbox.value
         if (mode === "searchbox") {
             append({"rule": search})
         }
@@ -931,8 +795,8 @@ const handleMouse = e => {
         switchFocus("events")
         return
     }
-    if (queryMatch(e, "#song-info") && !window.getSelection().toString()) {
-        if (["search", "searchbox", "playlist"].includes(mode)) {
+    if (queryMatch(e, "#song-info") && !window.getSelection()?.toString()) {
+        if (["search", "searchbox", "playlist"].includes(mode ?? "")) {
             switchFocus(mode)
         }
         return
@@ -1009,4 +873,159 @@ const handleMouse = e => {
     if (queryMatch(e, "#lyrics-results, #lyrics-editor")) {
         switchFocus("lyrics")
     }
+}
+
+/** Initialize all keyboard and mouse inputs. */
+export const init = () => {
+    window.addEventListener("keydown", e => handleKeyboard(e))
+    window.addEventListener("keypress", e => {
+        const id = toIdentifier(e)
+        if (e.key === "Tab" || id.length > 1) {
+            if (e.key === "Enter") {
+                if (!queryMatch(e, "#lyrics-edit-field")) {
+                    e.preventDefault()
+                }
+            } else {
+                e.preventDefault()
+            }
+        }
+    })
+    window.addEventListener("keyup", e => {
+        const id = toIdentifier(e)
+        if (e.key === "Tab" || id.length > 1) {
+            if (e.key === "Enter") {
+                if (!queryMatch(e, "#lyrics-edit-field")) {
+                    e.preventDefault()
+                }
+            } else {
+                e.preventDefault()
+            }
+        }
+    })
+    window.addEventListener("click", e => {
+        if (!queryMatch(e, "input, select")) {
+            e.preventDefault()
+        }
+    })
+    window.addEventListener("mousedown", handleMouse)
+    window.addEventListener("mouseup", e => {
+        if (!queryMatch(e, "input, textarea, #song-info, select, #fs-lyrics")) {
+            e.preventDefault()
+        }
+    })
+    window.addEventListener("touchmove", e => {
+        if (queryMatch(e, "#song-info, #fs-lyrics")) {
+            stunShiftLyrics()
+        }
+    })
+    window.addEventListener("mousewheel", e => {
+        if (queryMatch(e, "#song-info, #fs-lyrics")) {
+            stunShiftLyrics()
+        }
+    })
+    for (const vol of [...document.querySelectorAll("input[type='range']")]) {
+        if (!isHTMLInputElement(vol)) {
+            return
+        }
+        vol.addEventListener("input", () => {
+            if (!isReady()) {
+                return
+            }
+            volumeSet(vol.value)
+        })
+        vol.addEventListener("mousedown", e => {
+            if (!isReady()) {
+                return
+            }
+            if (e.button === 2) {
+                volumeSet(100)
+            } else if (e.button === 1) {
+                toggleMute()
+            }
+        })
+    }
+    const searchbox = document.getElementById("rule-search")
+    const searchResults = document.getElementById("search-results")
+    if (searchbox) {
+        searchbox.addEventListener("input", () => {
+            if (!isReady() || !isHTMLTextAreaElement(searchbox)
+                || !searchResults) {
+                return
+            }
+            const search = searchbox.value
+                .replace(/\n/g, "\\n")
+            if (search !== searchbox.value) {
+                searchbox.value = search
+            }
+            searchResults.textContent = ""
+            query(search).slice(0, 100).forEach(song => {
+                const el = generateSongElement(song)
+                document.getElementById("search-results")?.append(el)
+                el.addEventListener("dblclick", () => {
+                    append({"songs": [JSON.parse(JSON.stringify(song))]})
+                })
+                el.addEventListener("mousedown", mouseEv => {
+                    document.querySelector("#search-results .selected")
+                        ?.classList.remove("selected")
+                    el.classList.add("selected")
+                    el?.scrollIntoView({"block": "nearest"})
+                    if (mouseEv.button !== 0) {
+                        append(
+                            {"songs": [JSON.parse(JSON.stringify(song))]},
+                            mouseEv.button === 1)
+                    }
+                })
+            })
+        })
+    }
+    const progressContainers = [
+        document.getElementById("progress-container"),
+        document.getElementById("fs-progress-container")
+    ]
+    for (const element of progressContainers) {
+        element?.addEventListener("mousedown", e => {
+            const parent = element.offsetParent
+            if (!isReady() || !isHTMLElement(parent)) {
+                return
+            }
+            const x = e.pageX - element.offsetLeft - parent.offsetLeft
+            let percentage = x / element.getBoundingClientRect().width * 100
+            if (percentage < 1) {
+                percentage = 0
+            }
+            seek(percentage)
+        })
+    }
+    const coverartEls = [
+        document.getElementById("song-cover"),
+        document.getElementById("fs-song-cover")
+    ]
+    for (const element of coverartEls) {
+        element?.addEventListener("mousedown", e => {
+            if (!isReady()) {
+                return
+            }
+            if (e.button === 0) {
+                const isFullscreened = document.fullscreenElement
+                    || document.body.getAttribute("focus-el") === "fullscreen"
+                setFullscreenLayout(!isFullscreened, !isFullscreened)
+            }
+            if (e.button === 1) {
+                setFullscreenLayout(document.fullscreenElement,
+                    document.body.getAttribute("focus-el") !== "fullscreen")
+            }
+            if (e.button === 2) {
+                setFullscreenLayout(!document.fullscreenElement,
+                    document.body.getAttribute("focus-el") === "fullscreen")
+            }
+        })
+    }
+    document.getElementById("fullscreen")?.addEventListener("mousedown", e => {
+        if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
+            if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
+                document.exitFullscreen().catch(() => closeSpecialMode())
+            }
+        }
+    })
+    resetShowingLyrics()
 }

@@ -16,7 +16,6 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 /** @typedef {{
  *   album: string,
  *   artist: string,
@@ -26,35 +25,39 @@
  *   disctotal: number | null,
  *   duration: number,
  *   id: string,
- *   lyrics: string,
+ *   lyrics: string | null,
  *   path: string,
  *   title: string,
  *   track: number | null,
  *   tracktotal: number | null
- *   genre?: string,
- *   composer?: string,
- *   lyricist?: string,
- *   writer?: string,
- *   conductor?: string,
- *   remixer?: string,
- *   arranger?: string,
- *   engineer?: string,
- *   producer?: string,
- *   technician?: string,
- *   djmixer?: string,
- *   mixer?: string,
- *   label?: string,
+ * }} MainSongProps
+ */
+/** @typedef {{
+ *   genre?: string[],
+ *   composer?: string[],
+ *   lyricist?: string[],
+ *   writer?: string[],
+ *   conductor?: string[],
+ *   remixer?: string[],
+ *   arranger?: string[],
+ *   engineer?: string[],
+ *   producer?: string[],
+ *   technician?: string[],
+ *   djmixer?: string[],
+ *   mixer?: string[],
+ *   label?: string[],
  *   grouping?: string,
- *   subtitle?: string,
- *   rating?: string,
- *   bpm?: string,
+ *   subtitle?: string[],
+ *   rating?: number,
+ *   bpm?: number,
  *   mood?: string,
- *   releasetype?: string,
+ *   releasetype?: string[],
  *   originalalbum?: string,
  *   originalartist?: string,
  *   originaldate?: string
- * }} Song
+ * }} ExtraSongProps
  */
+/** @typedef {MainSongProps & Partial<ExtraSongProps>} Song */
 
 import {
     dirName,
@@ -83,7 +86,7 @@ let cachedSongs = []
 let songs = []
 let failureCount = 0
 let processedFiles = 0
-/** @type {(keyof Song)[]} */
+/** @type {(keyof MainSongProps)[]} */
 const mainProps = [
     "album",
     "artist",
@@ -99,7 +102,7 @@ const mainProps = [
     "track",
     "tracktotal"
 ]
-/** @type {(keyof Song)[]} */
+/** @type {(keyof ExtraSongProps)[]} */
 const extraProps = [
     "genre",
     "composer",
@@ -123,6 +126,7 @@ const extraProps = [
     "originalalbum",
     "originalartist"
 ]
+/** @type {(keyof Song | "order" | "limit" | "asc")[]} */
 const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
 const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
@@ -134,7 +138,7 @@ const low = s => s.toLowerCase()
 
 /**
  * Sanitize the lyrics by removing extra newlines and adding ones as needed.
- * @param {string|undefined} lyrics
+ * @param {string|undefined|null} lyrics
  */
 const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
@@ -203,8 +207,27 @@ const processFile = async(path, id) => {
             "tracktotal": details.common.track.of
         }
         for (const prop of extraProps) {
-            if (details.common[prop]) {
-                song[prop] = details.common[prop]
+            let val = details.common[prop]
+            if (!val) {
+                continue
+            }
+            if (prop === "rating") {
+                const rating = details.common.rating?.at(0)?.rating
+                if (rating) {
+                    song[prop] = rating
+                }
+                continue
+            }
+            if (prop === "bpm") {
+                const {bpm} = details.common
+                if (bpm) {
+                    song[prop] = bpm
+                }
+                continue
+            }
+            val = details.common[prop]
+            if (val) {
+                song[prop] = val
             }
         }
         if (details.common.originaldate) {
@@ -538,18 +561,22 @@ export const coverArt = async p => {
     }
 }
 
+/**
+ * Apply the startup settings to the cache.
+ * @param {string} dir
+ */
 export const setStartupSettings = dir => {
     configDir = dir
-    cache = document.getElementById("setting-cache").value || "all"
+    cache = document.getElementById("setting-cache")?.value || "all"
     const cachePath = joinPath(configDir, "cache.json")
     if (cache !== "none") {
         cachedSongs = readJSON(cachePath) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
-        if (document.getElementById("toggle-cache-clean").checked) {
+        if (document.getElementById("toggle-cache-clean")?.checked) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))
         }
         if (cache === "songs") {
-            cachedSongs = cachedSongs.map(s => ({...s, "lyrics": undefined}))
+            cachedSongs = cachedSongs.map(s => ({...s, "lyrics": null}))
         }
         if (cache === "lyrics") {
             cachedSongs = cachedSongs.filter(s => s.lyrics)
@@ -577,10 +604,10 @@ export const songById = id => JSON.parse(JSON.stringify(
  * Find a song by its unique id or path.
  * @param {string} id
  * @param {string} path
- * @returns {Song|{}}
+ * @returns {Song|null}
  */
 export const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
-    songs.find(s => s.id === id || s.path === path) || {}))
+    songs.find(s => s.id === id || s.path === path) ?? null))
 
 /**
  * Update the lyrics of a specific song by id or path.
@@ -589,8 +616,14 @@ export const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
  * @param {string} lyrics
  */
 export const updateLyricsOfSong = (id, path, lyrics) => {
-    songs.find(s => s.id === id || s.path === path).lyrics = lyrics
-    cachedSongs.find(s => s.id === id || s.path === path).lyrics = lyrics
+    const song = songs.find(s => s.id === id || s.path === path)
+    if (song) {
+        song.lyrics = lyrics
+    }
+    const cached = cachedSongs.find(s => s.id === id || s.path === path)
+    if (cached) {
+        cached.lyrics = lyrics
+    }
     return new Promise(res => {
         setTimeout(() => {
             updateCache()
