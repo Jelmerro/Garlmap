@@ -54,6 +54,12 @@ const MPVSocket = (path, close) => {
         open = true
     })
 
+    /**
+     * Parsed message send back by the mpv IPC connection.
+     * @param {{
+     *   event?: string, request_id: number, error?: string, data?: string
+     * }} m
+     */
     const message = m => {
         if (m.event) {
             return socket.emit("event", m.event, m)
@@ -75,6 +81,10 @@ const MPVSocket = (path, close) => {
 
     socket.on("data", data => data.toString().split(/\r?\n/g).filter(x => x)
         .map(x => JSON.parse(x.trim())).forEach(message))
+    /**
+     * Send a command to the mpv IPC socket.
+     * @param {any[]} args
+     */
     socket.send = (...args) => new Promise((res, rej) => {
         uuid += 1
         const id = uuid
@@ -116,6 +126,9 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
      *   get: (val: string) => string | Promise<string> | null
      * }}
      */
+    // @ts-expect-error EventEmitter type that has added attribute functions,
+    // as such they are expected to be defined here, which is not possible,
+    // even though they are always added, so I made then required in the type.
     const mpv = new EventEmitter()
     let socketPath = "/tmp/mpvsocket"
     if (platform() === "win32") {
@@ -149,7 +162,15 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
     })
     socket.on("event", (eventName, data) => mpv.emit(eventName, data))
     mpv.command = socket.send ?? (() => null)
+    /**
+     * Set a property via the mpv IPC.
+     * @param {any[]} a
+     */
     mpv.set = (...a) => socket.send?.("set_property", ...a)
+    /**
+     * Get a property via the mpv IPC.
+     * @param {string} val
+     */
     mpv.get = val => socket.send?.("get_property", val) ?? null
     return mpv
 }
