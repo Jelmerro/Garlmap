@@ -24,7 +24,13 @@ import {
     stopAfterTrack
 } from "./playlist.js"
 import {
-    deleteFolder, formatTime, isHTMLImageElement, isHTMLInputElement, joinPath
+    deleteFolder,
+    formatTime,
+    getInputNumber,
+    isHTMLImageElement,
+    isHTMLInputElement,
+    isInputChecked,
+    joinPath
 } from "../util.js"
 import {shiftLyricsByPercentage, showLyrics} from "./lyrics.js"
 import {coverArt} from "./songs.js"
@@ -108,8 +114,14 @@ export const seek = async percent => {
 export const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
-    document.getElementById("volume-slider").disabled = null
-    document.getElementById("fs-volume-slider").disabled = null
+    const volumeSliderEl = document.getElementById("volume-slider")
+    if (isHTMLInputElement(volumeSliderEl)) {
+        volumeSliderEl.disabled = false
+    }
+    const volumeSliderFsEl = document.getElementById("volume-slider")
+    if (isHTMLInputElement(volumeSliderFsEl)) {
+        volumeSliderFsEl.disabled = false
+    }
     await mpv?.command("loadfile", file)
     await mpv?.set("pause", false)
 }
@@ -126,14 +138,7 @@ export const queue = async file => {
 }
 
 /** Return the current volume based on the slider. */
-const getCurrentVolume = () => {
-    let volume = 100
-    const volumeEl = document.getElementById("volume-slider")
-    if (isHTMLInputElement(volumeEl)) {
-        volume = Number(volumeEl.value)
-    }
-    return volume
-}
+const getCurrentVolume = () => getInputNumber("volume-slider") || 100
 
 /**
  * Update the player volume and other slider states based on volume/mute state.
@@ -309,13 +314,23 @@ export const init = (path, configDir) => {
             const played = `\u00a0${formatTime(position)}/${
                 formatTime(duration)}\u00a0`
             const perc = `${position / duration * 100}%`
-            document.getElementById("progress-played").textContent = played
-            document.getElementById("progress-played").style.width = perc
-            document.getElementById("progress-string").textContent = played
-            document.getElementById("fs-progress-played").textContent = played
-            document.getElementById("fs-progress-played").style.width = perc
-            document.getElementById("fs-progress-string").textContent = played
-            if (document.getElementById("toggle-shift-lyrics")?.checked) {
+            const progressPlayedEl = document.getElementById("progress-played")
+            const progressStringEl = document.getElementById("progress-string")
+            if (progressPlayedEl && progressStringEl) {
+                progressPlayedEl.textContent = played
+                progressPlayedEl.style.width = perc
+                progressStringEl.textContent = played
+            }
+            const progressPlayedFsEl = document.getElementById(
+                "fs-progress-played")
+            const progressStringFsEl = document.getElementById(
+                "fs-progress-string")
+            if (progressPlayedFsEl && progressStringFsEl) {
+                progressPlayedFsEl.textContent = played
+                progressPlayedFsEl.style.width = perc
+                progressStringFsEl.textContent = played
+            }
+            if (isInputChecked("toggle-shift-lyrics")) {
                 shiftLyricsByPercentage(parseFloat(perc))
             }
             return
@@ -331,8 +346,7 @@ export const init = (path, configDir) => {
             current.stopAfter = false
             stoppedAfterTrack = true
             await playFromPlaylist(false)
-            await mpv?.set("pause",
-                !document.getElementById("toggle-autoplay")?.checked)
+            await mpv?.set("pause", !isInputChecked("toggle-autoplay"))
             updatePlayButton()
         }
     })

@@ -133,6 +133,31 @@ export const isHTMLSelectElement = el => {
 }
 
 /**
+ * Check if an element in the DOM is an input element that is checked by id.
+ * @param {string} id
+ */
+export const isInputChecked = id => {
+    const element = document.getElementById(id)
+    return isHTMLInputElement(element) && element.checked
+}
+
+/**
+ * Get an input or textarea string value from the DOM by id.
+ * @param {string} id
+ */
+export const getInputValue = id => {
+    const element = document.getElementById(id)
+    return (isHTMLInputElement(element) || isHTMLTextAreaElement(element)
+        || isHTMLSelectElement(element)) && element.value || ""
+}
+
+/**
+ * Get an element value from the DOM as a number or 0 as the default fallback.
+ * @param {string} id
+ */
+export const getInputNumber = id => Number(getInputValue(id) || 0)
+
+/**
  * Check if an event matchesa specific DOM query selector.
  * @param {Event} e
  * @param {string} query

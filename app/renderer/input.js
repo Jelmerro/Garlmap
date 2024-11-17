@@ -62,6 +62,7 @@ import {
     switchToLyrics
 } from "./lyrics.js"
 import {
+    getInputValue,
     isHTMLElement, isHTMLInputElement, isHTMLTextAreaElement, queryMatch
 } from "../util.js"
 import {
@@ -78,9 +79,11 @@ import {
     saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
 } from "./settings.js"
 
+/** Check if the folder is loaded and the app is ready to interact with. */
 const isReady = () => document.getElementById(
     "status-current")?.textContent === "Ready"
 
+/** Show the folder picker and open the folder if one is selected. */
 const openFolder = () => {
     ipcRenderer.invoke("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
@@ -618,8 +621,7 @@ const mappings = {
             incrementSelectedSearch()
         },
         "<C-Enter>": () => {
-            const search = document.getElementById("rule-search").value
-            setFallbackRule(search)
+            setFallbackRule(getInputValue("rule-search"))
         },
         "<C-PageDown>": () => {
             let i = 0
@@ -633,8 +635,7 @@ const mappings = {
             incrementSelectedSearch()
         },
         "<Enter>": () => {
-            const search = document.getElementById("rule-search").value
-            append({"rule": search})
+            append({"rule": getInputValue("rule-search")})
         },
         "<PageDown>": () => {
             document.getElementById("search-results")?.scrollBy(0, 300)
@@ -643,8 +644,7 @@ const mappings = {
             document.getElementById("search-results")?.scrollBy(0, -300)
         },
         "<S-Enter>": () => {
-            const search = document.getElementById("rule-search").value
-            append({"rule": search}, true)
+            append({"rule": getInputValue("rule-search")}, true)
         }
     },
     "settingseditor": {
@@ -716,17 +716,21 @@ const handleKeyboard = async e => {
     if (id === "<Enter>" && queryMatch(e, "select")) {
         return
     }
-    let mode = document.body.getAttribute("focus-el")
+    let mode = document.body.getAttribute("focus-el") ?? ""
     const searchbox = document.getElementById("rule-search")
     if (mode === "search" && document.activeElement === searchbox) {
         mode = "searchbox"
     }
-    if (mappings[mode][id]) {
+    // @ts-expect-error Index checking for this is complex, so safely look it up
+    const action = mappings[mode]?.[id]
+    // @ts-expect-error Index checking for this is complex, so safely look it up
+    const global = mappings.global?.[id]
+    if (action) {
         e.preventDefault()
-        await mappings[mode][id](e)
-    } else if (mappings.global[id]) {
+        await action(e)
+    } else if (global) {
         e.preventDefault()
-        await mappings.global[id](e)
+        await global(e)
     }
 }
 
@@ -780,14 +784,12 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#make-fallback") && isHTMLTextAreaElement(searchbox)) {
-        const search = searchbox.value
-        setFallbackRule(search)
+        setFallbackRule(searchbox.value)
         return
     }
     if (queryMatch(e, "#add-songs") && isHTMLTextAreaElement(searchbox)) {
-        const search = searchbox.value
         if (mode === "searchbox") {
-            append({"rule": search})
+            append({"rule": searchbox.value})
         }
         if (mode === "search") {
             appendSelectedSong()

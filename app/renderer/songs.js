@@ -61,7 +61,9 @@
 
 import {
     dirName,
+    getInputValue,
     isFile,
+    isInputChecked,
     joinPath,
     listFiles,
     makeDir,
@@ -605,12 +607,12 @@ export const coverArt = async p => {
  */
 export const setStartupSettings = dir => {
     configDir = dir
-    cache = document.getElementById("setting-cache")?.value || "all"
+    cache = getInputValue("setting-cache") || "all"
     const cachePath = joinPath(configDir, "cache.json")
     if (cache !== "none") {
         cachedSongs = readJSON(cachePath) || []
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
-        if (document.getElementById("toggle-cache-clean")?.checked) {
+        if (isInputChecked("toggle-cache-clean")) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))
         }
         if (cache === "songs") {

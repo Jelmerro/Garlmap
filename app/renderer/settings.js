@@ -17,9 +17,12 @@
 */
 import {
     deleteFile,
+    getInputNumber,
+    getInputValue,
     isHTMLInputElement,
     isHTMLLabelElement,
     isHTMLSelectElement,
+    isInputChecked,
     joinPath,
     notify,
     writeJSON
@@ -66,15 +69,12 @@ export const toggleAutoLyrics = () => {
 
 /** Toggle the shift lyrics feature. */
 export const toggleShiftLyrics = () => {
-    const timingEl = document.getElementById("setting-shift-timer")
+    if (getInputNumber("settings-shift-timer") > 0) {
+        return
+    }
     const toggleEl = document.getElementById("toggle-shift-lyrics")
-    if (isHTMLInputElement(timingEl)) {
-        if (Number(timingEl.value) > 0) {
-            return
-        }
-        if (isHTMLInputElement(toggleEl)) {
-            toggleEl.checked = !toggleEl.checked
-        }
+    if (isHTMLInputElement(toggleEl)) {
+        toggleEl.checked = !toggleEl.checked
     }
 }
 
@@ -86,93 +86,61 @@ export const toggleGenius = () => {
     }
 }
 
-/**
- * Check if an element in the DOM is an input element that is checked by id.
- * @param {string} id
- */
-const isElementWithIdChecked = id => {
-    const element = document.getElementById(id)
-    return isHTMLInputElement(element) && element.checked
-}
-
-/**
- * Get an element value from the DOM by id.
- * @param {string} id
- */
-const getElementValueById = id => {
-    const element = document.getElementById(id)
-    return isHTMLInputElement(element) && element.value || ""
-}
-
-/**
- * Get an element value from the DOM as a number or 0 as the default fallback.
- * @param {string} id
- */
-const getElementNumberValueById = id => Number(getElementValueById(id) || 0)
-
 /** Save the currently active settings to disk inside the configdir. */
 export const saveSettings = () => {
-    /** @type {Partial<Config>} */
-    const config = {}
     const startupConfigDir = localStorage.getItem("startup-config-dir")
     if (!startupConfigDir) {
         return
     }
     const configFile = joinPath(startupConfigDir, "settings.json")
-    const folder = document.getElementById("status-folder")?.textContent?.trim()
-    if (folder && folder !== "No folder selected") {
-        config.folder = folder
+    /** @type {Partial<Config>} */
+    const config = {
+        "apiKey": getInputValue("setting-apikey"),
+        "autoClose": isInputChecked("toggle-autoclose"),
+        "autoLyrics": isInputChecked("toggle-autolyrics"),
+        "autoRemove": isInputChecked("toggle-autoremove"),
+        "autoScroll": isInputChecked("toggle-autoscroll"),
+        "autoplay": isInputChecked("toggle-autoplay"),
+        "cache": getInputValue("setting-cache"),
+        "cacheClean": isInputChecked("toggle-cache-clean"),
+        "fallback": getInputValue("setting-fallback"),
+        "folder": document.getElementById("status-folder")?.textContent?.trim(),
+        "fontSize": getInputNumber("setting-fontsize") || 14,
+        "mpv": getInputValue("setting-mpv"),
+        "shiftLyrics": isInputChecked("toggle-shift-lyrics")
+            && getInputNumber("setting-shift-timer") === 0,
+        "shiftTimer": getInputNumber("setting-shift-timer"),
+        "twoColumn": getInputValue("setting-two-column"),
+        "useGenius": isInputChecked("toggle-genius")
     }
-    config.autoScroll = isElementWithIdChecked("toggle-autoscroll")
-    config.autoClose = isElementWithIdChecked("toggle-autoclose")
-    config.autoRemove = isElementWithIdChecked("toggle-autoremove")
-    config.autoLyrics = isElementWithIdChecked("toggle-autolyrics")
-    config.useGenius = isElementWithIdChecked("toggle-genius")
-    config.shiftTimer = getElementNumberValueById("setting-shift-timer")
-    config.shiftLyrics = isElementWithIdChecked("toggle-shift-lyrics")
-        && config.shiftTimer === 0
-    config.cacheClean = isElementWithIdChecked("toggle-cache-clean")
-    config.cache = getElementValueById("setting-cache")
-    config.twoColumn = getElementValueById("setting-two-column")
-    config.fontSize = getElementNumberValueById("setting-fontsize") || 14
-    config.mpv = getElementValueById("setting-mpv")
-    config.fallback = getElementValueById("setting-fallback")
-    config.autoplay = isElementWithIdChecked("toggle-autoplay")
-    config.apiKey = getElementValueById("setting-apikey")
-    if (!config.autoScroll) {
-        delete config.autoScroll
+    if (!config.apiKey) {
+        delete config.apiKey
     }
     if (!config.autoClose) {
         delete config.autoClose
     }
-    if (!config.autoRemove) {
-        delete config.autoRemove
-    }
     if (!config.autoLyrics) {
         delete config.autoLyrics
     }
-    if (config.useGenius) {
-        delete config.useGenius
+    if (!config.autoRemove) {
+        delete config.autoRemove
     }
-    if (!config.shiftLyrics) {
-        delete config.shiftLyrics
+    if (!config.autoScroll) {
+        delete config.autoScroll
     }
-    if (!config.shiftTimer) {
-        delete config.shiftTimer
+    if (!config.autoplay) {
+        delete config.autoplay
     }
     if (config.cache === "all") {
         delete config.cache
     }
-    if (config.twoColumn === "mobile") {
-        delete config.twoColumn
-    }
     if (!config.cacheClean) {
         delete config.cacheClean
     }
-    if (!config.customTheme) {
-        delete config.customTheme
+    if (!config.fallback || config.fallback === "order=shuffle") {
+        delete config.fallback
     }
-    if (!config.folder) {
+    if (!config.folder || config.folder === "No folder selected") {
         delete config.folder
     }
     if (!config.fontSize || config.fontSize === 14) {
@@ -185,14 +153,17 @@ export const saveSettings = () => {
     if (!config.mpv || config.mpv === defaultMpv) {
         delete config.mpv
     }
-    if (!config.fallback || config.fallback === "order=shuffle") {
-        delete config.fallback
+    if (!config.shiftLyrics) {
+        delete config.shiftLyrics
     }
-    if (!config.autoplay) {
-        delete config.autoplay
+    if (!config.shiftTimer) {
+        delete config.shiftTimer
     }
-    if (!config.apiKey) {
-        delete config.apiKey
+    if (config.twoColumn === "mobile") {
+        delete config.twoColumn
+    }
+    if (config.useGenius) {
+        delete config.useGenius
     }
     let success = false
     if (Object.keys(config).length === 0) {

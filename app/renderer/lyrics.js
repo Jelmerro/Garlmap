@@ -18,9 +18,11 @@
 import {
     basePath,
     dirName,
+    getInputNumber,
+    getInputValue,
     isElement,
-    isHTMLInputElement,
     isHTMLTextAreaElement,
+    isInputChecked,
     joinPath,
     notify,
     readFile,
@@ -101,10 +103,10 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
         }
     }
     // Fetch it from Genius
-    if (!document.getElementById("toggle-genius")?.checked) {
+    if (!isInputChecked("toggle-genius")) {
         return
     }
-    const apiKey = document.getElementById("setting-apikey").value || undefined
+    const apiKey = getInputValue("setting-apikey") || undefined
     const genius = new geniusLyrics.Client(apiKey)
     try {
         notify(`Searching Genius for the song lyrics of: ${
@@ -225,26 +227,22 @@ export const stunShiftLyrics = () => {
         clearTimeout(shiftLyricsTimeout)
     }
     document.getElementById("toggle-shift-lyrics").checked = false
-    if (Number(document.getElementById("setting-shift-timer").value) > 0) {
+    if (getInputNumber("setting-shift-timer") > 0) {
         shiftLyricsTimeout = window.setTimeout(() => {
             document.getElementById("toggle-shift-lyrics").checked = true
-        }, Number(document.getElementById("setting-shift-timer").value) * 1000)
+        }, getInputNumber("setting-shift-timer") * 1000)
     }
 }
 
 /** Find a list of songs by search query and show it. */
 export const searchLyrics = async() => {
-    const lyricsSearch = document.getElementById("lyrics-search")
-    if (!isHTMLInputElement(lyricsSearch)) {
-        return
-    }
-    const searchString = lyricsSearch.value.trim()
+    const searchString = getInputValue("lyrics-search").trim()
     const resultsContainer = document.getElementById("lyrics-results")
     if (!searchString || !resultsContainer) {
         return
     }
     resultsContainer.textContent = "Searching Genius..."
-    const apiKey = document.getElementById("setting-apikey")?.value || undefined
+    const apiKey = getInputValue("setting-apikey") || undefined
     const genius = new geniusLyrics.Client(apiKey)
     const results = await genius.songs.search(searchString).catch(e => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString}`)
@@ -271,10 +269,8 @@ export const saveLyrics = async() => {
     if (!current) {
         return
     }
-    const editor = document.getElementById("lyrics-edit-field")
-    if (isHTMLTextAreaElement(editor)) {
-        await updateLyricsOfSong(current.id, current.path, editor.value)
-    }
+    await updateLyricsOfSong(
+        current.id, current.path, getInputValue("lyrics-edit-field"))
     showLyrics(current.id)
 }
 
