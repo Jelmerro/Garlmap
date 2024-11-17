@@ -10,6 +10,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+- Improve type safety of code
+
 ### Versions
 
 - Electron 33.1.0 (was 30.0.6)

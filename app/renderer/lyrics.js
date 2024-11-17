@@ -58,12 +58,18 @@ export const sanitizeLyrics = lyrics => lyrics?.trim()
  * @param {import("./songs.js").Song|false} originalReq
  */
 export const fetchLyrics = async(req, force = false, originalReq = false) => {
+    const songInfoEl = document.getElementById("song-info")
+    const fsLyricsEl = document.getElementById("fs-lyrics")
+    const lyricsEditEl = document.getElementById("lyrics-edit-field")
+    if (!songInfoEl || !fsLyricsEl || !isHTMLTextAreaElement(lyricsEditEl)) {
+        return
+    }
     // Use cache
-    const cachedLyrics = songByIdOrPath(req.id, req.path).lyrics
+    const cachedLyrics = songByIdOrPath(req.id, req.path)?.lyrics
     if (cachedLyrics && !force) {
-        document.getElementById("song-info").textContent = cachedLyrics
-        document.getElementById("fs-lyrics").textContent = cachedLyrics
-        document.getElementById("lyrics-edit-field").textContent = cachedLyrics
+        songInfoEl.textContent = cachedLyrics
+        fsLyricsEl.textContent = cachedLyrics
+        lyricsEditEl.textContent = cachedLyrics
         showingLyrics = true
         return
     }
@@ -84,9 +90,9 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
         const lyrics = sanitizeLyrics(readFile(file))
         if (lyrics) {
             if (currentAndNext().current?.id === req.id) {
-                document.getElementById("song-info").textContent = lyrics
-                document.getElementById("fs-lyrics").textContent = lyrics
-                document.getElementById("lyrics-edit-field").value = lyrics
+                songInfoEl.textContent = lyrics
+                fsLyricsEl.textContent = lyrics
+                lyricsEditEl.value = lyrics
                 showingLyrics = true
             }
             updateLyricsOfSong(req.id, req.path, lyrics)
@@ -136,9 +142,9 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
                 lyrics = sanitizeLyrics(await song.lyrics())
             }
             if (currentAndNext().current?.id === req.id) {
-                document.getElementById("song-info").textContent = lyrics
-                document.getElementById("fs-lyrics").textContent = lyrics
-                document.getElementById("lyrics-edit-field").value = lyrics
+                songInfoEl.textContent = lyrics
+                fsLyricsEl.textContent = lyrics
+                lyricsEditEl.value = lyrics
                 showingLyrics = true
             }
             updateLyricsOfSong(req.id, req.path, lyrics)

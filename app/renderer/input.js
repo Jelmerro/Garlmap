@@ -61,6 +61,9 @@ import {
     switchToLyrics
 } from "./lyrics.js"
 import {
+    isHTMLElement, isHTMLInputElement, isHTMLTextAreaElement, queryMatch
+} from "../util.js"
+import {
     pause,
     relativeSeek,
     seek,
@@ -73,12 +76,9 @@ import {query, scanner} from "./songs.js"
 import {
     saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
 } from "./settings.js"
-import {
-    isHTMLElement, isHTMLInputElement, isHTMLTextAreaElement, queryMatch
-} from "../util.js"
 
 const isReady = () => document.getElementById(
-    "status-current").textContent === "Ready"
+    "status-current")?.textContent === "Ready"
 
 const openFolder = () => {
     ipcRenderer.invoke("dialog-open", {
@@ -86,7 +86,7 @@ const openFolder = () => {
     }).then(async info => {
         if (!info.canceled) {
             await scanner(info.filePaths[0])
-            if (document.getElementById("toggle-autoplay").checked) {
+            if (document.getElementById("toggle-autoplay")?.checked) {
                 playFromPlaylist(true)
                 pause()
             }
@@ -94,6 +94,10 @@ const openFolder = () => {
     })
 }
 
+/**
+ * Convert a keyboard event to a unique string representation.
+ * @param {KeyboardEvent} e
+ */
 const toIdentifier = e => {
     let keyCode = e.key
     if (e.key === "\u0000") {

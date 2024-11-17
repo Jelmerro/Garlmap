@@ -70,9 +70,10 @@ const MPVSocket = (path, close) => {
                 `${request.args.join(" ")} - failed with error: ${m.error}`))
         }
         requests.delete(m.request_id)
+        return m.error === "success"
     }
 
-    socket.on("data", data => data.split(/\r?\n/g).filter(x => x)
+    socket.on("data", data => data.toString().split(/\r?\n/g).filter(x => x)
         .map(x => JSON.parse(x.trim())).forEach(message))
     socket.send = (...args) => new Promise((res, rej) => {
         uuid += 1
