@@ -45,6 +45,7 @@ import {
     decrementSelectedSearch,
     generateSongElement,
     incrementSelectedSearch,
+    isValidSection,
     setFullscreenLayout,
     showSongInfo,
     switchFocus
@@ -86,7 +87,8 @@ const openFolder = () => {
     }).then(async info => {
         if (!info.canceled) {
             await scanner(info.filePaths[0])
-            if (document.getElementById("toggle-autoplay")?.checked) {
+            const toggleAutoplay = document.getElementById("toggle-autoplay")
+            if (isHTMLInputElement(toggleAutoplay) && toggleAutoplay?.checked) {
                 playFromPlaylist(true)
                 pause()
             }
@@ -281,7 +283,7 @@ const mappings = {
         "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
             document.body.getAttribute("focus-el") === "fullscreen"),
         "<C-c>": () => {
-            const text = window.getSelection().toString()
+            const text = window.getSelection()?.toString()
             if (text) {
                 clipboard.writeText(text)
             }
@@ -359,7 +361,7 @@ const mappings = {
             document.getElementById("song-info")?.scrollBy(0, -1000)
             stunShiftLyrics()
         },
-        "<S-F11>": () => setFullscreenLayout(document.fullscreenElement,
+        "<S-F11>": () => setFullscreenLayout(!!document.fullscreenElement,
             document.body.getAttribute("focus-el") !== "fullscreen"),
         "<Tab>": () => switchFocus("searchbox")
     },
@@ -447,7 +449,7 @@ const mappings = {
             saveLyrics()
         },
         "<Enter>": () => {
-            searchLyrics(document.getElementById("lyrics-search").value)
+            searchLyrics()
         },
         "<Escape>": () => closeSpecialMode(),
         "<Tab>": () => null
@@ -800,7 +802,8 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#song-info") && !window.getSelection()?.toString()) {
-        if (["search", "searchbox", "playlist"].includes(mode ?? "")) {
+        if (isValidSection(mode)
+            && ["search", "searchbox", "playlist"].includes(mode)) {
             switchFocus(mode)
         }
         return
@@ -859,7 +862,7 @@ const handleMouse = e => {
         return
     }
     if (queryMatch(e, "#lyrics-query")) {
-        searchLyrics(document.getElementById("lyrics-search").value)
+        searchLyrics()
         return
     }
     if (queryMatch(e, "#lyrics-save")) {
@@ -935,7 +938,7 @@ export const init = () => {
             if (!isReady()) {
                 return
             }
-            volumeSet(vol.value)
+            volumeSet(Number(vol.value))
         })
         vol.addEventListener("mousedown", e => {
             if (!isReady()) {
@@ -1015,7 +1018,7 @@ export const init = () => {
                 setFullscreenLayout(!isFullscreened, !isFullscreened)
             }
             if (e.button === 1) {
-                setFullscreenLayout(document.fullscreenElement,
+                setFullscreenLayout(!!document.fullscreenElement,
                     document.body.getAttribute("focus-el") !== "fullscreen")
             }
             if (e.button === 2) {

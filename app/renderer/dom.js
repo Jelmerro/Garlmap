@@ -50,7 +50,7 @@ const sections = [
  * @param {any} section
  * @returns {section is Section}
  */
-const isValidSection = section => sections.includes(section)
+export const isValidSection = section => sections.includes(section)
 
 /**
  * Generate a new song element to be shown in the list based on a song.

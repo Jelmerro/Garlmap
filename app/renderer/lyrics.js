@@ -19,6 +19,7 @@ import {
     basePath,
     dirName,
     isElement,
+    isHTMLInputElement,
     isHTMLTextAreaElement,
     joinPath,
     notify,
@@ -231,16 +232,22 @@ export const stunShiftLyrics = () => {
     }
 }
 
-export const searchLyrics = async searchString => {
+/** Find a list of songs by search query and show it. */
+export const searchLyrics = async() => {
+    const lyricsSearch = document.getElementById("lyrics-search")
+    if (!isHTMLInputElement(lyricsSearch)) {
+        return
+    }
+    const searchString = lyricsSearch.value.trim()
     const resultsContainer = document.getElementById("lyrics-results")
-    if (!searchString.trim() || !resultsContainer) {
+    if (!searchString || !resultsContainer) {
         return
     }
     resultsContainer.textContent = "Searching Genius..."
     const apiKey = document.getElementById("setting-apikey")?.value || undefined
     const genius = new geniusLyrics.Client(apiKey)
-    const results = await genius.songs.search(searchString.trim()).catch(e => {
-        notify(`Failed to fetch lyrics from Genius for: ${searchString.trim()}`)
+    const results = await genius.songs.search(searchString).catch(e => {
+        notify(`Failed to fetch lyrics from Genius for: ${searchString}`)
         console.warn(e)
     })
     lyricsSearchCache = results || []

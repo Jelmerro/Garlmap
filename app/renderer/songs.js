@@ -131,10 +131,10 @@ const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
 const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
 /**
- * Convert a string to all-lowercase.
- * @param {string} s
+ * Convert a string or number to an all-lowercase string.
+ * @param {string|number} s
  */
-const low = s => s.toLowerCase()
+const low = s => String(s).toLowerCase()
 
 /**
  * Sanitize the lyrics by removing extra newlines and adding ones as needed.
@@ -161,7 +161,10 @@ const processFile = async(path, id) => {
         }
     }
     if (cache === "lyrics" || !song) {
-        document.getElementById("status-scan").textContent = `Reading ${path}`
+        const statusScanEl = document.getElementById("status-scan")
+        if (statusScanEl) {
+            statusScanEl.textContent = `Reading ${path}`
+        }
         let details = await parseFile(path, {"skipCovers": true})
             .catch(() => null)
         if (!details?.format?.duration) {
@@ -279,12 +282,24 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
     processedFiles = 0
     songs = []
     failureCount = 0
-    document.getElementById("status-current").textContent = `Scanning`
-    document.getElementById("status-current").style.display = "initial"
-    document.getElementById("status-folder").textContent = folder
-    document.getElementById("status-folder").style.color = "var(--primary)"
-    document.getElementById("status-files").textContent = ""
-    document.getElementById("status-notify").textContent = ""
+    const statusCurrentEl = document.getElementById("status-current")
+    if (statusCurrentEl) {
+        statusCurrentEl.textContent = `Scanning`
+        statusCurrentEl.style.display = "initial"
+    }
+    const statusFolderEl = document.getElementById("status-folder")
+    if (statusFolderEl) {
+        statusFolderEl.textContent = folder
+        statusFolderEl.style.color = "var(--primary)"
+    }
+    const statusFilesEl = document.getElementById("status-files")
+    if (statusFilesEl) {
+        statusFilesEl.textContent = ""
+    }
+    const statusNotifyEl = document.getElementById("status-notify")
+    if (statusNotifyEl) {
+        statusNotifyEl.textContent = ""
+    }
     await stopPlayback()
     await clearPlaylist()
     const fileExts = [
@@ -327,23 +342,38 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
         const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
         await processFile(f, id)
         processedFiles += 1
-        document.getElementById("status-files").textContent
-            = `${processedFiles}/${files.length} songs`
+        if (statusFilesEl) {
+            statusFilesEl.textContent
+                = `${processedFiles}/${files.length} songs`
+        }
     }
     if (dumpOnly) {
         dumpLyrics(folder)
         return
     }
-    document.getElementById("status-current").textContent = `Ready`
-    document.getElementById("status-current").style.display = ""
-    document.getElementById("status-files").textContent
-        = `${songs.length} songs`
-    document.getElementById("status-scan").textContent = ""
+    if (statusCurrentEl) {
+        statusCurrentEl.textContent = `Ready`
+        statusCurrentEl.style.display = ""
+    }
+    if (statusFilesEl) {
+        statusFilesEl.textContent = `${songs.length} songs`
+    }
+    const statusScanEl = document.getElementById("status-scan")
+    if (statusScanEl) {
+        statusScanEl.textContent = ""
+    }
     if (failureCount) {
         notify(`Total of ${failureCount} scan failures`)
     }
     setTimeout(() => updateCache(), 1)
 }
+
+/**
+ * Check if a string is a valid song filter name.
+ * @param {any} name
+ * @returns {name is keyof Song}
+ */
+const isValidFilter = name => validProps.includes(name)
 
 /**
  * Query the song data by string to find matching songs.
@@ -361,7 +391,7 @@ export const query = search => {
     }))
     /** @type {{"cased": boolean, "name": string, "part": string}|null} */
     let globalSearch = {"cased": false, "name": "", "part": ""}
-    if (!validProps.includes(filters[0]?.name)) {
+    if (!isValidFilter(filters[0]?.name)) {
         globalSearch = filters.shift() ?? globalSearch
         globalSearch.cased = low(globalSearch.part) !== globalSearch.part
     }
@@ -369,23 +399,27 @@ export const query = search => {
         .filter(f => !["order", "limit", "asc"].includes(f.name))
     let filtered = songs.filter(s => {
         for (const filter of searchableFilters) {
-            if (!s[filter.name]) {
+            if (!isValidFilter(filter.name)) {
                 return false
             }
-            if (typeof s[filter.name] === "number" && filter.value.match(/^\d+-\d+$/g)) {
-                if (s[filter.name] < Number(filter.value.split("-")[0])
-                || s[filter.name] > Number(filter.value.split("-")[1])) {
+            const value = s[filter.name]
+            if (!value) {
+                return false
+            }
+            if (typeof value === "number" && filter.value.match(/^\d+-\d+$/g)) {
+                if (value < Number(filter.value.split("-")[0])
+                || value > Number(filter.value.split("-")[1])) {
                     return false
                 }
             } else if (filter.name.endsWith("date") && filter.value.match(/^\d+-\d+$/g)) {
-                const year = new Date(s[filter.name]
+                const year = new Date(value
                     ?.toString?.() || "").getFullYear()
                 if (year < Number(filter.value.split("-")[0])
                 || year > Number(filter.value.split("-")[1]) || isNaN(year)) {
                     return false
                 }
-            } else if (Array.isArray(s[filter.name])) {
-                const presentInArray = s[filter.name].find(field => {
+            } else if (Array.isArray(value)) {
+                const presentInArray = value.find(field => {
                     let flags = "gi"
                     if (filter.cased) {
                         flags = "g"
@@ -417,15 +451,15 @@ export const query = search => {
                 }
                 try {
                     const regex = RegExp(filter.value, flags)
-                    if (!String(s[filter.name]).match(regex)) {
+                    if (!String(value).match(regex)) {
                         return false
                     }
                 } catch {
                     if (filter.cased
-                        && !String(s[filter.name]).includes(filter.value)) {
+                        && !String(value).includes(filter.value)) {
                         return false
                     }
-                    if (!filter.cased && !String(low(s[filter.name]))
+                    if (!filter.cased && !String(low(value))
                         .includes(low(filter.value))) {
                         return false
                     }
@@ -546,13 +580,17 @@ export const query = search => {
     return filtered
 }
 
+/**
+ * Try parsing the file again but with cover art and return it if found.
+ * @param {string} p
+ */
 export const coverArt = async p => {
     try {
         const details = await parseFile(p, {"skipCovers": false})
             .catch(() => null)
         const pic = details?.common?.picture?.[0]
         if (pic) {
-            const str = Buffer.from(pic.data, "binary").toString("base64")
+            const str = Buffer.from(pic.data.buffer).toString("base64")
             return `data:${pic.format};base64,${str}`
         }
         return null

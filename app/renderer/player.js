@@ -23,7 +23,9 @@ import {
     playFromPlaylist,
     stopAfterTrack
 } from "./playlist.js"
-import {deleteFolder, formatTime, joinPath} from "../util.js"
+import {
+    deleteFolder, formatTime, isHTMLImageElement, isHTMLInputElement, joinPath
+} from "../util.js"
 import {shiftLyricsByPercentage, showLyrics} from "./lyrics.js"
 import {coverArt} from "./songs.js"
 import {ipcRenderer} from "electron"
@@ -31,7 +33,6 @@ import mpvAPI from "./mpv.js"
 
 /** @type {ReturnType<typeof mpvAPI>|null} */
 let mpv = null
-let volume = 100
 let hasAnySong = false
 let stoppedAfterTrack = false
 const audioEl = document.createElement("audio")
@@ -42,24 +43,32 @@ document.addEventListener("DOMContentLoaded", () => {
 /** Checks if there are songs queued and mpv is defined. */
 export const isAlive = () => hasAnySong && mpv
 
+/** Update the play button based on the current play/pause state. */
 const updatePlayButton = async() => {
+    const pauseImg = document.getElementById("pause")?.querySelector("img")
+    const pauseFsImg = document.getElementById("fs-pause")?.querySelector("img")
     if (!isAlive() || await mpv?.get("pause")) {
-        document.getElementById("pause").querySelector("img").src
-            = "../img/play.png"
-        document.getElementById("fs-pause").querySelector("img").src
-            = "../img/play.png"
+        if (pauseImg) {
+            pauseImg.src = "../img/play.png"
+        }
+        if (pauseFsImg) {
+            pauseFsImg.src = "../img/play.png"
+        }
         navigator.mediaSession.playbackState = "paused"
         audioEl.pause()
     } else {
-        document.getElementById("pause").querySelector("img").src
-            = "../img/pause.png"
-        document.getElementById("fs-pause").querySelector("img").src
-            = "../img/pause.png"
+        if (pauseImg) {
+            pauseImg.src = "../img/pause.png"
+        }
+        if (pauseFsImg) {
+            pauseFsImg.src = "../img/pause.png"
+        }
         navigator.mediaSession.playbackState = "playing"
         audioEl.play().catch(() => null)
     }
 }
 
+/** Pause the player. */
 export const pause = async() => {
     if (isAlive() && !stoppedAfterTrack) {
         await mpv?.set("pause", !await mpv.get("pause"))
@@ -70,12 +79,20 @@ export const pause = async() => {
     updatePlayButton()
 }
 
+/**
+ * Seek with a relative amount of seconds.
+ * @param {number} seconds
+ */
 export const relativeSeek = async seconds => {
     if (isAlive() && !stoppedAfterTrack) {
         await mpv?.command("seek", seconds, "relative")
     }
 }
 
+/**
+ * Seek to a percentage of the song between 0 and 100.
+ * @param {number} percent
+ */
 export const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
         const {current} = currentAndNext()
@@ -84,6 +101,10 @@ export const seek = async percent => {
     }
 }
 
+/**
+ * Load a new file into mpv and play it.
+ * @param {string} file
+ */
 export const load = async file => {
     hasAnySong = true
     stoppedAfterTrack = false
@@ -93,6 +114,10 @@ export const load = async file => {
     await mpv?.set("pause", false)
 }
 
+/**
+ * Queue a new song into mpv to play after this one.
+ * @param {string} file
+ */
 export const queue = async file => {
     await mpv?.command("playlist-clear")
     if (file) {
@@ -100,51 +125,82 @@ export const queue = async file => {
     }
 }
 
-const updateVolume = async() => {
+/** Return the current volume based on the slider. */
+const getCurrentVolume = () => {
+    let volume = 100
+    const volumeEl = document.getElementById("volume-slider")
+    if (isHTMLInputElement(volumeEl)) {
+        volume = Number(volumeEl.value)
+    }
+    return volume
+}
+
+/**
+ * Update the player volume and other slider states based on volume/mute state.
+ * @param {number} volume
+ */
+const updateVolume = async volume => {
     if (isAlive()) {
         await mpv?.set("volume", volume)
-    } else {
-        volume = 100
     }
-    document.getElementById("volume-slider").value = volume
-    document.getElementById("fs-volume-slider").value = volume
+    const volumeEl = document.getElementById("volume-slider")
+    const volumeFsEl = document.getElementById("fs-volume-slider")
+    if (!isHTMLInputElement(volumeEl) || !isHTMLInputElement(volumeFsEl)) {
+        return
+    }
+    if (isAlive()) {
+        volumeEl.value = String(volume)
+        volumeFsEl.value = String(volume)
+    } else {
+        volumeEl.value = "100"
+        volumeFsEl.value = "100"
+    }
     if (isAlive() && await mpv?.get("mute")) {
-        document.getElementById("volume-slider").className = "muted"
-        document.getElementById("fs-volume-slider").className = "muted"
+        volumeEl.className = "muted"
+        volumeFsEl.className = "muted"
     } else {
-        document.getElementById("volume-slider").className = ""
-        document.getElementById("fs-volume-slider").className = ""
+        volumeEl.className = ""
+        volumeFsEl.className = ""
     }
 }
 
+/**
+ * Set the volume to a new level.
+ * @param {number} vol
+ */
 export const volumeSet = async vol => {
-    volume = Math.min(130, Math.max(0, vol))
-    await updateVolume()
+    await updateVolume(Math.min(130, Math.max(0, vol)))
 }
 
+/** Jump up the volume by 10 steps. */
 export const volumeUp = async() => {
-    volume = Math.min(130, volume + 10)
-    await updateVolume()
+    await updateVolume(Math.min(130, getCurrentVolume() + 10))
 }
 
+/** Jump down the volume by 10 steps. */
 export const volumeDown = async() => {
-    volume = Math.max(0, volume - 10)
-    await updateVolume()
+    await updateVolume(Math.max(0, getCurrentVolume() - 10))
 }
 
+/** Toggle the mute state. */
 export const toggleMute = async() => {
     if (isAlive()) {
         await mpv?.set("mute", !await mpv.get("mute"))
     }
-    await updateVolume()
+    await updateVolume(getCurrentVolume())
 }
 
+/** Stop playback of mpv if alive. */
 export const stopPlayback = async() => {
     if (isAlive()) {
         await mpv?.command("stop")?.catch(() => null)
     }
 }
 
+/**
+ * Display the current song in the info bars.
+ * @param {import("./songs.js").Song} song
+ */
 export const displayCurrentSong = async song => {
     const els = [
         document.getElementById("current-song"),
@@ -190,19 +246,29 @@ export const displayCurrentSong = async song => {
     }
     // MediaSession details
     const cover = await coverArt(song.path)
+    const songCoverEl = document.getElementById("song-cover")
+    const songCoverFsEl = document.getElementById("fs-song-cover")
     if (cover) {
-        document.getElementById("song-cover").src = cover
-        document.getElementById("song-cover").style.display = "initial"
-        document.getElementById("fs-song-cover").src = cover
-        document.getElementById("fs-song-cover").style.display = "initial"
+        if (isHTMLImageElement(songCoverEl)) {
+            songCoverEl.src = cover
+            songCoverEl.style.display = "initial"
+        }
+        if (isHTMLImageElement(songCoverFsEl)) {
+            songCoverFsEl.src = cover
+            songCoverFsEl.style.display = "initial"
+        }
         navigator.mediaSession.metadata = new window.MediaMetadata({
             ...song, "artwork": [{"src": cover}]
         })
     } else {
-        document.getElementById("song-cover").removeAttribute("src")
-        document.getElementById("song-cover").style.display = "none"
-        document.getElementById("fs-song-cover").removeAttribute("src")
-        document.getElementById("fs-song-cover").style.display = "none"
+        if (songCoverEl) {
+            songCoverEl.removeAttribute("src")
+            songCoverEl.style.display = "none"
+        }
+        if (songCoverFsEl) {
+            songCoverFsEl.removeAttribute("src")
+            songCoverFsEl.style.display = "none"
+        }
         navigator.mediaSession.metadata = new window.MediaMetadata({...song})
     }
     audioEl.src = "./empty.mp3"
@@ -212,6 +278,11 @@ export const displayCurrentSong = async song => {
     updatePlayButton()
 }
 
+/**
+ * Initialize the player based on the mpv executable location and config dir.
+ * @param {string} path
+ * @param {string} configDir
+ */
 export const init = (path, configDir) => {
     mpv = mpvAPI({
         "args": [

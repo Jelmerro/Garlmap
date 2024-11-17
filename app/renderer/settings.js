@@ -86,6 +86,30 @@ export const toggleGenius = () => {
     }
 }
 
+/**
+ * Check if an element in the DOM is an input element that is checked by id.
+ * @param {string} id
+ */
+const isElementWithIdChecked = id => {
+    const element = document.getElementById(id)
+    return isHTMLInputElement(element) && element.checked
+}
+
+/**
+ * Get an element value from the DOM by id.
+ * @param {string} id
+ */
+const getElementValueById = id => {
+    const element = document.getElementById(id)
+    return isHTMLInputElement(element) && element.value || ""
+}
+
+/**
+ * Get an element value from the DOM as a number or 0 as the default fallback.
+ * @param {string} id
+ */
+const getElementNumberValueById = id => Number(getElementValueById(id) || 0)
+
 /** Save the currently active settings to disk inside the configdir. */
 export const saveSettings = () => {
     /** @type {Partial<Config>} */
@@ -99,24 +123,22 @@ export const saveSettings = () => {
     if (folder && folder !== "No folder selected") {
         config.folder = folder
     }
-    config.autoScroll = document.getElementById("toggle-autoscroll")?.checked
-    config.autoClose = document.getElementById("toggle-autoclose")?.checked
-    config.autoRemove = document.getElementById("toggle-autoremove")?.checked
-    config.autoLyrics = document.getElementById("toggle-autolyrics")?.checked
-    config.useGenius = document.getElementById("toggle-genius")?.checked
-    config.shiftTimer = Number(document.getElementById(
-        "setting-shift-timer")?.value) || 0
-    config.shiftLyrics = document.getElementById("toggle-shift-lyrics")?.checked
+    config.autoScroll = isElementWithIdChecked("toggle-autoscroll")
+    config.autoClose = isElementWithIdChecked("toggle-autoclose")
+    config.autoRemove = isElementWithIdChecked("toggle-autoremove")
+    config.autoLyrics = isElementWithIdChecked("toggle-autolyrics")
+    config.useGenius = isElementWithIdChecked("toggle-genius")
+    config.shiftTimer = getElementNumberValueById("setting-shift-timer")
+    config.shiftLyrics = isElementWithIdChecked("toggle-shift-lyrics")
         && config.shiftTimer === 0
-    config.cacheClean = document.getElementById("toggle-cache-clean")?.checked
-    config.cache = document.getElementById("setting-cache")?.value
-    config.twoColumn = document.getElementById("setting-two-column")?.value
-    config.fontSize = Number(document.getElementById(
-        "setting-fontsize")?.value) || 14
-    config.mpv = document.getElementById("setting-mpv")?.value
-    config.fallback = document.getElementById("setting-fallback")?.value
-    config.autoplay = document.getElementById("toggle-autoplay")?.checked
-    config.apiKey = document.getElementById("setting-apikey")?.value
+    config.cacheClean = isElementWithIdChecked("toggle-cache-clean")
+    config.cache = getElementValueById("setting-cache")
+    config.twoColumn = getElementValueById("setting-two-column")
+    config.fontSize = getElementNumberValueById("setting-fontsize") || 14
+    config.mpv = getElementValueById("setting-mpv")
+    config.fallback = getElementValueById("setting-fallback")
+    config.autoplay = isElementWithIdChecked("toggle-autoplay")
+    config.apiKey = getElementValueById("setting-apikey")
     if (!config.autoScroll) {
         delete config.autoScroll
     }

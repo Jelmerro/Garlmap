@@ -73,6 +73,21 @@ export const isHTMLInputElement = el => {
 }
 
 /**
+ * Check if a node is an HTMLImageElement, taking subframes into account.
+ * @param {Node|EventTarget|null|undefined} el
+ * @returns {el is HTMLImageElement}
+ */
+export const isHTMLImageElement = el => {
+    if (el instanceof EventTarget && !(el instanceof HTMLImageElement)) {
+        return false
+    }
+    if (!el || !el.ownerDocument || !el.ownerDocument.defaultView) {
+        return false
+    }
+    return el instanceof el.ownerDocument.defaultView.HTMLImageElement
+}
+
+/**
  * Check if a node is an HTMLTextAreaElement, taking subframes into account.
  * @param {Node|EventTarget|null|undefined} el
  * @returns {el is HTMLTextAreaElement}
