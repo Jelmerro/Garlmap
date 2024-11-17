@@ -683,11 +683,12 @@ const mappings = {
             const els = [...document.querySelectorAll("#settings-editor label")]
             const focusEl = els.find(el => el === document.activeElement
                 || el === document.activeElement?.parentNode)
-            let checkbox = focusEl.querySelector("input[type='checkbox']")
-            if (!checkbox && focusEl.matches("input[type='checkbox']")) {
-                checkbox = focusEl
+            if (isHTMLInputElement(focusEl)) {
+                focusEl.checked = !focusEl.checked
+                return
             }
-            if (checkbox) {
+            const checkbox = focusEl?.querySelector("input[type='checkbox']")
+            if (isHTMLInputElement(checkbox)) {
                 checkbox.checked = !checkbox.checked
             }
         },

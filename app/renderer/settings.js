@@ -415,12 +415,14 @@ export const init = () => {
                 settingCacheEl.value = config.cache || "all"
             }
             // Cacheclean
-            const cacheCleanEl = document.getElementById("setting-cache-clean")
+            const cacheCleanEl = document.getElementById("toggle-cache-clean")
             if (isHTMLInputElement(cacheCleanEl)) {
                 cacheCleanEl.checked = config.cacheClean ?? false
-                cacheCleanEl.addEventListener("click", () => {
+                cacheCleanEl.parentNode?.addEventListener("click", () => {
                     cacheCleanEl.checked = !cacheCleanEl.checked
-                    cacheCleanEl.focus()
+                    if (isHTMLLabelElement(cacheCleanEl.parentNode)) {
+                        cacheCleanEl.parentNode.focus()
+                    }
                 })
             }
             // Shifttimer
