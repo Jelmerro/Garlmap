@@ -35,8 +35,8 @@ import {ipcRenderer} from "electron"
 
 /* eslint-disable jsdoc/require-jsdoc, no-use-before-define */
 /** @typedef {import("./songs.js").Song&{
- *   upcoming: boolean,
- *   stopAfter: boolean
+ *   upcoming?: boolean,
+ *   stopAfter?: boolean
  * }} RuleSong
  */
 /** @typedef {{
@@ -452,20 +452,25 @@ export const playFromPlaylist = async(switchNow = true) => {
 
 /**
  * Append new a new rule to the queue, either at the end or as the next entry.
- * @param {Rule} item
+ * @param {Partial<Rule>} item
  * @param {boolean} upNext
  * @param {boolean} updateList
  */
 export const append = (item, upNext = false, updateList = true) => {
-    if (!item.songs) {
-        item.songs = JSON.parse(JSON.stringify(query(item.rule)))
-        if (item.songs.length === 0) {
-            return
-        }
-        if (item.songs.length === 1) {
-            append({"songs": item.songs})
-            return
-        }
+    /** @type {Rule} */
+    const rule = {
+        "open": !item.rule,
+        "rule": item.rule ?? "",
+        "songs": item.songs?.map(s => ({...s})) ?? query(item.rule ?? "").map(
+            s => ({...s, "stopAfter": false, "upcoming": false})),
+        "upcoming": item.upcoming ?? false
+    }
+    if (item.rule && rule.songs.length === 1) {
+        append({"songs": rule.songs})
+        return
+    }
+    if (rule.songs.length === 0) {
+        return
     }
     if (rulelist.length > 0) {
         if (!upNext || ruleIdx === rulelist.length - 1) {
@@ -476,15 +481,15 @@ export const append = (item, upNext = false, updateList = true) => {
             }
         }
     }
-    if (!item.rule) {
-        item.open = true
+    if (!rule.rule) {
+        rule.open = true
     }
-    item.duration = item.songs.map(s => s.duration)
+    rule.duration = rule.songs.map(s => s.duration)
         .reduce((p, n) => (p || 0) + (n || 0))
     if (upNext && ruleIdx !== rulelist.length) {
-        rulelist.splice(ruleIdx + 1, 0, item)
+        rulelist.splice(ruleIdx + 1, 0, rule)
     } else {
-        rulelist.push(item)
+        rulelist.push(rule)
     }
     if (updateList) {
         playFromPlaylist(false).then(() => {
@@ -513,8 +518,10 @@ export const stopAfterTrack = async(track = null) => {
 
 export const stopAfterLastTrackOfRule = () => {
     if (rulelist[ruleIdx]) {
-        rulelist[ruleIdx].songs.at(-1).stopAfter
-            = !rulelist[ruleIdx].songs.at(-1).stopAfter
+        const song = rulelist[ruleIdx].songs.at(-1)
+        if (song) {
+            song.stopAfter = !song.stopAfter
+        }
     }
     playFromPlaylist(false)
 }
@@ -742,6 +749,7 @@ export const importList = () => {
             return
         }
         if (info.filePaths[0]?.endsWith(".garlmap.json")) {
+            /** @type {Partial<{folder: string, list: Rule[]}>} */
             const imported = readJSON(info.filePaths[0])
             if (!imported?.list || !imported?.folder) {
                 notify("Not a valid Garlmap playlist file")
@@ -759,8 +767,8 @@ export const importList = () => {
                 await scanner(imported.folder)
             }
             imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
-                const songs = r.songs?.map(s => getSong(s?.id, s?.path))
-                    .filter(s => s?.id)
+                const songs = r.songs?.filter(s => s?.id)
+                    .map(s => getSong(s.id, s.path))?.flatMap(s => s ?? [])
                 append({"rule": r.rule, songs}, false, false)
             })
             playFromPlaylist(isInputChecked("toggle-autoplay"))
