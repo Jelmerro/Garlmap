@@ -63,7 +63,11 @@ import {
 } from "./lyrics.js"
 import {
     getInputValue,
-    isHTMLElement, isHTMLInputElement, isHTMLTextAreaElement, queryMatch
+    isHTMLElement,
+    isHTMLInputElement,
+    isHTMLLabelElement,
+    isHTMLTextAreaElement,
+    queryMatch
 } from "../util.js"
 import {
     pause,
@@ -651,10 +655,15 @@ const mappings = {
         "<C-/>": () => closeSpecialMode(),
         "<C-ArrowDown>": () => {
             const els = [...document.querySelectorAll("#settings-editor label")]
+                .filter(isHTMLLabelElement)
             const focusEl = els.find(el => el === document.activeElement
                 || el === document.activeElement?.parentNode)
+            if (!focusEl) {
+                els[0].focus()
+                return
+            }
             const index = els.indexOf(focusEl)
-            if (index === -1 || index >= els.length - 1) {
+            if (index >= els.length - 1) {
                 els[0].focus()
             } else {
                 els[index + 1].focus()
@@ -662,10 +671,15 @@ const mappings = {
         },
         "<C-ArrowUp>": () => {
             const els = [...document.querySelectorAll("#settings-editor label")]
+                .filter(isHTMLLabelElement)
             const focusEl = els.find(el => el === document.activeElement
                 || el === document.activeElement?.parentNode)
+            if (!focusEl) {
+                els[0].focus()
+                return
+            }
             const index = els.indexOf(focusEl)
-            if (!index || index <= 0) {
+            if (index === 0) {
                 els[els.length - 1].focus()
             } else {
                 els[index - 1].focus()

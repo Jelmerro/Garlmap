@@ -82,7 +82,7 @@ import {stopPlayback} from "./player.js"
 let configDir = null
 let cache = "all"
 let ownCacheChange = true
-/** @type {Song[]} */
+/** @type {(Partial<Song>&{id: string, path: string})[]} */
 let cachedSongs = []
 /** @type {Song[]} */
 let songs = []
@@ -146,12 +146,20 @@ const sanitizeLyrics = lyrics => lyrics?.trim()
     .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
 
 /**
+ * Check if a partially cached song is complete enough to be considered a song.
+ * @param {Partial<Song>|null} song
+ * @returns {song is Song}
+ */
+const isValidSong = song => typeof song?.title !== "undefined"
+    && typeof song.artist !== "undefined"
+
+/**
  * Process a file by path and id, then add it to the song data info.
  * @param {string} path
  * @param {string} id
  */
 const processFile = async(path, id) => {
-    /** @type {Song|null} */
+    /** @type {(Partial<Song>&{id: string, path: string})|null} */
     let song = null
     let cacheIndex = -1
     if (cache !== "none") {
@@ -162,7 +170,7 @@ const processFile = async(path, id) => {
             cacheIndex = cachedSongs.indexOf(song)
         }
     }
-    if (cache === "lyrics" || !song) {
+    if (cache === "lyrics" || !isValidSong(song)) {
         const statusScanEl = document.getElementById("status-scan")
         if (statusScanEl) {
             statusScanEl.textContent = `Reading ${path}`
@@ -232,6 +240,9 @@ const processFile = async(path, id) => {
             }
             val = details.common[prop]
             if (val) {
+                // @ts-expect-error Value can be string or string[],
+                // both are stored/typed as is, but prop type isn't narrowed,
+                // so we expect this to error in ts and rely on song types.
                 song[prop] = val
             }
         }
@@ -241,12 +252,16 @@ const processFile = async(path, id) => {
             song.originaldate = String(details.common.originalyear)
         }
     }
-    if (cacheIndex === -1) {
-        cachedSongs.push(song)
-    } else {
-        cachedSongs[cacheIndex] = song
+    if (song) {
+        if (cacheIndex === -1) {
+            cachedSongs.push(song)
+        } else {
+            cachedSongs[cacheIndex] = song
+        }
+        if (isValidSong(song)) {
+            songs.push(song)
+        }
     }
-    songs.push(song)
 }
 
 /**
@@ -619,8 +634,8 @@ export const setStartupSettings = dir => {
             cachedSongs = cachedSongs.map(s => ({...s, "lyrics": null}))
         }
         if (cache === "lyrics") {
-            cachedSongs = cachedSongs.filter(s => s.lyrics)
-                .map(s => ({"id": s.id, "lyrics": s.lyrics, "path": s.path}))
+            cachedSongs = cachedSongs.filter(s => s.lyrics).map(
+                s => ({"id": s.id, "lyrics": s.lyrics ?? "", "path": s.path}))
         }
     }
     watchFile(cachePath, () => {

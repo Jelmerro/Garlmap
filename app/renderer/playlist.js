@@ -457,6 +457,10 @@ export const append = (item, upNext = false, updateList = true) => {
     }
 }
 
+/**
+ * Stop playback after either the selected track or the currently playing one.
+ * @param {"selected"|null} track
+ */
 export const stopAfterTrack = async(track = null) => {
     if (rulelist.length === 0) {
         return
