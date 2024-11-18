@@ -102,8 +102,10 @@ export const relativeSeek = async seconds => {
 export const seek = async percent => {
     if (isAlive() && !stoppedAfterTrack) {
         const {current} = currentAndNext()
-        const {duration} = current
-        await mpv?.command("seek", percent * duration / 100, "absolute")
+        if (current) {
+            const {duration} = current
+            await mpv?.command("seek", percent * duration / 100, "absolute")
+        }
     }
 }
 
@@ -204,7 +206,7 @@ export const stopPlayback = async() => {
 
 /**
  * Display the current song in the info bars.
- * @param {import("./songs.js").Song} song
+ * @param {import("./songs.js").Song|null} song
  */
 export const displayCurrentSong = async song => {
     const els = [
@@ -307,6 +309,9 @@ export const init = (path, configDir) => {
         if (info.name === "playback-time" && info.data >= 0) {
             const position = info.data
             const {current} = currentAndNext()
+            if (!current) {
+                return
+            }
             const {duration} = current
             navigator.mediaSession.setPositionState({
                 duration, "playbackRate": 1, position
@@ -338,12 +343,16 @@ export const init = (path, configDir) => {
         if (info.name === "playlist-pos" && info.data === 1) {
             await incrementSong(false)
             const {current} = currentAndNext()
-            await showLyrics(current.id)
+            if (current) {
+                await showLyrics(current.id)
+            }
             autoPlayOpts()
         }
         if (info.name === "playlist-pos" && info.data === -1) {
             const {current} = currentAndNext()
-            current.stopAfter = false
+            if (current) {
+                current.stopAfter = false
+            }
             stoppedAfterTrack = true
             await playFromPlaylist(false)
             await mpv?.set("pause", !isInputChecked("toggle-autoplay"))

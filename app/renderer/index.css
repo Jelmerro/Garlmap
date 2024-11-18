@@ -33,7 +33,7 @@
 
 /* generic */
 * {margin: 0;padding: 0;}
-body {color: var(--fg);font-family: "DejaVu Sans Mono", "Courier", monospace;}
+body {color: var(--fg);font-family: monospace;}
 body {height: calc(100vh - 1em);width: calc(100vw - 1em);overflow: hidden;user-select: none;display: flex;flex-direction: column;background: var(--bg);line-height: 1.3em;padding: .5em;}
 body::backdrop {background: var(--bg);}
 ::-webkit-scrollbar {width: 1em;background: var(--scrollbar-bg);}

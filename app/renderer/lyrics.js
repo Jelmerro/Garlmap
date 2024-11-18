@@ -193,7 +193,7 @@ export const shiftLyricsByPercentage = current => {
     const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
     for (const el of lyricsContainers) {
         if (!el?.scrollHeight) {
-            return
+            continue
         }
         const scrollableHeight = el.scrollHeight - el.clientHeight
         const pad = Math.max(0, Math.min(

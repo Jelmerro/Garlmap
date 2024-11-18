@@ -11,6 +11,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ## Unreleased
 
 - Improve type safety of code
+- Always render text in monospace with default CSS
 
 ### Versions
 

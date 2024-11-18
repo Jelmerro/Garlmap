@@ -266,7 +266,9 @@ export const showSongInfo = position => {
     }
     if (position === "current") {
         const {current} = currentAndNext()
-        song = getSong(current?.id)
+        if (current) {
+            song = getSong(current.id)
+        }
     }
     const infopanelDetailsEl = document.getElementById("infopanel-details")
     if (infopanelDetailsEl && song) {
@@ -319,6 +321,9 @@ export const appendSelectedSong = (upNext = false) => {
     const id = document.querySelector("#search-results .selected.song")
         ?.getAttribute("song-id")
     if (id) {
-        append({"songs": [getSong(id)]}, upNext)
+        const song = getSong(id)
+        if (song) {
+            append({"songs": [song]}, upNext)
+        }
     }
 }

@@ -19,6 +19,8 @@ import {displayCurrentSong, load, queue, stopPlayback} from "./player.js"
 import {
     formatTime,
     isDirectory,
+    isHTMLInputElement,
+    isInputChecked,
     notify,
     queryMatch,
     readFile,
@@ -31,21 +33,45 @@ import {getSong, query, scanner} from "./songs.js"
 import {resetShowingLyrics, showLyrics} from "./lyrics.js"
 import {ipcRenderer} from "electron"
 
+/* eslint-disable jsdoc/require-jsdoc, no-use-before-define */
+/** @typedef {import("./songs.js").Song&{
+ *   upcoming: boolean,
+ *   stopAfter: boolean
+ * }} RuleSong
+ */
+/** @typedef {{
+ *   rule: string,
+ *   songs: RuleSong[],
+ *   open: boolean,
+ *   upcoming: boolean,
+ *   duration?: number,
+ * }} Rule
+ */
+
+/** @type {Rule[]} */
 let rulelist = []
 let ruleIdx = 0
 let pathIdx = 0
+/** @type {number|null} */
 let selectedRuleIdx = null
+/** @type {number|null} */
 let selectedPathIdx = null
+/** @type {number|null} */
 let upcomingPlaybackRuleIdx = null
+/** @type {number|null} */
 let upcomingPlaybackPathIdx = null
 
 const generatePlaylistView = () => {
-    document.getElementById("main-playlist").textContent = ""
+    const playlistEl = document.getElementById("main-playlist")
+    if (!playlistEl) {
+        return
+    }
+    playlistEl.textContent = ""
     rulelist.forEach((item, index) => {
         // Main playlist row
         const mainContainer = document.createElement("div")
         mainContainer.className = "rule"
-        mainContainer.setAttribute("rule-id", index)
+        mainContainer.setAttribute("rule-id", String(index))
         if (index === ruleIdx) {
             mainContainer.classList.add("current")
         }
@@ -80,7 +106,7 @@ const generatePlaylistView = () => {
                     switchFocus("playlist")
                     selectedRuleIdx = index
                     selectedPathIdx = null
-                    document.querySelector("#main-playlist .selected")
+                    playlistEl.querySelector(".selected")
                         ?.classList.remove("selected")
                     mainContainer.classList.add("selected")
                 }
@@ -89,7 +115,7 @@ const generatePlaylistView = () => {
                 item.open = !item.open
                 generatePlaylistView()
             })
-            document.getElementById("main-playlist").append(mainContainer)
+            playlistEl.append(mainContainer)
         }
         if (item.open) {
             // Song dropdown
@@ -112,8 +138,8 @@ const generatePlaylistView = () => {
                 if (song.upcoming) {
                     songInfo.classList.add("upcoming")
                 }
-                songInfo.setAttribute("rule-id", index)
-                songInfo.setAttribute("path-id", songIdx)
+                songInfo.setAttribute("rule-id", String(index))
+                songInfo.setAttribute("path-id", String(songIdx))
                 songInfo.addEventListener("mousedown", e => {
                     if (e.button === 1) {
                         switchFocus("playlist")
@@ -155,7 +181,7 @@ const generatePlaylistView = () => {
                 }
                 songContainer.append(songInfo)
             })
-            document.getElementById("main-playlist").append(songContainer)
+            playlistEl.append(songContainer)
         }
     })
 }
@@ -169,7 +195,8 @@ export const playSelectedSong = async() => {
 }
 
 export const currentAndNext = () => {
-    const fallbackRule = document.getElementById("fallback-rule").textContent
+    const fallbackRule = document.getElementById("fallback-rule")?.textContent
+        ?? "order=shuffle"
     let current = rulelist[ruleIdx]?.songs[pathIdx]
     if (!current) {
         const songs = JSON.parse(JSON.stringify(
@@ -192,7 +219,7 @@ export const currentAndNext = () => {
         return {current, "next": null}
     }
     const playbackOrder = document.getElementById("fallback-rule")
-        .getAttribute("playback-order")
+        ?.getAttribute("playback-order")
     const moreThanOne = rulelist.length > 1 || rulelist[0]?.songs?.length > 1
     if (playbackOrder && moreThanOne) {
         const allSongs = rulelist.map((r, idx) => [...r.songs.map(s => {
@@ -319,19 +346,16 @@ export const incrementSelectedPlaylist = () => {
 }
 
 const updateSelectedPlaylist = () => {
-    document.querySelector("#main-playlist .selected")
-        ?.classList.remove("selected")
+    const playlistEl = document.getElementById("main-playlist")
+    playlistEl?.querySelector(".selected")?.classList.remove("selected")
     if (selectedPathIdx === null) {
-        document.querySelector(`#main-playlist [rule-id="${selectedRuleIdx}"]`)
-            .classList.add("selected")
+        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"]`)
+            ?.classList.add("selected")
     } else {
-        document.querySelector(
-            `#main-playlist [rule-id="${selectedRuleIdx}"]`
-            + `[path-id="${selectedPathIdx}"]`).classList.add("selected")
+        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"] [path-id="${
+            selectedPathIdx}"]`)?.classList.add("selected")
     }
-    document.querySelector("#main-playlist .selected")?.scrollIntoView({
-        "block": "nearest"
-    })
+    playlistEl?.querySelector(".selected")?.scrollIntoView({"block": "nearest"})
 }
 
 export const topSelectedPlaylist = () => {
@@ -363,11 +387,11 @@ export const bottomSelectedPlaylist = () => {
 }
 
 export const topScroll = () => {
-    document.getElementById("main-playlist").scrollTo(0, 0)
+    document.getElementById("main-playlist")?.scrollTo(0, 0)
 }
 
 export const bottomScroll = () => {
-    document.getElementById("main-playlist").scrollTo(
+    document.getElementById("main-playlist")?.scrollTo(
         0, Number.MAX_SAFE_INTEGER)
 }
 
@@ -406,21 +430,32 @@ export const playFromPlaylist = async(switchNow = true) => {
             autoPlayOpts()
         }
     }
-    if (next && !current.stopAfter) {
-        if (next.title && next.artist) {
-            document.getElementById("fs-up-next").textContent
-                = `Up Next: ${next.title} by ${next.artist}`
-        } else {
-            document.getElementById("fs-up-next").textContent
-                = `Up Next: ${next.id}`
+    const upNextEl = document.getElementById("fs-up-next")
+    const fullscreenEl = document.getElementById("fullscreen")
+    if (next && !current?.stopAfter) {
+        if (upNextEl) {
+            if (next.title && next.artist) {
+                upNextEl.textContent = `Up Next: ${
+                    next.title} by ${next.artist}`
+            } else {
+                upNextEl.textContent = `Up Next: ${next.id}`
+            }
         }
-        document.getElementById("fullscreen").setAttribute("up-next", "yes")
+        fullscreenEl?.setAttribute("up-next", "yes")
     } else {
-        document.getElementById("fs-up-next").textContent = ""
-        document.getElementById("fullscreen").removeAttribute("up-next")
+        if (upNextEl) {
+            upNextEl.textContent = ""
+        }
+        fullscreenEl?.removeAttribute("up-next")
     }
 }
 
+/**
+ * Append new a new rule to the queue, either at the end or as the next entry.
+ * @param {Rule} item
+ * @param {boolean} upNext
+ * @param {boolean} updateList
+ */
 export const append = (item, upNext = false, updateList = true) => {
     if (!item.songs) {
         item.songs = JSON.parse(JSON.stringify(query(item.rule)))
@@ -428,7 +463,8 @@ export const append = (item, upNext = false, updateList = true) => {
             return
         }
         if (item.songs.length === 1) {
-            return append({"songs": item.songs})
+            append({"songs": item.songs})
+            return
         }
     }
     if (rulelist.length > 0) {
@@ -529,19 +565,25 @@ export const deleteSelectedPlaylist = () => {
     playFromPlaylist(false)
 }
 
+/**
+ * Set the fallback rule to a new query.
+ * @param {string} rule
+ */
 export const setFallbackRule = rule => {
     const filters = rule.split(/(?= \w+[:=])/g).map(p => ({
         "name": p.trim().split(/[:=]/g)[0].toLowerCase(),
         "value": p.trim().split(/[:=]/g)[1]?.toLowerCase()
     }))
     const playback = filters.find(f => f.name === "playback")
+    const fallbackEl = document.getElementById("fallback-rule")
     if (playback) {
         if (filters.length > 1) {
             notify("Fallback rule playback can not contain other fields")
         } else if (["shuffle", "list"].includes(playback.value)) {
-            document.getElementById("fallback-rule")
-                .setAttribute("playback-order", playback.value)
-            document.getElementById("fallback-rule").textContent = rule
+            if (fallbackEl) {
+                fallbackEl.setAttribute("playback-order", playback.value)
+                fallbackEl.textContent = rule
+            }
             playFromPlaylist(false)
         } else {
             notify("Fallback rule playback value must be shuffle or list")
@@ -552,38 +594,50 @@ export const setFallbackRule = rule => {
         notify("Fallback rule must match at least 2 tracks or be playback")
         return
     }
-    document.getElementById("fallback-rule").removeAttribute("playback-order")
-    document.getElementById("fallback-rule").textContent = rule
+    if (fallbackEl) {
+        fallbackEl.removeAttribute("playback-order")
+        fallbackEl.textContent = rule
+    }
     playFromPlaylist(false)
 }
 
 export const toggleAutoScroll = () => {
-    document.getElementById("toggle-autoscroll").checked
-        = !document.getElementById("toggle-autoscroll").checked
-    if (document.getElementById("toggle-autoscroll").checked) {
+    const el = document.getElementById("toggle-autoscroll")
+    if (isHTMLInputElement(el)) {
+        el.checked = !el.checked
+    }
+    if (isInputChecked("toggle-autoscroll")) {
         autoPlayOpts("scroll")
     }
 }
 
 export const toggleAutoClose = () => {
-    document.getElementById("toggle-autoclose").checked
-        = !document.getElementById("toggle-autoclose").checked
-    if (document.getElementById("toggle-autoclose").checked) {
+    const el = document.getElementById("toggle-autoclose")
+    if (isHTMLInputElement(el)) {
+        el.checked = !el.checked
+    }
+    if (isInputChecked("toggle-autoclose")) {
         autoPlayOpts("close")
     }
 }
 
 export const toggleAutoRemove = () => {
-    document.getElementById("toggle-autoremove").checked
-        = !document.getElementById("toggle-autoremove").checked
-    if (document.getElementById("toggle-autoremove").checked) {
+    const el = document.getElementById("toggle-autoremove")
+    if (isHTMLInputElement(el)) {
+        el.checked = !el.checked
+    }
+    if (isInputChecked("toggle-autoremove")) {
         autoPlayOpts("remove")
     }
 }
 
-export const autoPlayOpts = (singleOpt = false) => {
-    const autoRemove = document.getElementById("toggle-autoremove").checked
-    if (autoRemove && [false, "remove"].includes(singleOpt)) {
+/**
+ * Update the list based on new automatic play options.
+ * @param {"remove"|"close"|"scroll"|null} singleOpt
+ */
+export const autoPlayOpts = (singleOpt = null) => {
+    const autoRemove = isInputChecked("toggle-autoremove")
+    if (autoRemove && [null, "remove"].includes(singleOpt)) {
         rulelist = rulelist.filter((_, index) => index >= ruleIdx)
         if (selectedRuleIdx) {
             selectedRuleIdx -= ruleIdx
@@ -598,8 +652,8 @@ export const autoPlayOpts = (singleOpt = false) => {
         ruleIdx = 0
         generatePlaylistView()
     }
-    const autoClose = document.getElementById("toggle-autoclose").checked
-    if (autoClose && [false, "close"].includes(singleOpt)) {
+    const autoClose = isInputChecked("toggle-autoclose")
+    if (autoClose && [null, "close"].includes(singleOpt)) {
         rulelist.forEach((rule, index) => {
             rule.open = index === ruleIdx || !rule.rule
         })
@@ -608,16 +662,16 @@ export const autoPlayOpts = (singleOpt = false) => {
         }
         generatePlaylistView()
     }
-    const autoScroll = document.getElementById("toggle-autoscroll").checked
-    if (autoScroll && [false, "scroll"].includes(singleOpt)) {
+    const autoScroll = isInputChecked("toggle-autoscroll")
+    if (autoScroll && [null, "scroll"].includes(singleOpt)) {
         [...document.querySelectorAll("#main-playlist .current")].pop()
             ?.scrollIntoView({"behavior": "smooth", "block": "center"})
     }
 }
 
 export const exportList = () => {
-    const folder = document.getElementById("status-folder").textContent.trim()
-    if (folder === "No folder selected") {
+    const folder = document.getElementById("status-folder")?.textContent?.trim()
+    if (!folder || folder === "No folder selected") {
         notify("No folder open yet, nothing to export")
         return
     }
@@ -709,7 +763,7 @@ export const importList = () => {
                     .filter(s => s?.id)
                 append({"rule": r.rule, songs}, false, false)
             })
-            playFromPlaylist(document.getElementById("toggle-autoplay").checked)
+            playFromPlaylist(isInputChecked("toggle-autoplay"))
         } else {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
@@ -719,7 +773,7 @@ export const importList = () => {
                     append({"songs": [song]}, false, false)
                 }
             })
-            playFromPlaylist(document.getElementById("toggle-autoplay").checked)
+            playFromPlaylist(isInputChecked("toggle-autoplay"))
         }
     })
 }
