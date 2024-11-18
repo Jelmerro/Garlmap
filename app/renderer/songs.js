@@ -648,21 +648,13 @@ export const setStartupSettings = dir => {
 }
 
 /**
- * Find a song by its unique id.
- * @param {string} id
- * @returns {Song|{}}
- */
-export const songById = id => JSON.parse(JSON.stringify(
-    songs.find(s => s.id === id) || {}))
-
-/**
  * Find a song by its unique id or path.
  * @param {string} id
- * @param {string} path
+ * @param {string|null} path
  * @returns {Song|null}
  */
-export const songByIdOrPath = (id, path) => JSON.parse(JSON.stringify(
-    songs.find(s => s.id === id || s.path === path) ?? null))
+export const getSong = (id, path = null) => JSON.parse(JSON.stringify(
+    songs.find(s => s.id === id || path && s.path === path) ?? null))
 
 /**
  * Update the lyrics of a specific song by id or path.

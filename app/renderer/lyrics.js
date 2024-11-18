@@ -21,6 +21,7 @@ import {
     getInputNumber,
     getInputValue,
     isElement,
+    isHTMLInputElement,
     isHTMLTextAreaElement,
     isInputChecked,
     joinPath,
@@ -28,7 +29,7 @@ import {
     readFile,
     resetWelcome
 } from "../util.js"
-import {songById, songByIdOrPath, updateLyricsOfSong} from "./songs.js"
+import {getSong, updateLyricsOfSong} from "./songs.js"
 import {compareStrings} from "./compare-strings.js"
 import {currentAndNext} from "./playlist.js"
 import geniusLyrics from "genius-lyrics"
@@ -58,9 +59,9 @@ export const sanitizeLyrics = lyrics => lyrics?.trim()
  * Fetch lyrics for a given song TODO.
  * @param {import("./songs.js").Song} req
  * @param {boolean} force
- * @param {import("./songs.js").Song|false} originalReq
+ * @param {import("./songs.js").Song|null} originalReq
  */
-export const fetchLyrics = async(req, force = false, originalReq = false) => {
+export const fetchLyrics = async(req, force = false, originalReq = null) => {
     const songInfoEl = document.getElementById("song-info")
     const fsLyricsEl = document.getElementById("fs-lyrics")
     const lyricsEditEl = document.getElementById("lyrics-edit-field")
@@ -68,7 +69,7 @@ export const fetchLyrics = async(req, force = false, originalReq = false) => {
         return
     }
     // Use cache
-    const cachedLyrics = songByIdOrPath(req.id, req.path)?.lyrics
+    const cachedLyrics = getSong(req.id, req.path)?.lyrics
     if (cachedLyrics && !force) {
         songInfoEl.textContent = cachedLyrics
         fsLyricsEl.textContent = cachedLyrics
@@ -190,7 +191,10 @@ export const shiftLyricsByPercentage = current => {
         lyricsContainers.push(document.getElementById("song-info"))
     }
     const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
-    for (const el of lyricsContainers.filter(e => e?.scrollHeight)) {
+    for (const el of lyricsContainers) {
+        if (!el?.scrollHeight) {
+            return
+        }
         const scrollableHeight = el.scrollHeight - el.clientHeight
         const pad = Math.max(0, Math.min(
             el.clientHeight / el.scrollHeight * 50, 30))
@@ -217,6 +221,7 @@ export const shiftLyricsByPercentage = current => {
     }
 }
 
+/** Stun the automatic shifting of lyrics based on the shifttimer delay. */
 export const stunShiftLyrics = () => {
     if (!showingLyrics) {
         if (document.body.getAttribute("focus-el") !== "fullscreen") {
@@ -226,10 +231,14 @@ export const stunShiftLyrics = () => {
     if (shiftLyricsTimeout) {
         clearTimeout(shiftLyricsTimeout)
     }
-    document.getElementById("toggle-shift-lyrics").checked = false
+    const shiftLyricsToggle = document.getElementById("toggle-shift-lyrics")
+    if (!isHTMLInputElement(shiftLyricsToggle)) {
+        return
+    }
+    shiftLyricsToggle.checked = false
     if (getInputNumber("setting-shift-timer") > 0) {
         shiftLyricsTimeout = window.setTimeout(() => {
-            document.getElementById("toggle-shift-lyrics").checked = true
+            shiftLyricsToggle.checked = true
         }, getInputNumber("setting-shift-timer") * 1000)
     }
 }
@@ -253,7 +262,7 @@ export const searchLyrics = async() => {
     results?.forEach(result => {
         const el = document.createElement("div")
         el.textContent = `${result.title} - ${result.artist.name}`
-        resultsContainer.appendChild(el)
+        resultsContainer.append(el)
         el.addEventListener("click", () => {
             resultsContainer.querySelector(".selected")
                 ?.classList.remove("selected")
@@ -311,22 +320,40 @@ export const resetShowingLyrics = () => {
     showingLyrics = false
 }
 
-export const showLyrics = async p => {
+/** Reset help, then show updated lyrics in the sidebar, editor and fullscreen.
+ * @param {string} id
+ */
+export const showLyrics = async id => {
     if (showingLyrics) {
         resetShowingLyrics()
     }
-    if (!document.getElementById("toggle-autolyrics")?.checked) {
+    if (!isInputChecked("toggle-autolyrics")) {
         return
     }
-    document.getElementById("fs-lyrics").scrollTo(0, 0)
-    document.getElementById("lyrics-edit-field").scrollTo(0, 0)
-    const song = songById(p)
-    document.getElementById("fs-lyrics").textContent = song.lyrics || ""
-    document.getElementById("lyrics-edit-field").value = song.lyrics || ""
-    if (song.lyrics) {
+    const fsLyricsEl = document.getElementById("fs-lyrics")
+    const lyricsEditEl = document.getElementById("lyrics-edit-field")
+    const songInfoEl = document.getElementById("song-info")
+    fsLyricsEl?.scrollTo(0, 0)
+    lyricsEditEl?.scrollTo(0, 0)
+    const song = getSong(id)
+    if (song?.lyrics) {
         showingLyrics = true
-        document.getElementById("song-info").textContent = song.lyrics
-    } else {
+        if (fsLyricsEl) {
+            fsLyricsEl.textContent = song.lyrics
+        }
+        if (isHTMLTextAreaElement(lyricsEditEl)) {
+            lyricsEditEl.value = song.lyrics ?? ""
+        }
+        if (songInfoEl) {
+            songInfoEl.textContent = song.lyrics
+        }
+    } else if (song) {
+        if (fsLyricsEl) {
+            fsLyricsEl.textContent = ""
+        }
+        if (isHTMLTextAreaElement(lyricsEditEl)) {
+            lyricsEditEl.value = ""
+        }
         await fetchLyrics(song)
     }
 }

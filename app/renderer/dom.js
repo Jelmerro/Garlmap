@@ -17,7 +17,7 @@
 */
 import {append, currentAndNext} from "./playlist.js"
 import {formatTime, isElement} from "../util.js"
-import {songById} from "./songs.js"
+import {getSong} from "./songs.js"
 
 /** @typedef {"playlist"
  *   |"search"
@@ -65,22 +65,22 @@ export const generateSongElement = song => {
     if (!song.title || !song.artist) {
         mainInfo.textContent = song.id
         mainInfo.classList.add("id-only")
-        songContainer.appendChild(mainInfo)
+        songContainer.append(mainInfo)
         return songContainer
     }
     const titleEl = document.createElement("span")
     titleEl.textContent = song.title
-    mainInfo.appendChild(titleEl)
+    mainInfo.append(titleEl)
     const artistEl = document.createElement("span")
     artistEl.textContent = song.artist
     artistEl.className = "artist"
-    mainInfo.appendChild(artistEl)
-    songContainer.appendChild(mainInfo)
+    mainInfo.append(artistEl)
+    songContainer.append(mainInfo)
     const otherInfo = document.createElement("span")
     otherInfo.className = "other-info"
     const albumEl = document.createElement("span")
     albumEl.textContent = song.album
-    otherInfo.appendChild(albumEl)
+    otherInfo.append(albumEl)
     const bundledInfo = document.createElement("span")
     bundledInfo.className = "bundled-info"
     bundledInfo.textContent = formatTime(song.duration)
@@ -91,8 +91,8 @@ export const generateSongElement = song => {
     if (song.date) {
         bundledInfo.textContent += ` from ${song.date}`
     }
-    otherInfo.appendChild(bundledInfo)
-    songContainer.appendChild(otherInfo)
+    otherInfo.append(bundledInfo)
+    songContainer.append(otherInfo)
     return songContainer
 }
 
@@ -254,19 +254,19 @@ export const showSongInfo = position => {
         const id = document.querySelector("#playlist-container .selected")
             ?.getAttribute("song-id")
         if (id) {
-            song = songById(id)
+            song = getSong(id)
         }
     }
     if (position === "search") {
         const id = document.querySelector("#search-results .selected.song")
             ?.getAttribute("song-id")
         if (id) {
-            song = songById(id)
+            song = getSong(id)
         }
     }
     if (position === "current") {
         const {current} = currentAndNext()
-        song = songById(current?.id)
+        song = getSong(current?.id)
     }
     const infopanelDetailsEl = document.getElementById("infopanel-details")
     if (infopanelDetailsEl && song) {
@@ -319,6 +319,6 @@ export const appendSelectedSong = (upNext = false) => {
     const id = document.querySelector("#search-results .selected.song")
         ?.getAttribute("song-id")
     if (id) {
-        append({"songs": [songById(id)]}, upNext)
+        append({"songs": [getSong(id)]}, upNext)
     }
 }

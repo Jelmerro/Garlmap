@@ -465,7 +465,7 @@ export const init = () => {
             if (config.customTheme) {
                 const styleEl = document.createElement("style")
                 styleEl.textContent = config.customTheme
-                document.head.appendChild(styleEl)
+                document.head.append(styleEl)
                 try {
                     applyPrimaryColorToImages()
                 } catch {

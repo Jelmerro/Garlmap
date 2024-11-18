@@ -27,7 +27,7 @@ import {
     writeJSON
 } from "../util.js"
 import {generateSongElement, switchFocus} from "./dom.js"
-import {query, scanner, songByIdOrPath} from "./songs.js"
+import {getSong, query, scanner} from "./songs.js"
 import {resetShowingLyrics, showLyrics} from "./lyrics.js"
 import {ipcRenderer} from "electron"
 
@@ -58,14 +58,14 @@ const generatePlaylistView = () => {
         } else {
             openImg.src = "../img/right.png"
         }
-        mainContainer.appendChild(openImg)
+        mainContainer.append(openImg)
         const title = document.createElement("span")
         title.textContent = item.rule
-        mainContainer.appendChild(title)
+        mainContainer.append(title)
         const info = document.createElement("span")
         info.textContent = `${item.songs.length} songs - ${
             formatTime(item.duration)}`
-        mainContainer.appendChild(info)
+        mainContainer.append(info)
         if (item.rule) {
             mainContainer.addEventListener("mousedown", e => {
                 if (e.button === 1) {
@@ -89,7 +89,7 @@ const generatePlaylistView = () => {
                 item.open = !item.open
                 generatePlaylistView()
             })
-            document.getElementById("main-playlist").appendChild(mainContainer)
+            document.getElementById("main-playlist").append(mainContainer)
         }
         if (item.open) {
             // Song dropdown
@@ -151,11 +151,11 @@ const generatePlaylistView = () => {
                 if (song.stopAfter) {
                     const stopImg = document.createElement("img")
                     stopImg.src = "../img/eject.png"
-                    songInfo.appendChild(stopImg)
+                    songInfo.append(stopImg)
                 }
-                songContainer.appendChild(songInfo)
+                songContainer.append(songInfo)
             })
-            document.getElementById("main-playlist").appendChild(songContainer)
+            document.getElementById("main-playlist").append(songContainer)
         }
     })
 }
@@ -705,7 +705,7 @@ export const importList = () => {
                 await scanner(imported.folder)
             }
             imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
-                const songs = r.songs?.map(s => songByIdOrPath(s?.id, s?.path))
+                const songs = r.songs?.map(s => getSong(s?.id, s?.path))
                     .filter(s => s?.id)
                 append({"rule": r.rule, songs}, false, false)
             })
@@ -714,7 +714,7 @@ export const importList = () => {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
             list.split("\n").filter(i => i && !i.startsWith("#")).forEach(i => {
-                const song = songByIdOrPath(i, i)
+                const song = getSong(i, i)
                 if (song?.id) {
                     append({"songs": [song]}, false, false)
                 }
