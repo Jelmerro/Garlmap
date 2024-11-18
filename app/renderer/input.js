@@ -132,6 +132,7 @@ const toIdentifier = e => {
     return keyCode
 }
 
+/* eslint-disable jsdoc/require-jsdoc */
 const mappings = {
     "events": {
         "<ArrowDown>": () => {
@@ -715,6 +716,7 @@ const mappings = {
         }
     }
 }
+/* eslint-enable jsdoc/require-jsdoc */
 
 /**
  * Handle all keyboard presses based on event key and mode.

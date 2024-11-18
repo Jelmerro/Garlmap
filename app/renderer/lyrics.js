@@ -243,46 +243,7 @@ export const stunShiftLyrics = () => {
     }
 }
 
-/** Find a list of songs by search query and show it. */
-export const searchLyrics = async() => {
-    const searchString = getInputValue("lyrics-search").trim()
-    const resultsContainer = document.getElementById("lyrics-results")
-    if (!searchString || !resultsContainer) {
-        return
-    }
-    resultsContainer.textContent = "Searching Genius..."
-    const apiKey = getInputValue("setting-apikey") || undefined
-    const genius = new geniusLyrics.Client(apiKey)
-    const results = await genius.songs.search(searchString).catch(e => {
-        notify(`Failed to fetch lyrics from Genius for: ${searchString}`)
-        console.warn(e)
-    })
-    lyricsSearchCache = results || []
-    resultsContainer.textContent = ""
-    results?.forEach(result => {
-        const el = document.createElement("div")
-        el.textContent = `${result.title} - ${result.artist.name}`
-        resultsContainer.append(el)
-        el.addEventListener("click", () => {
-            resultsContainer.querySelector(".selected")
-                ?.classList.remove("selected")
-            el.classList.add("selected")
-            switchFocus("lyrics")
-        })
-        el.addEventListener("dblclick", () => selectLyricsFromResults())
-    })
-}
-
-export const saveLyrics = async() => {
-    const {current} = currentAndNext()
-    if (!current) {
-        return
-    }
-    await updateLyricsOfSong(
-        current.id, current.path, getInputValue("lyrics-edit-field"))
-    showLyrics(current.id)
-}
-
+/** Set the editor contents to the currently selected song enty's lyrics. */
 export const selectLyricsFromResults = async() => {
     const resultsContainer = document.getElementById("lyrics-results")
     const selected = resultsContainer?.querySelector(".selected")
@@ -314,6 +275,37 @@ export const selectLyricsFromResults = async() => {
     }
 }
 
+/** Find a list of songs by search query and show it. */
+export const searchLyrics = async() => {
+    const searchString = getInputValue("lyrics-search").trim()
+    const resultsContainer = document.getElementById("lyrics-results")
+    if (!searchString || !resultsContainer) {
+        return
+    }
+    resultsContainer.textContent = "Searching Genius..."
+    const apiKey = getInputValue("setting-apikey") || undefined
+    const genius = new geniusLyrics.Client(apiKey)
+    const results = await genius.songs.search(searchString).catch(e => {
+        notify(`Failed to fetch lyrics from Genius for: ${searchString}`)
+        console.warn(e)
+    })
+    lyricsSearchCache = results || []
+    resultsContainer.textContent = ""
+    results?.forEach(result => {
+        const el = document.createElement("div")
+        el.textContent = `${result.title} - ${result.artist.name}`
+        resultsContainer.append(el)
+        el.addEventListener("click", () => {
+            resultsContainer.querySelector(".selected")
+                ?.classList.remove("selected")
+            el.classList.add("selected")
+            switchFocus("lyrics")
+        })
+        el.addEventListener("dblclick", () => selectLyricsFromResults())
+    })
+}
+
+/** Switch back to showing the help text instead of the lyrics. */
 export const resetShowingLyrics = () => {
     resetWelcome()
     document.getElementById("song-info")?.scrollTo(0, 0)
@@ -358,6 +350,21 @@ export const showLyrics = async id => {
     }
 }
 
+/** Save the current editor buffer as the current song lyrics. */
+export const saveLyrics = async() => {
+    const {current} = currentAndNext()
+    if (!current) {
+        return
+    }
+    await updateLyricsOfSong(
+        current.id, current.path, getInputValue("lyrics-edit-field"))
+    showLyrics(current.id)
+}
+
+/**
+ * Switch to the lyrics for the sidebar, fetch if not found or if forced.
+ * @param {boolean} forceFetch
+ */
 export const switchToLyrics = async(forceFetch = false) => {
     if (isAlive()) {
         const {current} = currentAndNext()
@@ -368,6 +375,7 @@ export const switchToLyrics = async(forceFetch = false) => {
     }
 }
 
+/** Decrement the selected lyric song to the one above, or back to searching. */
 export const decrementSelectedLyrics = () => {
     const selected = document.querySelector("#lyrics-results .selected")
     if (!selected) {
@@ -381,6 +389,7 @@ export const decrementSelectedLyrics = () => {
     }
 }
 
+/** Increment the selected lyric song to the one below. */
 export const incrementSelectedLyrics = () => {
     const selected = document.querySelector("#lyrics-results .selected")
     if (selected) {
