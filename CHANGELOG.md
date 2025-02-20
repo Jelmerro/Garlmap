@@ -22,8 +22,8 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ### Versions
 
-- Electron 33.1.0 (was 30.0.6)
-- Chromium 130.0.6723.91 (was 124.0.6367.207)
+- Electron 34.2.0 (was 30.0.6)
+- Chromium 132.0.6824.196 (was 124.0.6367.207)
 
 ## [2.2.0](https://github.com/Jelmerro/Garlmap/compare/2.1.0...2.2.0) - 2024-05-16
 

@@ -26,14 +26,14 @@
   "funding": "https://github.com/sponsors/Jelmerro/",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "electron": "33.1.0",
+    "electron": "34.2.0",
     "electron-builder": "25.1.8",
     "eslint-config": "github:Jelmerro/eslint-config",
-    "typescript": "5.6.3"
+    "typescript": "5.7.3"
   },
   "dependencies": {
     "genius-lyrics": "4.4.7",
-    "music-metadata": "10.5.1"
+    "music-metadata": "11.0.0"
   },
   "engines": {
     "node": ">=20"
