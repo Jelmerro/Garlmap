@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2024 Jelmer van Arnhem
+*  Copyright (C) 2021-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -155,17 +155,26 @@ const isValidSong = song => typeof song?.title !== "undefined"
 
 /**
  * Process a file by path and id, then add it to the song data info.
+ * @param {string} folder
  * @param {string} path
  * @param {string} id
  */
-const processFile = async(path, id) => {
+const processFile = async(folder, path, id) => {
     /** @type {(Partial<Song>&{id: string, path: string})|null} */
     let song = null
     let cacheIndex = -1
     if (cache !== "none") {
-        song = cachedSongs.find(s => path === s.path)
-            || cachedSongs.find(s => id.endsWith(s.id))
-            || cachedSongs.find(s => s.id.endsWith(id)) || null
+        song = cachedSongs.find(s => path === s.path) || null
+        if (!song) {
+            song = cachedSongs.find(s => id.endsWith(s.id))
+               || cachedSongs.find(s => s.id.endsWith(id)) || null
+            if (song) {
+                song.path = joinPath(folder, id)
+                if (!isFile(song.path)) {
+                    song = null
+                }
+            }
+        }
         if (song) {
             cacheIndex = cachedSongs.indexOf(song)
         }
@@ -357,7 +366,7 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
         .filter(f => fileExts.includes(f.replace(/.*\./g, "")))
     for (const f of files) {
         const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
-        await processFile(f, id)
+        await processFile(folder, f, id)
         processedFiles += 1
         if (statusFilesEl) {
             statusFilesEl.textContent

@@ -10,8 +10,15 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Fallback logic for finding cache matches if the base path is different
+
+### Changed
+
 - Improve type safety of code
 - Always render text in monospace with default CSS
+- Song path to be based on cached id for a song if path is not a file, but basefolder with id is a file
 
 ### Versions
 
