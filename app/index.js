@@ -474,8 +474,8 @@ const processStartupArgs = () => {
                 config.autoRemove = isTruthyArg(value)
                     || arg === "--auto-remove"
             } else {
-                console.warn(`Error, unsupported argument '${arg}'`)
-                app.exit(1)
+                console.warn(`Arg '${arg}' will be passed to Chromium`)
+                app.commandLine.appendArgument(arg)
             }
         } else {
             config.folder = arg
