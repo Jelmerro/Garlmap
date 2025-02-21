@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Fixed
 
 - Unrecognized startup arguments not being passed to underlying Chromium process, hence preventing startup
+- Fallback rule not creating rule block in some cases
 
 ### Versions
 

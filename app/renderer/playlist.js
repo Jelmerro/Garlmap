@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2024 Jelmer van Arnhem
+*  Copyright (C) 2021-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -465,7 +465,7 @@ export const append = (item, upNext = false, updateList = true) => {
             s => ({...s, "stopAfter": false, "upcoming": false})),
         "upcoming": item.upcoming ?? false
     }
-    if (item.rule && rule.songs.length === 1) {
+    if (rule.songs.length === 1 && !item.songs) {
         append({"songs": rule.songs})
         return
     }
@@ -480,9 +480,6 @@ export const append = (item, upNext = false, updateList = true) => {
                 rulelist.pop()
             }
         }
-    }
-    if (!rule.rule) {
-        rule.open = true
     }
     rule.duration = rule.songs.map(s => s.duration)
         .reduce((p, n) => (p || 0) + (n || 0))
