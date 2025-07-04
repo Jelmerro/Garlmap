@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2022-2024 Jelmer van Arnhem
+*  Copyright (C) 2022-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -49,11 +49,16 @@ let lyricsSearchCache = []
 const low = s => s.toLowerCase()
 
 /**
- * Sanitize the lyrics (if found) by resetting the newlines.
+ * Sanitize the lyrics by resetting the newlines and removing extra info.
  * @param {string|null} lyrics
  */
-export const sanitizeLyrics = lyrics => lyrics?.trim()
-    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
+export const sanitizeLyrics = lyrics => {
+    let sanitized = lyrics?.trim().replace(/\n\[/g, "\n\n[") ?? ""
+    sanitized = sanitized.replace(/\n\n\n/g, "\n\n")
+    sanitized = sanitized.replace(/^\d+ Contributor.*?Lyrics/g, "")
+    sanitized = sanitized.replace(/^[\s\S]*…\sRead\sMore\s/g, "")
+    return sanitized
+}
 
 /**
  * Fetch lyrics for a given song TODO.

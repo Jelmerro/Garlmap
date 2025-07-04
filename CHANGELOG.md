@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ## Fixed
 
 - Selection in playlist not being visible when using arrow keys
+- Additional Genius song info being incorrectly added to the lyrics for some songs
 
 ### Versions
 
