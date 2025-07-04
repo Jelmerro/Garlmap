@@ -352,7 +352,7 @@ const updateSelectedPlaylist = () => {
         playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"]`)
             ?.classList.add("selected")
     } else {
-        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"] [path-id="${
+        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"][path-id="${
             selectedPathIdx}"]`)?.classList.add("selected")
     }
     playlistEl?.querySelector(".selected")?.scrollIntoView({"block": "nearest"})

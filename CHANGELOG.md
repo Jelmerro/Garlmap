@@ -8,6 +8,17 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+## Fixed
+
+- Selection in playlist not being visible when using arrow keys
+
+### Versions
+
+- Electron 37.2.0 (was 34.2.0)
+- Chromium 138.0.7204.97 (was 132.0.6824.196)
+
 ## [2.3.1](https://github.com/Jelmerro/Garlmap/compare/2.3.0...2.3.1) - 2025-02-21
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/2.3.0...2.3.1) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.3.1)
