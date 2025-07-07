@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+## Added
+
+- Ctrl-q as a way to shutdown Garlmap
+
 ## Fixed
 
 - Selection in playlist not being visible when using arrow keys
