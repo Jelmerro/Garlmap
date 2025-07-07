@@ -8,13 +8,15 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
-## Unreleased
+## [2.4.0](https://github.com/Jelmerro/Garlmap/compare/2.3.1...2.4.0) - 2025-07-07
 
-## Added
+[code diff](https://github.com/Jelmerro/Garlmap/compare/2.3.1...2.4.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.4.0)
+
+### Added
 
 - Ctrl-q as a way to shutdown Garlmap
 
-## Fixed
+### Fixed
 
 - Selection in playlist not being visible when using arrow keys
 - Additional Genius song info being incorrectly added to the lyrics for some songs
