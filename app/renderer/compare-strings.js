@@ -1,6 +1,6 @@
 /* MIT License
 *
-* Copyright (C) 2023-2024 Jelmer van Arnhem
+* Copyright (C) 2023-2025 Jelmer van Arnhem
 * Copyright (c) 2018 Akash Kurdekar
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,6 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
 /**
  * Compare two strings and return the match value between 0 and 1.
  * @param {string} first

@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2024 Jelmer van Arnhem
+*  Copyright (C) 2021-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+import {ipcRenderer} from "electron"
 import {
     deleteFile,
     getInputNumber,
@@ -28,11 +30,10 @@ import {
     writeJSON
 } from "../util.js"
 import {pause, init as startMpv} from "./player.js"
-import {scanner, setStartupSettings} from "./songs.js"
 import {
     setFallbackRule, toggleAutoClose, toggleAutoRemove, toggleAutoScroll
 } from "./playlist.js"
-import {ipcRenderer} from "electron"
+import {scanner, setStartupSettings} from "./songs.js"
 
 /** @typedef {{
  *   apiKey: string | undefined,
@@ -98,9 +99,9 @@ export const saveSettings = () => {
         "apiKey": getInputValue("setting-apikey"),
         "autoClose": isInputChecked("toggle-autoclose"),
         "autoLyrics": isInputChecked("toggle-autolyrics"),
+        "autoplay": isInputChecked("toggle-autoplay"),
         "autoRemove": isInputChecked("toggle-autoremove"),
         "autoScroll": isInputChecked("toggle-autoscroll"),
-        "autoplay": isInputChecked("toggle-autoplay"),
         "cache": getInputValue("setting-cache"),
         "cacheClean": isInputChecked("toggle-cache-clean"),
         "fallback": getInputValue("setting-fallback"),

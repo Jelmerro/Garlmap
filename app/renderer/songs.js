@@ -59,6 +59,8 @@
  */
 /** @typedef {MainSongProps & Partial<ExtraSongProps>} Song */
 
+import {ipcRenderer} from "electron"
+import {parseFile} from "music-metadata"
 import {
     dirName,
     getInputValue,
@@ -73,10 +75,8 @@ import {
     writeFile,
     writeJSON
 } from "../util.js"
-import {clearPlaylist} from "./playlist.js"
-import {ipcRenderer} from "electron"
-import {parseFile} from "music-metadata"
 import {stopPlayback} from "./player.js"
+import {clearPlaylist} from "./playlist.js"
 
 /** @type {string|null} */
 let configDir = null
@@ -422,7 +422,7 @@ export const query = search => {
         globalSearch.cased = low(globalSearch.part) !== globalSearch.part
     }
     const searchableFilters = filters.map(f => ({...f, "name": low(f.name)}))
-        .filter(f => !["order", "limit", "asc"].includes(f.name))
+        .filter(f => !["asc", "limit", "order"].includes(f.name))
     let filtered = songs.filter(s => {
         for (const filter of searchableFilters) {
             if (!isValidFilter(filter.name)) {
@@ -519,7 +519,7 @@ export const query = search => {
         return true
     })
     let order = filters.find(f => low(f.name) === "order")?.value || "disk"
-    if (!["shuffle", "albumshuffle", "disk", "alpha", "date"].includes(order)) {
+    if (!["albumshuffle", "alpha", "date", "disk", "shuffle"].includes(order)) {
         order = "disk"
     }
     if (order.endsWith("shuffle")) {
@@ -527,7 +527,7 @@ export const query = search => {
     }
     /** @type {string|boolean} */
     let asc = filters.find(f => low(f.name) === "asc")?.value ?? ""
-    if (["true", "1", "yes", "0", "false", "no"].includes(asc)) {
+    if (["0", "1", "false", "no", "true", "yes"].includes(asc)) {
         asc = asc === "true" || asc === "1" || asc === "yes"
     } else {
         asc = true

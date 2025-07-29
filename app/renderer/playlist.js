@@ -15,7 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {displayCurrentSong, load, queue, stopPlayback} from "./player.js"
+
+import {ipcRenderer} from "electron"
 import {
     formatTime,
     isDirectory,
@@ -29,9 +30,9 @@ import {
     writeJSON
 } from "../util.js"
 import {generateSongElement, switchFocus} from "./dom.js"
-import {getSong, query, scanner} from "./songs.js"
 import {resetShowingLyrics, showLyrics} from "./lyrics.js"
-import {ipcRenderer} from "electron"
+import {displayCurrentSong, load, queue, stopPlayback} from "./player.js"
+import {getSong, query, scanner} from "./songs.js"
 
 /* eslint-disable jsdoc/require-jsdoc, no-use-before-define */
 /** @typedef {import("./songs.js").Song&{
@@ -583,7 +584,7 @@ export const setFallbackRule = rule => {
     if (playback) {
         if (filters.length > 1) {
             notify("Fallback rule playback can not contain other fields")
-        } else if (["shuffle", "list"].includes(playback.value)) {
+        } else if (["list", "shuffle"].includes(playback.value)) {
             if (fallbackEl) {
                 fallbackEl.setAttribute("playback-order", playback.value)
                 fallbackEl.textContent = rule
@@ -657,7 +658,7 @@ export const autoPlayOpts = (singleOpt = null) => {
         generatePlaylistView()
     }
     const autoClose = isInputChecked("toggle-autoclose")
-    if (autoClose && [null, "close"].includes(singleOpt)) {
+    if (autoClose && ["close", null].includes(singleOpt)) {
         rulelist.forEach((rule, index) => {
             rule.open = index === ruleIdx || !rule.rule
         })

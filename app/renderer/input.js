@@ -15,6 +15,46 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+import {clipboard, ipcRenderer} from "electron"
+import {
+    getInputValue,
+    isHTMLElement,
+    isHTMLInputElement,
+    isHTMLLabelElement,
+    isHTMLTextAreaElement,
+    queryMatch
+} from "../util.js"
+import {
+    appendSelectedSong,
+    closeSpecialMode,
+    decrementSelectedSearch,
+    generateSongElement,
+    incrementSelectedSearch,
+    isValidSection,
+    setFullscreenLayout,
+    showSongInfo,
+    switchFocus
+} from "./dom.js"
+import {
+    decrementSelectedLyrics,
+    incrementSelectedLyrics,
+    resetShowingLyrics,
+    saveLyrics,
+    searchLyrics,
+    selectLyricsFromResults,
+    stunShiftLyrics,
+    switchToLyrics
+} from "./lyrics.js"
+import {
+    pause,
+    relativeSeek,
+    seek,
+    toggleMute,
+    volumeDown,
+    volumeSet,
+    volumeUp
+} from "./player.js"
 import {
     append,
     bottomScroll,
@@ -40,48 +80,9 @@ import {
     topSelectedPlaylist
 } from "./playlist.js"
 import {
-    appendSelectedSong,
-    closeSpecialMode,
-    decrementSelectedSearch,
-    generateSongElement,
-    incrementSelectedSearch,
-    isValidSection,
-    setFullscreenLayout,
-    showSongInfo,
-    switchFocus
-} from "./dom.js"
-import {clipboard, ipcRenderer} from "electron"
-import {
-    decrementSelectedLyrics,
-    incrementSelectedLyrics,
-    resetShowingLyrics,
-    saveLyrics,
-    searchLyrics,
-    selectLyricsFromResults,
-    stunShiftLyrics,
-    switchToLyrics
-} from "./lyrics.js"
-import {
-    getInputValue,
-    isHTMLElement,
-    isHTMLInputElement,
-    isHTMLLabelElement,
-    isHTMLTextAreaElement,
-    queryMatch
-} from "../util.js"
-import {
-    pause,
-    relativeSeek,
-    seek,
-    toggleMute,
-    volumeDown,
-    volumeSet,
-    volumeUp
-} from "./player.js"
-import {query, scanner} from "./songs.js"
-import {
     saveSettings, toggleAutoLyrics, toggleGenius, toggleShiftLyrics
 } from "./settings.js"
+import {query, scanner} from "./songs.js"
 
 /** Check if the folder is loaded and the app is ready to interact with. */
 const isReady = () => document.getElementById(
@@ -168,6 +169,12 @@ const mappings = {
         " ": () => {
             pause()
         },
+        "0": () => {
+            volumeSet(100)
+        },
+        "-": () => {
+            volumeDown()
+        },
         "<ArrowDown>": () => {
             relativeSeek(-60)
         },
@@ -213,12 +220,6 @@ const mappings = {
         "=": () => {
             volumeUp()
         },
-        "-": () => {
-            volumeDown()
-        },
-        "0": () => {
-            volumeSet(100)
-        },
         "m": () => {
             toggleMute()
         },
@@ -229,34 +230,6 @@ const mappings = {
     },
     "global": {
         "<A-F4>": () => window.close(),
-        "<C-+>": () => {
-            volumeUp()
-        },
-        "<C-/>": () => switchFocus("settingseditor"),
-        "<C-=>": () => {
-            volumeUp()
-        },
-        "<C-[>": () => {
-            relativeSeek(-6)
-        },
-        "<C-]>": () => {
-            relativeSeek(6)
-        },
-        "<C-_>": () => {
-            volumeDown()
-        },
-        "<C-`>": () => {
-            seek(0)
-        },
-        "<C-{>": () => {
-            relativeSeek(-60)
-        },
-        "<C-}>": () => {
-            relativeSeek(60)
-        },
-        "<C-->": () => {
-            volumeDown()
-        },
         "<C-0>": () => {
             volumeSet(100)
         },
@@ -287,16 +260,38 @@ const mappings = {
         "<C-9>": () => {
             seek(90)
         },
-        "<C-E>": () => switchFocus("events"),
-        "<C-F4>": () => switchFocus("lyricseditor"),
-        "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
-            document.body.getAttribute("focus-el") === "fullscreen"),
+        "<C-+>": () => {
+            volumeUp()
+        },
+        "<C-->": () => {
+            volumeDown()
+        },
+        "<C-/>": () => switchFocus("settingseditor"),
+        "<C-=>": () => {
+            volumeUp()
+        },
+        "<C-[>": () => {
+            relativeSeek(-6)
+        },
+        "<C-]>": () => {
+            relativeSeek(6)
+        },
+        "<C-_>": () => {
+            volumeDown()
+        },
+        "<C-`>": () => {
+            seek(0)
+        },
         "<C-c>": () => {
             const text = window.getSelection()?.toString()
             if (text) {
                 clipboard.writeText(text)
             }
         },
+        "<C-E>": () => switchFocus("events"),
+        "<C-F4>": () => switchFocus("lyricseditor"),
+        "<C-F11>": () => setFullscreenLayout(!document.fullscreenElement,
+            document.body.getAttribute("focus-el") === "fullscreen"),
         "<C-f>": () => switchFocus("search"),
         "<C-g>": () => {
             toggleGenius()
@@ -321,6 +316,12 @@ const mappings = {
         },
         "<C-t>": () => {
             exportList()
+        },
+        "<C-{>": () => {
+            relativeSeek(-60)
+        },
+        "<C-}>": () => {
+            relativeSeek(60)
         },
         "<Escape>": () => setFullscreenLayout(false, false),
         "<F1>": () => {
@@ -414,7 +415,6 @@ const mappings = {
             decrementSelectedLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
-        "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
             incrementSelectedLyrics()
         },
@@ -424,6 +424,7 @@ const mappings = {
         "<C-s>": () => {
             saveLyrics()
         },
+        "<C-Tab>": () => switchFocus("lyricseditor"),
         "<Enter>": () => {
             selectLyricsFromResults()
         },
@@ -435,10 +436,10 @@ const mappings = {
             saveLyrics()
         },
         "<C-F4>": () => closeSpecialMode(),
-        "<C-Tab>": () => switchFocus("lyrics"),
         "<C-s>": () => {
             saveLyrics()
         },
+        "<C-Tab>": () => switchFocus("lyrics"),
         "<Escape>": () => closeSpecialMode(),
         "<Tab>": () => switchFocus("lyricssearch")
     },
@@ -449,7 +450,6 @@ const mappings = {
             switchFocus("lyrics")
         },
         "<C-F4>": () => closeSpecialMode(),
-        "<C-Tab>": () => switchFocus("lyricseditor"),
         "<C-n>": () => {
             document.querySelector("#lyrics-results > *")
                 ?.classList.add("selected")
@@ -458,6 +458,7 @@ const mappings = {
         "<C-s>": () => {
             saveLyrics()
         },
+        "<C-Tab>": () => switchFocus("lyricseditor"),
         "<Enter>": () => {
             searchLyrics()
         },
@@ -491,11 +492,20 @@ const mappings = {
                 i += 1
             }
         },
+        "<C-e>": () => {
+            document.getElementById("main-playlist")?.scrollBy(0, 50)
+        },
         "<C-End>": () => {
             bottomSelectedPlaylist()
         },
         "<C-Home>": () => {
             topSelectedPlaylist()
+        },
+        "<C-n>": () => {
+            incrementSelectedPlaylist()
+        },
+        "<C-p>": () => {
+            decrementSelectedPlaylist()
         },
         "<C-PageDown>": () => {
             let i = 0
@@ -512,15 +522,6 @@ const mappings = {
             }
         },
         "<C-Tab>": () => switchFocus("search"),
-        "<C-e>": () => {
-            document.getElementById("main-playlist")?.scrollBy(0, 50)
-        },
-        "<C-n>": () => {
-            incrementSelectedPlaylist()
-        },
-        "<C-p>": () => {
-            decrementSelectedPlaylist()
-        },
         "<C-y>": () => {
             document.getElementById("main-playlist")?.scrollBy(0, -50)
         },
@@ -541,9 +542,6 @@ const mappings = {
         },
         "<PageUp>": () => {
             document.getElementById("main-playlist")?.scrollBy(0, -300)
-        },
-        "S": () => {
-            stopAfterLastTrackOfRule()
         },
         "a": () => {
             toggleAutoScroll()
@@ -572,6 +570,9 @@ const mappings = {
         "r": () => {
             toggleAutoRemove()
         },
+        "S": () => {
+            stopAfterLastTrackOfRule()
+        },
         "s": () => {
             stopAfterTrack("selected")
         },
@@ -584,6 +585,12 @@ const mappings = {
             incrementSelectedSearch()
         },
         "<ArrowUp>": () => {
+            decrementSelectedSearch()
+        },
+        "<C-n>": () => {
+            incrementSelectedSearch()
+        },
+        "<C-p>": () => {
             decrementSelectedSearch()
         },
         "<C-PageDown>": () => {
@@ -601,12 +608,6 @@ const mappings = {
             }
         },
         "<C-Tab>": () => switchFocus("playlist"),
-        "<C-n>": () => {
-            incrementSelectedSearch()
-        },
-        "<C-p>": () => {
-            decrementSelectedSearch()
-        },
         "<Enter>": () => {
             appendSelectedSong()
         },
@@ -630,6 +631,9 @@ const mappings = {
         "<C-Enter>": () => {
             setFallbackRule(getInputValue("rule-search"))
         },
+        "<C-n>": () => {
+            incrementSelectedSearch()
+        },
         "<C-PageDown>": () => {
             let i = 0
             while (i < 10) {
@@ -638,9 +642,6 @@ const mappings = {
             }
         },
         "<C-Tab>": () => switchFocus("playlist"),
-        "<C-n>": () => {
-            incrementSelectedSearch()
-        },
         "<Enter>": () => {
             append({"rule": getInputValue("rule-search")})
         },
@@ -824,7 +825,7 @@ const handleMouse = e => {
     }
     if (queryMatch(e, "#song-info") && !window.getSelection()?.toString()) {
         if (isValidSection(mode)
-            && ["search", "searchbox", "playlist"].includes(mode)) {
+            && ["playlist", "search", "searchbox"].includes(mode)) {
             switchFocus(mode)
         }
         return

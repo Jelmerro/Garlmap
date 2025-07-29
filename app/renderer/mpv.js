@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2023-2024 Jelmer van Arnhem
+*  Copyright (C) 2023-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,10 +15,11 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {EventEmitter} from "events"
-import {Socket} from "net"
-import {platform} from "os"
-import {spawn} from "child_process"
+
+import {spawn} from "node:child_process"
+import {EventEmitter} from "node:events"
+import {Socket} from "node:net"
+import {platform} from "node:os"
 
 /**
  * Opens the socket to MPV at the location and send a signal on close.

@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2024 Jelmer van Arnhem
+*  Copyright (C) 2021-2025 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,9 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-import {append, currentAndNext} from "./playlist.js"
+
 import {formatTime, isElement} from "../util.js"
+import {append, currentAndNext} from "./playlist.js"
 import {getSong} from "./songs.js"
 
 /** @typedef {"playlist"

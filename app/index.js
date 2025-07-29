@@ -16,9 +16,8 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 import {
-    BrowserWindow, app, dialog, globalShortcut, ipcMain, systemPreferences
+    app, BrowserWindow, dialog, globalShortcut, ipcMain, systemPreferences
 } from "electron"
 import {
     basePath,
@@ -386,7 +385,7 @@ const logCustomSettings = config => {
  */
 const isTruthyArg = (arg = null) => {
     const argStr = String(arg).trim().toLowerCase()
-    return Number(argStr) > 0 || ["y", "yes", "true", "on"].includes(argStr)
+    return Number(argStr) > 0 || ["on", "true", "y", "yes"].includes(argStr)
 }
 
 /** Process the startup args into a usable config object. */
@@ -403,9 +402,9 @@ const processStartupArgs = () => {
         "apiKey": process.env.GARLMAP_API_KEY?.trim().toLowerCase(),
         "autoClose": isTruthyArg(process.env.GARLMAP_AUTO_CLOSE) || undefined,
         "autoLyrics": isTruthyArg(process.env.GARLMAP_AUTO_LYRICS) || undefined,
+        "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
         "autoRemove": isTruthyArg(process.env.GARLMAP_AUTO_REMOVE) || undefined,
         "autoScroll": isTruthyArg(process.env.GARLMAP_AUTO_SCROLL) || undefined,
-        "autoplay": isTruthyArg(process.env.GARLMAP_AUTOPLAY) || undefined,
         "cache": process.env.GARLMAP_CACHE?.trim().toLowerCase(),
         "cacheClean": isTruthyArg(process.env.GARLMAP_CACHE_CLEAN) || undefined,
         configDir,
@@ -481,12 +480,12 @@ const processStartupArgs = () => {
             config.folder = arg
         }
     })
-    if (!["all", "songs", "lyrics", "none", undefined].includes(config.cache)) {
+    if (!["all", "lyrics", "none", "songs", undefined].includes(config.cache)) {
         console.warn("Error, cache arg only accepts one of:")
         console.warn("- all, songs, lyrics, none")
         app.exit(1)
     }
-    if (!["never", "mobile", "always", undefined].includes(config.twoColumn)) {
+    if (!["always", "mobile", "never", undefined].includes(config.twoColumn)) {
         console.warn("Error, twoColumn arg only accepts one of:")
         console.warn("- never, mobile, always")
         app.exit(1)

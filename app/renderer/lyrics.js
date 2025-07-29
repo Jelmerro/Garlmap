@@ -15,6 +15,8 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+import geniusLyrics from "genius-lyrics"
 import {
     basePath,
     dirName,
@@ -29,12 +31,11 @@ import {
     readFile,
     resetWelcome
 } from "../util.js"
-import {getSong, updateLyricsOfSong} from "./songs.js"
 import {compareStrings} from "./compare-strings.js"
-import {currentAndNext} from "./playlist.js"
-import geniusLyrics from "genius-lyrics"
-import {isAlive} from "./player.js"
 import {switchFocus} from "./dom.js"
+import {isAlive} from "./player.js"
+import {currentAndNext} from "./playlist.js"
+import {getSong, updateLyricsOfSong} from "./songs.js"
 
 /** @type {number|null} */
 let shiftLyricsTimeout = null
@@ -163,7 +164,7 @@ export const fetchLyrics = async(req, force = false, originalReq = null) => {
         }
         notify(`Failed to find matching song lyrics in Genius results for: ${
             req.title} ${req.artist}`)
-    } catch (e) {
+    } catch(e) {
         notify(`Failed to fetch lyrics from Genius for: ${
             req.title} ${req.artist}`)
         console.warn(e)
@@ -270,7 +271,7 @@ export const selectLyricsFromResults = async() => {
             } else {
                 editor.value = sanitizeLyrics(await cacheEntry.lyrics())
             }
-        } catch (e) {
+        } catch(e) {
             notify(`Failed to fetch lyrics from Genius for: ${
                 cacheEntry.title} ${cacheEntry.artist.name}`)
             editor.value = previousLyrics
