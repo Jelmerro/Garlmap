@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Fixed
+
+- Selection jumping when deleting a rule before another rule that are open
+
 ### Versions
 
 - Electron 39.1.2 (was 37.2.0)

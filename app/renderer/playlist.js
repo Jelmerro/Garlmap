@@ -225,6 +225,7 @@ export const currentAndNext = () => {
         ?.getAttribute("playback-order")
     const moreThanOne = rulelist.length > 1 || rulelist[0]?.songs?.length > 1
     if (playbackOrder && moreThanOne) {
+        /** @type {(RuleSong & {idx: number})[]} */
         const allSongs = rulelist.map((r, idx) => [...r.songs.map(s => {
             const song = JSON.parse(JSON.stringify(s))
             song.idx = idx
@@ -237,14 +238,16 @@ export const currentAndNext = () => {
                 || rulelist[ruleIdx + 1]?.songs[0]
             return {current, next}
         }
-        let next = rulelist[upcomingPlaybackRuleIdx]
-            ?.songs?.[upcomingPlaybackPathIdx]
+        let next = upcomingPlaybackRuleIdx && upcomingPlaybackPathIdx
+            && rulelist[upcomingPlaybackRuleIdx]
+                ?.songs?.[upcomingPlaybackPathIdx]
         if (next && next.id !== current.id) {
             return {current, next}
         }
+        /** @type {(RuleSong & {idx: number})|null} */
         let randomSong = null
         while (!randomSong || randomSong.id === current.id) {
-            randomSong = allSongs.at(Math.random() * allSongs.length)
+            randomSong = allSongs.at(Math.random() * allSongs.length) ?? null
         }
         upcomingPlaybackRuleIdx = randomSong.idx
         upcomingPlaybackPathIdx = rulelist[randomSong.idx].songs.indexOf(
@@ -305,11 +308,11 @@ export const incrementSong = async(user = true) => {
 }
 
 export const decrementSelectedPlaylist = () => {
-    if (selectedPathIdx > 0) {
+    if (selectedPathIdx) {
         selectedPathIdx -= 1
-    } else if (selectedPathIdx === 0 && rulelist[selectedRuleIdx]?.rule) {
+    } else if (selectedPathIdx === 0 && rulelist[selectedRuleIdx ?? -1]?.rule) {
         selectedPathIdx = null
-    } else if (selectedRuleIdx > 0) {
+    } else if (selectedRuleIdx) {
         selectedRuleIdx -= 1
         if (rulelist[selectedRuleIdx].open) {
             selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
@@ -321,7 +324,7 @@ export const decrementSelectedPlaylist = () => {
     } else {
         return
     }
-    if (!rulelist[selectedRuleIdx]?.rule) {
+    if (!rulelist[selectedRuleIdx ?? -1]?.rule) {
         selectedPathIdx = 0
     }
     updateSelectedPlaylist()
@@ -331,18 +334,19 @@ export const incrementSelectedPlaylist = () => {
     if (selectedRuleIdx === null && selectedPathIdx === null) {
         selectedRuleIdx = 0
     } else if (selectedPathIdx === null
-    && rulelist[selectedRuleIdx]?.open) {
+    && rulelist[selectedRuleIdx ?? -1]?.open) {
         selectedPathIdx = 0
-    } else if (rulelist[selectedRuleIdx]?.songs.length > selectedPathIdx + 1
-    && rulelist[selectedRuleIdx].open) {
-        selectedPathIdx += 1
-    } else if (rulelist.length > selectedRuleIdx + 1) {
-        selectedRuleIdx += 1
+    } else if (rulelist[selectedRuleIdx ?? -1]
+        ?.songs.length > (selectedPathIdx ?? 0) + 1
+    && rulelist[selectedRuleIdx ?? -1].open) {
+        selectedPathIdx = (selectedPathIdx ?? 0) + 1
+    } else if (rulelist.length > (selectedRuleIdx ?? 0) + 1) {
+        selectedRuleIdx = (selectedRuleIdx ?? 0) + 1
         selectedPathIdx = null
     } else {
         return
     }
-    if (!rulelist[selectedRuleIdx]?.rule) {
+    if (!rulelist[selectedRuleIdx ?? -1]?.rule) {
         selectedPathIdx = 0
     }
     updateSelectedPlaylist()
@@ -367,7 +371,8 @@ export const topSelectedPlaylist = () => {
     if (rulelist.length > 0) {
         selectedRuleIdx = 0
     }
-    if (rulelist[selectedRuleIdx] && !rulelist[selectedRuleIdx].rule) {
+    if (rulelist[selectedRuleIdx ?? -1]
+        && !rulelist[selectedRuleIdx ?? -1].rule) {
         selectedPathIdx = 0
     }
     topScroll()
@@ -380,9 +385,10 @@ export const bottomSelectedPlaylist = () => {
     if (rulelist.length > 0) {
         selectedRuleIdx = rulelist.length - 1
     }
-    if (rulelist[selectedRuleIdx]?.songs) {
-        if (rulelist[selectedRuleIdx].open || !rulelist[selectedRuleIdx].rule) {
-            selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
+    if (rulelist[selectedRuleIdx ?? -1]?.songs) {
+        if (rulelist[selectedRuleIdx ?? -1].open
+            || !rulelist[selectedRuleIdx ?? -1].rule) {
+            selectedPathIdx = rulelist[selectedRuleIdx ?? -1].songs.length - 1
         }
     }
     bottomScroll()
@@ -507,8 +513,10 @@ export const stopAfterTrack = async(track = null) => {
         return
     }
     if (track === "selected") {
-        rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
-            = !rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
+        if (selectedRuleIdx !== null && selectedPathIdx !== null) {
+            rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
+                = !rulelist[selectedRuleIdx].songs[selectedPathIdx].stopAfter
+        }
     } else {
         rulelist[ruleIdx].songs[pathIdx].stopAfter
             = !rulelist[ruleIdx].songs[pathIdx].stopAfter
@@ -541,7 +549,7 @@ export const deleteSelectedPlaylist = () => {
             if (ruleIdx > selectedRuleIdx) {
                 ruleIdx -= 1
             }
-            selectedRuleIdx = Math.max(0, selectedRuleIdx -= 1)
+            selectedRuleIdx = Math.max(0, selectedRuleIdx - 1)
             if (rulelist[selectedRuleIdx]?.open) {
                 selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
             }
@@ -554,16 +562,16 @@ export const deleteSelectedPlaylist = () => {
             if (selectedRuleIdx === ruleIdx && pathIdx > selectedPathIdx) {
                 pathIdx -= 1
             }
-            selectedPathIdx = Math.max(0, selectedPathIdx -= 1)
+            selectedPathIdx = Math.max(0, selectedPathIdx - 1)
         }
     } else if (selectedRuleIdx !== null) {
         rulelist = rulelist.filter((_, i) => i !== selectedRuleIdx)
         if (ruleIdx > selectedRuleIdx) {
             ruleIdx -= 1
         }
-        selectedRuleIdx = Math.max(0, selectedRuleIdx -= 1)
-        if (rulelist[selectedRuleIdx]?.open) {
-            selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
+        selectedRuleIdx = Math.max(0, selectedRuleIdx - 1)
+        if (!rulelist[selectedRuleIdx].rule) {
+            selectedPathIdx = 0
         }
     }
     if (!rulelist[selectedRuleIdx]?.open) {
@@ -652,7 +660,7 @@ export const autoPlayOpts = (singleOpt = null) => {
                 selectedRuleIdx = null
                 selectedPathIdx = null
             }
-            if (!rulelist[selectedRuleIdx]?.open) {
+            if (!rulelist[selectedRuleIdx ?? -1]?.open) {
                 selectedPathIdx = null
             }
         }
@@ -664,7 +672,7 @@ export const autoPlayOpts = (singleOpt = null) => {
         rulelist.forEach((rule, index) => {
             rule.open = index === ruleIdx || !rule.rule
         })
-        if (rulelist[selectedRuleIdx] !== rulelist[ruleIdx]) {
+        if (rulelist[selectedRuleIdx ?? -1] !== rulelist[ruleIdx]) {
             selectedPathIdx = null
         }
         generatePlaylistView()

@@ -131,9 +131,9 @@ export const load = async file => {
 
 /**
  * Queue a new song into mpv to play after this one.
- * @param {string} file
+ * @param {string|null} file
  */
-export const queue = async file => {
+export const queue = async(file = null) => {
     await mpv?.command("playlist-clear")
     if (file) {
         await mpv?.command("loadfile", file, "append")
