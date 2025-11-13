@@ -222,7 +222,8 @@ const formatDate = d => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${
     padZero(d.getDate())} ${padZero(d.getHours())}:${padZero(d.getMinutes())}:${
     padZero(d.getSeconds())}`
 
-/** @typedef {{
+/**
+ * @typedef {{
  *   color: string,
  *   msg: string,
  *   time: Date,

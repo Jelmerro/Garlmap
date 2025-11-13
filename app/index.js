@@ -358,7 +358,7 @@ const registerMediaKeys = () => {
 /**
  * Log any custom settings to the console on startup.
  * @param {import("./renderer/settings.js").Config} config
- * */
+ */
 const logCustomSettings = config => {
     let hasCustom = false
     for (const [key, val] of Object.entries(config)) {

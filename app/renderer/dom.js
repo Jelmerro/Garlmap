@@ -20,7 +20,8 @@ import {formatTime, isElement} from "../util.js"
 import {append, currentAndNext} from "./playlist.js"
 import {getSong} from "./songs.js"
 
-/** @typedef {"playlist"
+/**
+ * @typedef {"playlist"
  *   |"search"
  *   |"searchbox"
  *   |"fullscreen"
@@ -30,7 +31,8 @@ import {getSong} from "./songs.js"
  *   |"lyricssearch"
  *   |"lyricseditor"
  *   |"settingseditor"
- * } Section */
+ * } Section
+ */
 
 /** @type {Section[]} */
 const sections = [

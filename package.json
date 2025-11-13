@@ -1,41 +1,42 @@
 {
-  "name": "garlmap",
-  "productName": "Garlmap",
-  "version": "2.5.0-dev",
-  "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
-  "main": "app/index.js",
-  "type": "module",
-  "scripts": {
-    "fix": "eslint --fix app build.js",
-    "lint": "npm run eslint && npm run tsc",
-    "eslint": "eslint app build.js",
-    "tsc": "tsc",
-    "start": "electron app",
-    "update": "npx -y jelmerro/nus"
-  },
-  "repository": "https://github.com/Jelmerro/Garlmap",
-  "homepage": "https://github.com/Jelmerro/Garlmap",
-  "keywords": [
-    "Music",
-    "Electron",
-    "Audio",
-    "Player"
-  ],
-  "author": "Jelmer van Arnhem",
-  "email": "Jelmerro@users.noreply.github.com",
-  "funding": "https://github.com/sponsors/Jelmerro/",
-  "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "electron": "37.2.4",
-    "electron-builder": "26.0.12",
-    "eslint-config": "github:Jelmerro/eslint-config",
-    "typescript": "5.8.3"
-  },
-  "dependencies": {
-    "genius-lyrics": "4.4.7",
-    "music-metadata": "11.7.3"
-  },
-  "engines": {
-    "node": ">=20"
-  }
+    "name": "garlmap",
+    "version": "2.5.0-dev",
+    "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
+    "keywords": [
+        "Music",
+        "Electron",
+        "Audio",
+        "Player"
+    ],
+    "homepage": "https://github.com/Jelmerro/Garlmap",
+    "repository": {
+        "url": "https://github.com/Jelmerro/Garlmap",
+        "type": "git"
+    },
+    "funding": "https://github.com/sponsors/Jelmerro/",
+    "license": "GPL-3.0-or-later",
+    "author": "Jelmer van Arnhem",
+    "type": "module",
+    "main": "app/index.js",
+    "scripts": {
+        "eslint": "eslint",
+        "fix": "eslint --fix",
+        "lint": "npm run eslint && npm run tsc",
+        "start": "electron app",
+        "tsc": "tsc",
+        "update": "npx -y jelmerro/nus"
+    },
+    "dependencies": {
+        "genius-lyrics": "4.4.7",
+        "music-metadata": "11.10.0"
+    },
+    "devDependencies": {
+        "electron": "39.1.2",
+        "electron-builder": "26.0.12",
+        "eslint-config": "github:Jelmerro/eslint-config",
+        "type-config": "github:Jelmerro/type-config"
+    },
+    "engines": {
+        "node": ">=20"
+    }
 }

@@ -16,7 +16,8 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/** @typedef {{
+/**
+ * @typedef {{
  *   album: string,
  *   artist: string,
  *   bitrate: number,
@@ -32,7 +33,8 @@
  *   tracktotal: number | null
  * }} MainSongProps
  */
-/** @typedef {{
+/**
+ * @typedef {{
  *   genre?: string[],
  *   composer?: string[],
  *   lyricist?: string[],
@@ -60,7 +62,8 @@
 /** @typedef {MainSongProps & Partial<ExtraSongProps>} Song */
 
 import {ipcRenderer} from "electron"
-import {parseFile} from "music-metadata"
+import {parseFile, selectCover} from "music-metadata"
+import {uint8ArrayToBase64} from "uint8array-extras"
 import {
     dirName,
     getInputValue,
@@ -614,10 +617,9 @@ export const coverArt = async p => {
     try {
         const details = await parseFile(p, {"skipCovers": false})
             .catch(() => null)
-        const pic = details?.common?.picture?.[0]
+        const pic = selectCover(details?.common?.picture)
         if (pic) {
-            const str = Buffer.from(pic.data.buffer).toString("base64")
-            return `data:${pic.format};base64,${str}`
+            return `data:${pic.format};base64,${uint8ArrayToBase64(pic.data)}`
         }
         return null
     } catch {

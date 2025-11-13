@@ -35,12 +35,14 @@ import {displayCurrentSong, load, queue, stopPlayback} from "./player.js"
 import {getSong, query, scanner} from "./songs.js"
 
 /* eslint-disable jsdoc/require-jsdoc, no-use-before-define */
-/** @typedef {import("./songs.js").Song&{
+/**
+ * @typedef {import("./songs.js").Song&{
  *   upcoming?: boolean,
  *   stopAfter?: boolean
  * }} RuleSong
  */
-/** @typedef {{
+/**
+ * @typedef {{
  *   rule: string,
  *   songs: RuleSong[],
  *   open: boolean,

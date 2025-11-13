@@ -26,12 +26,14 @@ import {platform} from "node:os"
  * @param {string} path
  * @param {(err?: Error) => void} close
  */
-const MPVSocket = (path, close) => {
-    /** @type {Socket&{
+const mpvsocket = (path, close) => {
+    /**
+     * @type {Socket&{
      *   send?: (event: string, ...args: any[]) => void
      * }|{
      *   send?: (get: "get_property", val: string) => string | Promise<string>
-     * }} */
+     * }}
+     */
     const socket = new Socket()
     const requests = new Map()
     const start = Date.now()
@@ -121,7 +123,8 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
     if (!path) {
         throw Error("Path is required")
     }
-    /** @type {EventEmitter&{
+    /**
+     * @type {EventEmitter&{
      *   command: (event: string, ...args: any[]) => void | Promise<void>
      *   set: (...args: any[]) => void | Promise<void>
      *   get: (val: string) => string | Promise<string> | null
@@ -157,7 +160,7 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
     })
     proc.stderr.on("data", () => null)
     proc.on("error", x => mpv.emit("error", x))
-    const socket = MPVSocket(socketPath, err => {
+    const socket = mpvsocket(socketPath, err => {
         proc.kill()
         mpv.emit("error", err)
     })

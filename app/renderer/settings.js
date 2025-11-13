@@ -35,7 +35,8 @@ import {
 } from "./playlist.js"
 import {scanner, setStartupSettings} from "./songs.js"
 
-/** @typedef {{
+/**
+ * @typedef {{
  *   apiKey: string | undefined,
  *   autoClose?: boolean | undefined,
  *   autoLyrics?: boolean | undefined,

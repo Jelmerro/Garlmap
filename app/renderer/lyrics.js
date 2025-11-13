@@ -318,7 +318,8 @@ export const resetShowingLyrics = () => {
     showingLyrics = false
 }
 
-/** Reset help, then show updated lyrics in the sidebar, editor and fullscreen.
+/**
+ * Reset help, then show updated lyrics in the sidebar, editor and fullscreen.
  * @param {string} id
  */
 export const showLyrics = async id => {
