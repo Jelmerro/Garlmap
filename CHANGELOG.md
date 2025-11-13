@@ -10,8 +10,13 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Changed
+
+- Rule duration to always include upcoming song duration
+
 ### Fixed
 
+- Rule duration not always updating on entry deletion
 - Selection jumping when deleting a rule before another rule that are open
 
 ### Versions

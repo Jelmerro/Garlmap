@@ -197,22 +197,28 @@ export const playSelectedSong = async() => {
     }
 }
 
+/**
+ * Update the duration for a rule by an index.
+ * @param {number} idx
+ */
+const updateRuleDuration = idx => {
+    rulelist[idx].duration = rulelist[idx].songs
+        .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
+}
+
 export const currentAndNext = () => {
     const fallbackRule = document.getElementById("fallback-rule")?.textContent
         ?? "order=shuffle"
     let current = rulelist[ruleIdx]?.songs[pathIdx]
     if (!current) {
+        /** @type {RuleSong[]} */
         const songs = JSON.parse(JSON.stringify(
             query(fallbackRule).slice(0, 2)))
         ;[current] = songs
         if (!current) {
             return {}
         }
-        append({
-            "rule": fallbackRule,
-            "songs": [current,
-                {...songs[songs.indexOf(current) + 1], "upcoming": true}]
-        })
+        append({"rule": fallbackRule, "songs": [current]})
         ruleIdx = rulelist.length - 1
         pathIdx = 0
     }
@@ -225,12 +231,6 @@ export const currentAndNext = () => {
         ?.getAttribute("playback-order")
     const moreThanOne = rulelist.length > 1 || rulelist[0]?.songs?.length > 1
     if (playbackOrder && moreThanOne) {
-        /** @type {(RuleSong & {idx: number})[]} */
-        const allSongs = rulelist.map((r, idx) => [...r.songs.map(s => {
-            const song = JSON.parse(JSON.stringify(s))
-            song.idx = idx
-            return song
-        })]).flat(1)
         if (playbackOrder === "list") {
             upcomingPlaybackRuleIdx = null
             upcomingPlaybackPathIdx = null
@@ -238,35 +238,43 @@ export const currentAndNext = () => {
                 || rulelist[ruleIdx + 1]?.songs[0]
             return {current, next}
         }
-        let next = upcomingPlaybackRuleIdx && upcomingPlaybackPathIdx
+        let next = upcomingPlaybackRuleIdx !== null
+            && upcomingPlaybackPathIdx !== null
             && rulelist[upcomingPlaybackRuleIdx]
                 ?.songs?.[upcomingPlaybackPathIdx]
         if (next && next.id !== current.id) {
             return {current, next}
         }
-        /** @type {(RuleSong & {idx: number})|null} */
+        /** @type {{ruleIdx: number, songIdx: number, id: string}[]} */
+        const songsIdxs = rulelist.map((r, ri) => [...r.songs.map(
+            (s, si) => ({"id": s.id, "ruleIdx": ri, "songIdx": si}))]).flat(1)
+        /** @type {{ruleIdx: number, songIdx: number, id: string}|null} */
         let randomSong = null
         while (!randomSong || randomSong.id === current.id) {
-            randomSong = allSongs.at(Math.random() * allSongs.length) ?? null
+            randomSong = songsIdxs.at(Math.random() * songsIdxs.length) ?? null
         }
-        upcomingPlaybackRuleIdx = randomSong.idx
-        upcomingPlaybackPathIdx = rulelist[randomSong.idx].songs.indexOf(
-            rulelist[randomSong.idx].songs.find(s => s.id === randomSong.id))
+        upcomingPlaybackRuleIdx = randomSong.ruleIdx
+        upcomingPlaybackPathIdx = randomSong.songIdx
         next = rulelist[upcomingPlaybackRuleIdx].songs[upcomingPlaybackPathIdx]
         return {current, next}
     }
     let next = rulelist[ruleIdx]?.songs[pathIdx + 1]
         || rulelist[ruleIdx + 1]?.songs[0]
     if (!next) {
-        const songs = query(fallbackRule)
-        next = JSON.parse(JSON.stringify(songs[songs.indexOf(songs.find(
-            s => s.id === current.id)) + 1] || songs[0] || {}))
+        const queuedSongs = query(fallbackRule)
+        if (rulelist[ruleIdx]?.rule === fallbackRule) {
+            const currentInFallback = queuedSongs.find(s => s.id === current.id)
+            if (currentInFallback) {
+                next = queuedSongs[queuedSongs.indexOf(currentInFallback) + 1]
+            }
+        }
+        if (!next) {
+            [next] = queuedSongs
+        }
         if (next?.id) {
-            next.upcoming = true
             if (rulelist[ruleIdx]?.rule === fallbackRule) {
-                rulelist[ruleIdx].duration = rulelist[ruleIdx].songs
-                    .map(s => s.duration).reduce((p, n) => (p || 0) + (n || 0))
-                rulelist[ruleIdx].songs.push(next)
+                rulelist[ruleIdx].songs.push({...next, "upcoming": true})
+                updateRuleDuration(ruleIdx)
                 playFromPlaylist(false)
             } else {
                 append({"rule": fallbackRule,
@@ -490,13 +498,12 @@ export const append = (item, upNext = false, updateList = true) => {
             }
         }
     }
-    rule.duration = rule.songs.map(s => s.duration)
-        .reduce((p, n) => (p || 0) + (n || 0))
     if (upNext && ruleIdx !== rulelist.length) {
         rulelist.splice(ruleIdx + 1, 0, rule)
     } else {
         rulelist.push(rule)
     }
+    updateRuleDuration(rulelist.indexOf(rule))
     if (updateList) {
         playFromPlaylist(false).then(() => {
             autoPlayOpts("scroll")
@@ -556,9 +563,7 @@ export const deleteSelectedPlaylist = () => {
         } else {
             rulelist[selectedRuleIdx].songs = rulelist[
                 selectedRuleIdx].songs.filter((_, i) => i !== selectedPathIdx)
-            rulelist[selectedRuleIdx].duration = rulelist[
-                selectedRuleIdx].songs.map(s => s.duration)
-                .reduce((p, n) => (p || 0) + (n || 0))
+            updateRuleDuration(selectedRuleIdx)
             if (selectedRuleIdx === ruleIdx && pathIdx > selectedPathIdx) {
                 pathIdx -= 1
             }
