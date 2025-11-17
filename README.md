@@ -17,7 +17,7 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 - Audio only playback, no video support or other second-grade features
 - Player that plays music >.>
 
-## Why
+## Features
 
 - Listening to music locally should allow you to define rules for automatic playback
 - Queuing that one album from a specific artist after the current song should be easy
@@ -27,38 +27,38 @@ Garlmap is the Gapless Almighty Rule-based Logical Mpv Audio Player.
 - There should be options to clear or hide irrelevant info in the playlist automatically
 - Adding a group of songs to your queue in bulk should allow you to remove them in one go
 
-## Getting started
+See what's changed recently by viewing the [changelog](CHANGELOG.md).
 
-### Fedora
+## Install
 
-I host a custom DNF repository that you can use for Garlmap,
-or you can download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
+### [Github](https://github.com/Jelmerro/Garlmap/releases)
+
+Download a stable installer or executable for your platform from Github.
+
+You should install mpv from [mpv.io](https://mpv.io) or your package manager,
+then add mpv to your path, or use the `--mpv` option.
+
+### [Fedora](https://jelmerro.nl/fedora)
+
+I host a custom Fedora repository that you can use for automatic updates.
 
 ```bash
 sudo dnf config-manager addrepo --from-repofile=https://jelmerro.nl/fedora/jelmerro.repo
 sudo dnf install garlmap
 ```
 
-### Windows/Mac/Other Linux
+## Contribute
 
-1. Install mpv from [mpv.io](https://mpv.io) or your package manager.
-You must add mpv to your path, or use the `--mpv` option.
-2. Download a [release from here](https://github.com/Jelmerro/Garlmap/releases).
-3. Read the built-in help on the right or run Garlmap with `--help` on startup.
-
-See what's changed recently by viewing the [changelog](CHANGELOG.md).
+You can support my work on [ko-fi](https://ko-fi.com/Jelmerro) or [Github sponsors](https://github.com/sponsors/Jelmerro).
+Another way to help is to report issues or suggest new features.
+Please try to follow the linter styling when developing, see `npm run lint`.
+For an example vimrc that can auto-format based on the included linters,
+you can check out my personal [vimrc](https://github.com/Jelmerro/vimrc).
 
 ## Building
 
-Please clone this repo and run `npm ci` then `npm start`.
-You should now have Garlmap up and running from source,
-next you can make your own executable builds using `node build`.
+To create your own builds or run from source, you need to install [Node.js](https://nodejs.org).
+Please clone or download this repo and run `npm ci` then `npm start`.
+You can make your own executable builds using `node build`.
 See `node build --help` for other options, the builds will be stored in `dist`.
 If you plan to contribute, please follow the included linter, see `npm run lint`.
-
-## License
-
-Garlmap is created by [Jelmer van Arnhem](https://github.com/Jelmerro).
-
-You can copy or modify the code under the terms of the GPL3.0 or later versions.
-For more information and legal terms, see the LICENSE file.
