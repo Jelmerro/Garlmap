@@ -28,11 +28,11 @@
     },
     "dependencies": {
         "genius-lyrics": "4.4.7",
-        "music-metadata": "11.10.0"
+        "music-metadata": "11.10.2"
     },
     "devDependencies": {
-        "electron": "39.1.2",
-        "electron-builder": "26.0.12",
+        "electron": "39.2.3",
+        "electron-builder": "26.3.0",
         "eslint-config": "github:Jelmerro/eslint-config",
         "type-config": "github:Jelmerro/type-config"
     },
