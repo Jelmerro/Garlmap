@@ -8,7 +8,9 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
-## Unreleased
+## [2.5.0](https://github.com/Jelmerro/Garlmap/compare/2.4.0...2.5.0) - 2025-11-21
+
+[code diff](https://github.com/Jelmerro/Garlmap/compare/2.4.0...2.5.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.5.0)
 
 ### Changed
 
