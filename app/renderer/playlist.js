@@ -99,9 +99,7 @@ const generatePlaylistView = () => {
             mainContainer.addEventListener("mousedown", e => {
                 if (e.button === 1) {
                     switchFocus("playlist")
-                    selectedRuleIdx = index
-                    selectedPathIdx = null
-                    deleteSelectedPlaylist()
+                    deleteSelectedPlaylist(index, null)
                 } else if (queryMatch(e, "img") || e.button === 2) {
                     item.open = !item.open
                     generatePlaylistView()
@@ -146,9 +144,7 @@ const generatePlaylistView = () => {
                 songInfo.addEventListener("mousedown", e => {
                     if (e.button === 1) {
                         switchFocus("playlist")
-                        selectedRuleIdx = index
-                        selectedPathIdx = songIdx
-                        deleteSelectedPlaylist()
+                        deleteSelectedPlaylist(index, songIdx)
                     } else if (e.button === 2) {
                         song.stopAfter = !song.stopAfter
                         playFromPlaylist(false)
@@ -540,45 +536,47 @@ export const stopAfterLastTrackOfRule = () => {
     playFromPlaylist(false)
 }
 
-export const deleteSelectedPlaylist = () => {
-    if (selectedRuleIdx === null) {
+export const deleteSelectedPlaylist = (
+    delRule = selectedRuleIdx, delPath = selectedPathIdx
+) => {
+    if (delRule === null) {
         return
     }
-    if (selectedRuleIdx === ruleIdx
-        && (selectedPathIdx === pathIdx || selectedPathIdx === null)) {
+    if (delRule === ruleIdx && (delPath === pathIdx || delPath === null)) {
         return
     }
-    if (selectedRuleIdx !== null && selectedPathIdx !== null) {
-        if (rulelist[selectedRuleIdx].songs.length === 1) {
-            rulelist = rulelist.filter((_, i) => i !== selectedRuleIdx)
-            if (ruleIdx > selectedRuleIdx) {
-                ruleIdx -= 1
-            }
-            selectedRuleIdx = Math.max(0, selectedRuleIdx - 1)
-            if (rulelist[selectedRuleIdx]?.open) {
-                selectedPathIdx = rulelist[selectedRuleIdx].songs.length - 1
-            }
-        } else {
-            rulelist[selectedRuleIdx].songs = rulelist[
-                selectedRuleIdx].songs.filter((_, i) => i !== selectedPathIdx)
-            updateRuleDuration(selectedRuleIdx)
-            if (selectedRuleIdx === ruleIdx && pathIdx > selectedPathIdx) {
-                pathIdx -= 1
-            }
-            selectedPathIdx = Math.max(0, selectedPathIdx - 1)
+    if (delPath !== null && rulelist[delRule].songs.length > 1) {
+        rulelist[delRule].songs = rulelist[
+            delRule].songs.filter((_, i) => i !== delPath)
+        updateRuleDuration(delRule)
+        if (delRule === ruleIdx && pathIdx > delPath) {
+            pathIdx -= 1
         }
-    } else if (selectedRuleIdx !== null) {
-        rulelist = rulelist.filter((_, i) => i !== selectedRuleIdx)
-        if (ruleIdx > selectedRuleIdx) {
+        if (selectedPathIdx
+            && delRule === selectedRuleIdx && selectedPathIdx >= delPath) {
+            selectedPathIdx -= 1
+        }
+    } else {
+        rulelist = rulelist.filter((_, i) => i !== delRule)
+        if (ruleIdx > delRule) {
             ruleIdx -= 1
         }
-        selectedRuleIdx = Math.max(0, selectedRuleIdx - 1)
-        if (!rulelist[selectedRuleIdx].rule) {
-            selectedPathIdx = 0
+        if (selectedRuleIdx && selectedRuleIdx >= delRule) {
+            selectedRuleIdx -= 1
         }
-    }
-    if (!rulelist[selectedRuleIdx]?.open) {
-        selectedPathIdx = null
+        if (selectedRuleIdx !== null) {
+            if (!rulelist[selectedRuleIdx].rule) {
+                selectedPathIdx = 0
+            } else if (selectedRuleIdx + 1 === delRule) {
+                if (rulelist[selectedRuleIdx]?.songs.length > 0) {
+                    selectedPathIdx = rulelist[selectedRuleIdx]
+                        ?.songs.length - 1
+                }
+                if (!rulelist[selectedRuleIdx]?.open) {
+                    selectedPathIdx = null
+                }
+            }
+        }
     }
     playFromPlaylist(false)
 }

@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Fixed
+
+- Rule deletion with the mouse moving the selection nearby as a side effect
+
 ### Versions
 
 - Electron 40.4.1 (was 39.3.3)
