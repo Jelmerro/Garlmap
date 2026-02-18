@@ -487,9 +487,12 @@ export const append = (item, upNext = false, updateList = true) => {
     if (rulelist.length > 0 && (!upNext || ruleIdx === rulelist.length - 1)) {
         const lastrule = rulelist.at(-1)
         if (lastrule) {
+            const lastruleOldCount = lastrule.songs.length
             lastrule.songs = lastrule.songs.filter(s => !s.upcoming)
             if (lastrule.songs.length === 0) {
                 rulelist.pop()
+            } else if (lastruleOldCount !== lastrule.songs.length) {
+                updateRuleDuration(rulelist.indexOf(lastrule))
             }
         }
     }

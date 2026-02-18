@@ -13,6 +13,7 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 ### Fixed
 
 - Rule deletion with the mouse moving the selection nearby as a side effect
+- Rule duration not updating when the current rule's upcoming song is replaced by a new rule
 
 ### Versions
 
