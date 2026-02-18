@@ -1,6 +1,6 @@
 /* MIT License
 *
-* Copyright (C) 2023-2025 Jelmer van Arnhem
+* Copyright (C) 2023-2026 Jelmer van Arnhem
 * Copyright (c) 2018 Akash Kurdekar
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,7 @@ export const compareStrings = (first, second) => {
     }
     const firstBigrams = new Map()
     for (let i = 0; i < first.length - 1; i++) {
-        const bigram = first.substring(i, i + 2)
+        const bigram = first.slice(i, i + 2)
         let count = 1
         if (firstBigrams.has(bigram)) {
             count = firstBigrams.get(bigram) + 1
@@ -45,7 +45,7 @@ export const compareStrings = (first, second) => {
     }
     let intersectionSize = 0
     for (let i = 0; i < second.length - 1; i++) {
-        const bigram = second.substring(i, i + 2)
+        const bigram = second.slice(i, i + 2)
         let count = 0
         if (firstBigrams.has(bigram)) {
             count = firstBigrams.get(bigram)
@@ -55,5 +55,5 @@ export const compareStrings = (first, second) => {
             intersectionSize += 1
         }
     }
-    return 2.0 * intersectionSize / (first.length + second.length - 2)
+    return 2 * intersectionSize / (first.length + second.length - 2)
 }

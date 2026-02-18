@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -179,7 +179,7 @@ export const queryMatch = (e, query) => e?.composedPath?.().find(el => {
  * @param {number|null|undefined} total
  */
 export const formatTime = total => {
-    if (total === null || total === undefined || isNaN(Number(total))) {
+    if (total === null || total === undefined || Number.isNaN(Number(total))) {
         return ""
     }
     /** @type {string|number} */
@@ -351,7 +351,7 @@ export const basePath = loc => basename(loc)
 /**
  * Read the file contents of a file and parse it as JSON.
  * @param {string} loc
- * @returns {any|null}
+ * @returns {unknown|null}
  */
 export const readJSON = loc => {
     try {
@@ -377,7 +377,7 @@ export const readFile = loc => {
 /**
  * Write JSON data to a file, optionally with indentation.
  * @param {string} loc
- * @param {any} data
+ * @param {unknown} data
  * @param {number | undefined | null} indent
  */
 export const writeJSON = (loc, data, indent = null) => {
@@ -461,14 +461,14 @@ export const watchFile = (file, call) => {
 export const listFiles = dir => {
     /** @type {string[]} */
     const files = []
-    readdirSync(dir, {"withFileTypes": true}).forEach(entry => {
+    for (const entry of readdirSync(dir, {"withFileTypes": true})) {
         const loc = joinPath(dir, entry.name)
         if (entry.isDirectory()) {
             files.push(...listFiles(loc))
         } else if (entry.isFile()) {
             files.push(loc)
         }
-    })
+    }
     return files
 }
 

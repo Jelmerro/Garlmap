@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -131,9 +131,8 @@ const extraProps = [
     "originalalbum",
     "originalartist"
 ]
-/** @type {(keyof Song | "order" | "limit" | "asc")[]} */
 const validProps = [...mainProps, ...extraProps, "order", "limit", "asc"]
-const queryRegex = RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
+const queryRegex = new RegExp(`(?= (?:${validProps.join("|")})[:=])`, "gi")
 
 /**
  * Convert a string or number to an all-lowercase string.
@@ -146,15 +145,15 @@ const low = s => String(s).toLowerCase()
  * @param {string|undefined|null} lyrics
  */
 const sanitizeLyrics = lyrics => lyrics?.trim()
-    .replace(/\n\[/g, "\n\n[").replace(/\n\n\n/g, "\n\n") || ""
+    .replace(/\n\[/g, "\n\n[").replace(/\n{3}/g, "\n\n") || ""
 
 /**
  * Check if a partially cached song is complete enough to be considered a song.
  * @param {Partial<Song>|null} song
  * @returns {song is Song}
  */
-const isValidSong = song => typeof song?.title !== "undefined"
-    && typeof song.artist !== "undefined"
+const isValidSong = song => song?.title !== undefined
+    && song.artist !== undefined
 
 /**
  * Process a file by path and id, then add it to the song data info.
@@ -331,7 +330,7 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
     }
     await stopPlayback()
     await clearPlaylist()
-    const fileExts = [
+    const fileExts = new Set([
         "3gp",
         "aac",
         "aif",
@@ -352,9 +351,9 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
         "mp2",
         "mp3",
         "mp4",
+        "mp+",
         "mpc",
         "mpp",
-        "mp+",
         "oga",
         "ogg",
         "opus",
@@ -364,9 +363,9 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
         "wma",
         "wmv",
         "wv"
-    ]
+    ])
     const files = listFiles(folder)
-        .filter(f => fileExts.includes(f.replace(/.*\./g, "")))
+        .filter(f => fileExts.has(f.replace(/.*\./g, "")))
     for (const f of files) {
         const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
         await processFile(folder, f, id)
@@ -399,7 +398,7 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
 
 /**
  * Check if a string is a valid song filter name.
- * @param {any} name
+ * @param {string} name
  * @returns {name is keyof Song}
  */
 const isValidFilter = name => validProps.includes(name)
@@ -435,16 +434,17 @@ export const query = search => {
             if (!value) {
                 return false
             }
-            if (typeof value === "number" && filter.value.match(/^\d+-\d+$/g)) {
+            if (typeof value === "number" && /^\d+-\d+$/g.test(filter.value)) {
                 if (value < Number(filter.value.split("-")[0])
                 || value > Number(filter.value.split("-")[1])) {
                     return false
                 }
-            } else if (filter.name.endsWith("date") && filter.value.match(/^\d+-\d+$/g)) {
+            } else if (filter.name.endsWith("date") && /^\d+-\d+$/g.test(filter.value)) {
                 const year = new Date(value
                     ?.toString?.() || "").getFullYear()
                 if (year < Number(filter.value.split("-")[0])
-                || year > Number(filter.value.split("-")[1]) || isNaN(year)) {
+                    || year > Number(filter.value.split("-")[1])
+                    || Number.isNaN(year)) {
                     return false
                 }
             } else if (Array.isArray(value)) {
@@ -454,16 +454,16 @@ export const query = search => {
                         flags = "g"
                     }
                     try {
-                        const regex = RegExp(filter.value, flags)
-                        if (!String(field).match(regex)) {
+                        const regex = new RegExp(filter.value, flags)
+                        if (!regex.test(field)) {
                             return false
                         }
                     } catch {
                         if (filter.cased
-                        && !String(field).includes(filter.value)) {
+                        && !field.includes(filter.value)) {
                             return false
                         }
-                        if (!filter.cased && !String(low(field))
+                        if (!filter.cased && !low(field)
                             .includes(low(filter.value))) {
                             return false
                         }
@@ -479,8 +479,8 @@ export const query = search => {
                     flags = "g"
                 }
                 try {
-                    const regex = RegExp(filter.value, flags)
-                    if (!String(value).match(regex)) {
+                    const regex = new RegExp(filter.value, flags)
+                    if (!regex.test(String(value))) {
                         return false
                     }
                 } catch {
@@ -500,19 +500,19 @@ export const query = search => {
             if (globalSearch.cased) {
                 flags = "g"
             }
-            for (const word of globalSearch.part.split(/\s/g).filter(w => w)) {
+            for (const word of globalSearch.part.split(/\s/g).filter(Boolean)) {
                 try {
-                    const regex = RegExp(word, flags)
-                    if (!Object.values(s).find(
+                    const regex = new RegExp(word, flags)
+                    if (!Object.values(s).some(
                         val => String(val).match(regex))) {
                         return false
                     }
                 } catch {
-                    if (globalSearch.cased && !Object.values(s).find(
+                    if (globalSearch.cased && !Object.values(s).some(
                         val => String(val).includes(word))) {
                         return false
                     }
-                    if (!Object.values(s).find(val => low(String(val))
+                    if (!Object.values(s).some(val => low(String(val))
                         .includes(low(word)))) {
                         return false
                     }
@@ -535,7 +535,7 @@ export const query = search => {
     } else {
         asc = true
     }
-    const albums = Array.from(new Set(filtered.map(s => s.album))).sort(
+    const albums = [...new Set(filtered.map(s => s.album))].toSorted(
         () => Math.random() - 0.5)
     filtered.sort((a, b) => {
         if (order === "disk") {
@@ -560,7 +560,7 @@ export const query = search => {
             const dateA = new Date(String(a.date))
             const dateB = new Date(String(b.date))
             const diff = dateA.getTime() - dateB.getTime()
-            if (isNaN(diff)) {
+            if (Number.isNaN(diff)) {
                 return 0
             }
             if (asc) {
@@ -602,7 +602,7 @@ export const query = search => {
     const limitStr = filters.find(f => low(f.name) === "limit")?.value
     if (limitStr) {
         const limit = Number(limitStr)
-        if (!isNaN(limit)) {
+        if (!Number.isNaN(limit)) {
             filtered = filtered.slice(0, limit)
         }
     }
@@ -636,7 +636,10 @@ export const setStartupSettings = dir => {
     cache = getInputValue("setting-cache") || "all"
     const cachePath = joinPath(configDir, "cache.json")
     if (cache !== "none") {
-        cachedSongs = readJSON(cachePath) || []
+        const cacheFromFile = readJSON(cachePath)
+        if (Array.isArray(cacheFromFile)) {
+            cachedSongs = cacheFromFile
+        }
         cachedSongs = cachedSongs.filter(s => s.id && s.path)
         if (isInputChecked("toggle-cache-clean")) {
             cachedSongs = cachedSongs.filter(s => isFile(s.path))
@@ -654,7 +657,10 @@ export const setStartupSettings = dir => {
             ownCacheChange = false
             return
         }
-        cachedSongs = readJSON(cachePath) || cachedSongs
+        const cacheFromFile = readJSON(cachePath)
+        if (Array.isArray(cacheFromFile)) {
+            cachedSongs = cacheFromFile
+        }
     })
 }
 

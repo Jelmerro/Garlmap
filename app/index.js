@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -36,21 +36,34 @@ import {
  */
 const applyDevtoolsSettings = prefFile => {
     makeDir(dirName(prefFile))
+    /**
+     * @type {Partial<{electron: {devtools?: {preferences?: {
+     *   cssSourceMapsEnabled?: "true"|"false",
+     *   consoleTimestampsEnabled?: "true"|"false",
+     *   disablePausedStateOverlay?: "true"|"false",
+     *   currentDockState?: `"left"`|`"right"`|`"bottom"`|`"undocked"`,
+     *   "help.show-release-note"?: "true"|"false",
+     *   jsSourceMapsEnabled?: "true"|"false",
+     *   "ui-theme"?: `"dark"`|`"light"`|`"system"`,
+     *   uiTheme?: `"dark"`|`"light"`|`"system"`
+     * }}}}>}
+     */
     const preferences = readJSON(prefFile) || {}
     preferences.electron ||= {}
     preferences.electron.devtools ||= {}
     preferences.electron.devtools.preferences ||= {}
     // Disable source maps as they are unused and produce a lot of warnings
-    preferences.electron.devtools.preferences.cssSourceMapsEnabled = false
-    preferences.electron.devtools.preferences.jsSourceMapsEnabled = false
+    preferences.electron.devtools.preferences.cssSourceMapsEnabled = "false"
+    preferences.electron.devtools.preferences.jsSourceMapsEnabled = "false"
     // Undock devtools by default as to not mess with the window size
     preferences.electron.devtools.preferences.currentDockState = `"undocked"`
     // Disable release notes, none of these are relevant for Garlmap
-    preferences.electron.devtools.preferences["help.show-release-note"] = false
+    preferences.electron.devtools.preferences[
+        "help.show-release-note"] = "false"
     // Show timestamps in the console
-    preferences.electron.devtools.preferences.consoleTimestampsEnabled = true
+    preferences.electron.devtools.preferences.consoleTimestampsEnabled = "true"
     // Disable the paused overlay which prevents interaction with the player
-    preferences.electron.devtools.preferences.disablePausedStateOverlay = true
+    preferences.electron.devtools.preferences.disablePausedStateOverlay = "true"
     // Enable dark theme
     preferences.electron.devtools.preferences.uiTheme = `"dark"`
     writeJSON(prefFile, preferences)
@@ -80,10 +93,10 @@ See the LICENSE file or the GNU website for details.`)
 
 /** Print the help information and usage. */
 const outputHelp = () => {
-    console.info(`${`
-> garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \\
-    --auto-scroll --auto-close --auto-remove --use-genius --shift-lyrics \\
-    --shift-timer=<int> two-column=<MOBILE,never,always> --font-size=<int> \\
+    console.info(`${String.raw`
+> garlmap --cache=<ALL,songs,lyrics,none> --cache-clean --auto-lyrics \
+    --auto-scroll --auto-close --auto-remove --use-genius --shift-lyrics \
+    --shift-timer=<int> two-column=<MOBILE,never,always> --font-size=<int> \
     --mpv=<loc> --dump-lyrics --fallback=<str> --autoplay --api-key=<str> folder
 
 For help with app usage, see the built-in help on the right.
@@ -424,7 +437,7 @@ const processStartupArgs = () => {
     if (configFile) {
         config = {...config, ...configFile, "dumpLyrics": undefined}
     }
-    args.forEach(arg => {
+    for (const arg of args) {
         if (arg.startsWith("-")) {
             const [name] = arg.split("=")
             const value = arg.split("=").slice(1).join("=").toLowerCase()
@@ -479,7 +492,7 @@ const processStartupArgs = () => {
         } else {
             config.folder = arg
         }
-    })
+    }
     if (!["all", "lyrics", "none", "songs", undefined].includes(config.cache)) {
         console.warn("Error, cache arg only accepts one of:")
         console.warn("- all, songs, lyrics, none")
@@ -498,7 +511,7 @@ const processStartupArgs = () => {
     }
     if (config.shiftTimer) {
         const s = Number(config.shiftTimer)
-        if (isNaN(s) || s > 1000 || s < 0) {
+        if (Number.isNaN(s) || s > 1000 || s < 0) {
             console.warn("Shift timer must be a number between 0 and 1000")
             app.exit(1)
         }
@@ -506,7 +519,7 @@ const processStartupArgs = () => {
     }
     if (config.fontSize) {
         const s = Number(config.fontSize)
-        if (isNaN(s) || s > 100 || s < 8 || Math.floor(s) !== s) {
+        if (Number.isNaN(s) || s > 100 || s < 8 || Math.floor(s) !== s) {
             console.warn("Font size must be a round number between 8 and 100.")
             app.exit(1)
         }

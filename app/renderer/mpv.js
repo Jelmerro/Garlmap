@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2023-2025 Jelmer van Arnhem
+*  Copyright (C) 2023-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,19 +21,38 @@ import {EventEmitter} from "node:events"
 import {Socket} from "node:net"
 import {platform} from "node:os"
 
+/** @typedef {void|Promise<void>|Promise<boolean>} Response */
+
+/**
+ * @typedef {(
+ *   ["volume", number]
+ *   |["mute", boolean]
+ *   |["pause", boolean]
+ * )} SetArgument
+ */
+
+/**
+ * @typedef {(
+ *   ["set_property", ...SetArgument]
+ *   |["get_property", string]
+ *   |["observe_property", number, string]
+ *   |["playlist-clear"]|["stop"]|["quit"]
+ *   |["loadfile", string, "append"]|["loadfile", string]
+ *   |["seek", number, "relative"|"absolute"]
+ * )} CmdArgument
+ */
+
+/** @typedef {(...args: CmdArgument) => Response} CmdFunc */
+
+/** @typedef {(get: "get_property", val: string) => Promise<boolean>} GetFunc */
+
 /**
  * Opens the socket to MPV at the location and send a signal on close.
  * @param {string} path
  * @param {(err?: Error) => void} close
  */
 const mpvsocket = (path, close) => {
-    /**
-     * @type {Socket&{
-     *   send?: (event: string, ...args: any[]) => void
-     * }|{
-     *   send?: (get: "get_property", val: string) => string | Promise<string>
-     * }}
-     */
+    /** @type {Socket&{send?: CmdFunc&GetFunc}} */
     const socket = new Socket()
     const requests = new Map()
     const start = Date.now()
@@ -51,7 +70,9 @@ const mpvsocket = (path, close) => {
         }
     })
     socket.on("connect", () => {
-        queue.forEach(msg => socket.write(msg))
+        for (const msg of queue) {
+            socket.write(msg)
+        }
         socket.on("close", () => close())
         queue = []
         open = true
@@ -82,11 +103,16 @@ const mpvsocket = (path, close) => {
         return m.error === "success"
     }
 
-    socket.on("data", data => data.toString().split(/\r?\n/g).filter(x => x)
-        .map(x => JSON.parse(x.trim())).forEach(message))
+    socket.on("data", data => {
+        const messages = data.toString().split(/\r?\n/g).filter(Boolean)
+            .map(x => JSON.parse(x.trim()))
+        for (const msg of messages) {
+            message(msg)
+        }
+    })
     /**
      * Send a command to the mpv IPC socket.
-     * @param {any[]} args
+     * @param {CmdArgument} args
      */
     socket.send = (...args) => new Promise((res, rej) => {
         uuid += 1
@@ -111,32 +137,40 @@ const mpvsocket = (path, close) => {
 }
 
 /**
+ * A basic promise returning false directly.
+ * @returns {Promise<false>}
+ */
+const falsyPromise = () => new Promise(res => {
+    res(false)
+})
+
+/**
  * Stats an MPV instance with the provided MPV args, options and mpv path.
  * @param {{
  *   args?: string[],
  *   options?: {[key: string]: string|boolean},
  *   path?: string
  * }} config
- * @throws {Error}
+ * @throws {Error} When the path is missing.
  */
 const Mpv = ({args = [], options = {}, path} = {}) => {
     if (!path) {
-        throw Error("Path is required")
+        throw new Error("Path is required")
     }
     /**
      * @type {EventEmitter&{
-     *   command: (event: string, ...args: any[]) => void | Promise<void>
-     *   set: (...args: any[]) => void | Promise<void>
-     *   get: (val: string) => string | Promise<string> | null
+     *   command: CmdFunc&GetFunc,
+     *   set: (...args: SetArgument) => Response
+     *   get: (val: string) => Promise<boolean>
      * }}
      */
     // @ts-expect-error EventEmitter type that has added attribute functions,
     // as such they are expected to be defined here, which is not possible,
-    // even though they are always added, so I made then required in the type.
+    // even though they are always added, so I made them required in the type.
     const mpv = new EventEmitter()
     let socketPath = "/tmp/mpvsocket"
     if (platform() === "win32") {
-        socketPath = "\\\\.\\pipe\\mpvsocket"
+        socketPath = String.raw`\\.\pipe\mpvsocket`
     }
     socketPath += Math.random().toString().slice(2)
     args.push(`--input-ipc-server=${socketPath}`)
@@ -150,7 +184,9 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
         "SIGTERM",
         "SIGINT"
     ]
-    signals.forEach(sig => process.on(sig, () => proc.kill()))
+    for (const sig of signals) {
+        process.on(sig, () => proc.kill())
+    }
     let lastStdErr = ""
     proc.on("exit", x => x !== 0 && mpv.emit("error", lastStdErr || x))
     proc.stdout.setEncoding("utf8")
@@ -165,17 +201,17 @@ const Mpv = ({args = [], options = {}, path} = {}) => {
         mpv.emit("error", err)
     })
     socket.on("event", (eventName, data) => mpv.emit(eventName, data))
-    mpv.command = socket.send ?? (() => null)
+    mpv.command = socket.send ?? falsyPromise
     /**
      * Set a property via the mpv IPC.
-     * @param {any[]} a
+     * @param {SetArgument} a
      */
     mpv.set = (...a) => socket.send?.("set_property", ...a)
     /**
      * Get a property via the mpv IPC.
      * @param {string} val
      */
-    mpv.get = val => socket.send?.("get_property", val) ?? null
+    mpv.get = val => socket.send?.("get_property", val) ?? falsyPromise()
     return mpv
 }
 

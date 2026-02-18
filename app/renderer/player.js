@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -277,7 +277,9 @@ export const displayCurrentSong = async song => {
             songCoverFsEl.removeAttribute("src")
             songCoverFsEl.style.display = "none"
         }
-        navigator.mediaSession.metadata = new window.MediaMetadata({...song})
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+            ...song, "artwork": []
+        })
     }
     audioEl.src = "./empty.mp3"
     audioEl.loop = true
@@ -337,7 +339,7 @@ export const init = (path, configDir) => {
                 progressStringFsEl.textContent = played
             }
             if (isInputChecked("toggle-shift-lyrics")) {
-                shiftLyricsByPercentage(parseFloat(perc))
+                shiftLyricsByPercentage(Number.parseFloat(perc))
             }
             return
         }
@@ -387,7 +389,7 @@ export const init = (path, configDir) => {
     navigator.mediaSession.setActionHandler("seekbackward", () => null)
     navigator.mediaSession.setActionHandler("seekforward", () => null)
     navigator.mediaSession.setActionHandler("seekto",
-        details => mpv?.command("seek", details.seekTime, "absolute"))
+        details => mpv?.command("seek", details.seekTime ?? 0, "absolute"))
     navigator.mediaSession.setActionHandler("previoustrack", () => {
         decrementSong()
     })

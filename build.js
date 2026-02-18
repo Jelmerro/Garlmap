@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,9 @@ const ebuilder = {"config": {
     "afterPack": context => {
         const localeDir = `${context.appOutDir}/locales/`
         readdir(localeDir, (_err, files) => {
-            files?.filter(f => !f.match(/en-US\.pak/))
-                .forEach(f => unlinkSync(localeDir + f))
+            for (const file of files?.filter(f => !/en-US\.pak/.test(f)) ?? []) {
+                unlinkSync(localeDir + file)
+            }
         })
     },
     "appId": "com.github.Jelmerro.garlmap",
@@ -95,7 +96,7 @@ const ebuilder = {"config": {
         ]
     }
 }}
-process.argv.slice(2).forEach(a => {
+for (const a of process.argv.slice(2)) {
     if (a === "--help") {
         console.info("Basic Garlmap build script, these are its options:")
         console.info(" --all, --linux, --win, --mac")
@@ -111,6 +112,6 @@ process.argv.slice(2).forEach(a => {
     if (a === "--mac" || a === "--all") {
         ebuilder.mac = []
     }
-})
+}
 rmSync("dist/", {"force": true, "recursive": true})
-build(ebuilder).then(e => console.info(e)).catch(e => console.error(e))
+console.info(await build(ebuilder))

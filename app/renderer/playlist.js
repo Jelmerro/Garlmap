@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ const generatePlaylistView = () => {
         return
     }
     playlistEl.textContent = ""
-    rulelist.forEach((item, index) => {
+    for (const [index, item] of rulelist.entries()) {
         // Main playlist row
         const mainContainer = document.createElement("div")
         mainContainer.className = "rule"
@@ -126,7 +126,7 @@ const generatePlaylistView = () => {
             if (item.rule) {
                 songContainer.className = "songs-of-rule"
             }
-            item.songs.forEach((song, songIdx) => {
+            for (const [songIdx, song] of item.songs.entries()) {
                 const songInfo = generateSongElement(song)
                 const currentImg = document.createElement("img")
                 currentImg.src = "../img/play.png"
@@ -183,10 +183,10 @@ const generatePlaylistView = () => {
                     songInfo.append(stopImg)
                 }
                 songContainer.append(songInfo)
-            })
+            }
             playlistEl.append(songContainer)
         }
-    })
+    }
 }
 
 export const playSelectedSong = async() => {
@@ -246,8 +246,8 @@ export const currentAndNext = () => {
             return {current, next}
         }
         /** @type {{ruleIdx: number, songIdx: number, id: string}[]} */
-        const songsIdxs = rulelist.map((r, ri) => [...r.songs.map(
-            (s, si) => ({"id": s.id, "ruleIdx": ri, "songIdx": si}))]).flat(1)
+        const songsIdxs = rulelist.flatMap((r, ri) => r.songs.map(
+            (s, si) => ({"id": s.id, "ruleIdx": ri, "songIdx": si})))
         /** @type {{ruleIdx: number, songIdx: number, id: string}|null} */
         let randomSong = null
         while (!randomSong || randomSong.id === current.id) {
@@ -393,11 +393,10 @@ export const bottomSelectedPlaylist = () => {
     if (rulelist.length > 0) {
         selectedRuleIdx = rulelist.length - 1
     }
-    if (rulelist[selectedRuleIdx ?? -1]?.songs) {
-        if (rulelist[selectedRuleIdx ?? -1].open
-            || !rulelist[selectedRuleIdx ?? -1].rule) {
-            selectedPathIdx = rulelist[selectedRuleIdx ?? -1].songs.length - 1
-        }
+    if (rulelist[selectedRuleIdx ?? -1]?.songs
+        && (rulelist[selectedRuleIdx ?? -1].open
+        || !rulelist[selectedRuleIdx ?? -1].rule)) {
+        selectedPathIdx = rulelist[selectedRuleIdx ?? -1].songs.length - 1
     }
     bottomScroll()
     updateSelectedPlaylist()
@@ -489,11 +488,11 @@ export const append = (item, upNext = false, updateList = true) => {
     if (rule.songs.length === 0) {
         return
     }
-    if (rulelist.length > 0) {
-        if (!upNext || ruleIdx === rulelist.length - 1) {
-            rulelist[rulelist.length - 1].songs = rulelist[rulelist.length - 1]
-                .songs.filter(s => !s.upcoming)
-            if (rulelist[rulelist.length - 1].songs.length === 0) {
+    if (rulelist.length > 0 && (!upNext || ruleIdx === rulelist.length - 1)) {
+        const lastrule = rulelist.at(-1)
+        if (lastrule) {
+            lastrule.songs = lastrule.songs.filter(s => !s.upcoming)
+            if (lastrule.songs.length === 0) {
                 rulelist.pop()
             }
         }
@@ -545,10 +544,9 @@ export const deleteSelectedPlaylist = () => {
     if (selectedRuleIdx === null) {
         return
     }
-    if (selectedRuleIdx === ruleIdx) {
-        if (selectedPathIdx === pathIdx || selectedPathIdx === null) {
-            return
-        }
+    if (selectedRuleIdx === ruleIdx
+        && (selectedPathIdx === pathIdx || selectedPathIdx === null)) {
+        return
     }
     if (selectedRuleIdx !== null && selectedPathIdx !== null) {
         if (rulelist[selectedRuleIdx].songs.length === 1) {
@@ -674,9 +672,9 @@ export const autoPlayOpts = (singleOpt = null) => {
     }
     const autoClose = isInputChecked("toggle-autoclose")
     if (autoClose && ["close", null].includes(singleOpt)) {
-        rulelist.forEach((rule, index) => {
+        for (const [index, rule] of rulelist.entries()) {
             rule.open = index === ruleIdx || !rule.rule
-        })
+        }
         if (rulelist[selectedRuleIdx ?? -1] !== rulelist[ruleIdx]) {
             selectedPathIdx = null
         }
@@ -708,7 +706,7 @@ export const exportList = () => {
         }
         let file = String(info.filePath)
         if (file.endsWith("m3u") || file.endsWith("m3u8")) {
-            const list = rulelist.map(r => r.songs).flat(1).map(s => s.path)
+            const list = rulelist.flatMap(r => r.songs).map(s => s.path)
             const success = writeFile(file, `#EXTM3U\n${list.join("\n")}\n`)
             if (!success) {
                 notify("Failed to save playlist, write error")
@@ -730,7 +728,7 @@ export const exportList = () => {
                     s => ({"id": s.id, "path": s.path}))}
             }
             return false
-        }).filter(r => r)
+        }).filter(Boolean)
         const success = writeJSON(file, {folder, list}, 4)
         if (!success) {
             notify("Failed to save playlist, write error")
@@ -763,7 +761,7 @@ export const importList = () => {
         }
         if (info.filePaths[0]?.endsWith(".garlmap.json")) {
             /** @type {Partial<{folder: string, list: Rule[]}>} */
-            const imported = readJSON(info.filePaths[0])
+            const imported = readJSON(info.filePaths[0]) ?? {}
             if (!imported?.list || !imported?.folder) {
                 notify("Not a valid Garlmap playlist file")
                 return
@@ -779,21 +777,22 @@ export const importList = () => {
             } else {
                 await scanner(imported.folder)
             }
-            imported.list.filter(r => r?.rule || r?.songs).forEach(r => {
-                const songs = r.songs?.filter(s => s?.id)
+            for (const rule of imported.list.filter(r => r?.rule || r?.songs)) {
+                const songs = rule.songs?.filter(s => s?.id)
                     .map(s => getSong(s.id, s.path))?.flatMap(s => s ?? [])
-                append({"rule": r.rule, songs}, false, false)
-            })
+                append({"rule": rule.rule, songs}, false, false)
+            }
             playFromPlaylist(isInputChecked("toggle-autoplay"))
         } else {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
-            list.split("\n").filter(i => i && !i.startsWith("#")).forEach(i => {
-                const song = getSong(i, i)
+            for (const m3uItem of list.split("\n").filter(l => l
+                && !l.startsWith("#"))) {
+                const song = getSong(m3uItem, m3uItem)
                 if (song?.id) {
                     append({"songs": [song]}, false, false)
                 }
-            })
+            }
             playFromPlaylist(isInputChecked("toggle-autoplay"))
         }
     })

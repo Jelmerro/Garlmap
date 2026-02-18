@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -34,26 +34,25 @@ import {getSong} from "./songs.js"
  * } Section
  */
 
-/** @type {Section[]} */
-const sections = [
+const sections = new Set([
+    "events",
+    "fullscreen",
+    "infopanel",
+    "lyrics",
+    "lyricseditor",
+    "lyricssearch",
     "playlist",
     "search",
     "searchbox",
-    "fullscreen",
-    "events",
-    "infopanel",
-    "lyrics",
-    "lyricssearch",
-    "lyricseditor",
     "settingseditor"
-]
+])
 
 /**
  * Check if a string is a valid section name.
- * @param {any} section
+ * @param {string} section
  * @returns {section is Section}
  */
-export const isValidSection = section => sections.includes(section)
+export const isValidSection = section => sections.has(section)
 
 /**
  * Generate a new song element to be shown in the list based on a song.
@@ -214,7 +213,7 @@ export const switchFocus = async newFocus => {
 
 /** Closes any "special" mode, like fullscreen or the modal/dialog ones. */
 export const closeSpecialMode = async() => {
-    const lastFocus = document.body.getAttribute("last-main-focus")
+    const lastFocus = document.body.getAttribute("last-main-focus") ?? ""
     if (isValidSection(lastFocus)) {
         await switchFocus(lastFocus)
     } else {

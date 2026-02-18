@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2022-2025 Jelmer van Arnhem
+*  Copyright (C) 2022-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import {isAlive} from "./player.js"
 import {currentAndNext} from "./playlist.js"
 import {getSong, updateLyricsOfSong} from "./songs.js"
 
-/** @type {number|null} */
+/** @type {NodeJS.Timeout|null} */
 let shiftLyricsTimeout = null
 let showingLyrics = false
 /** @type {import("genius-lyrics").Song[]} */
@@ -55,9 +55,9 @@ const low = s => s.toLowerCase()
  */
 export const sanitizeLyrics = lyrics => {
     let sanitized = lyrics?.trim().replace(/\n\[/g, "\n\n[") ?? ""
-    sanitized = sanitized.replace(/\n\n\n/g, "\n\n")
+    sanitized = sanitized.replace(/\n{3}/g, "\n\n")
     sanitized = sanitized.replace(/^\d+ Contributor.*?Lyrics/g, "")
-    sanitized = sanitized.replace(/^[\s\S]*…\sRead\sMore\s/g, "")
+    sanitized = sanitized.replace(/^[\S\s]*…\sRead\sMore\s/g, "")
     return sanitized
 }
 
@@ -120,7 +120,7 @@ export const fetchLyrics = async(req, force = false, originalReq = null) => {
             req.title} ${req.artist}`, "info")
         /** @type {(import("genius-lyrics").Song & {score?: number})[]} */
         const results = await genius.songs.search(`${req.title} ${req.artist}`)
-        results.forEach(s => {
+        for (const s of results) {
             s.score = compareStrings(low(s.title), low(req.title))
                 + compareStrings(low(s.artist.name), low(req.artist))
             if (originalReq) {
@@ -143,7 +143,7 @@ export const fetchLyrics = async(req, force = false, originalReq = null) => {
                     s.score = originalArtistScore
                 }
             }
-        })
+        }
         results.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
         const [song] = results
         if (song && (song.score ?? 0) > 1.6) {
@@ -164,10 +164,10 @@ export const fetchLyrics = async(req, force = false, originalReq = null) => {
         }
         notify(`Failed to find matching song lyrics in Genius results for: ${
             req.title} ${req.artist}`)
-    } catch(e) {
+    } catch(error) {
         notify(`Failed to fetch lyrics from Genius for: ${
             req.title} ${req.artist}`)
-        console.warn(e)
+        console.warn(error)
     }
     // Retry without text between brackets in song title and single artist
     if (originalReq) {
@@ -196,7 +196,8 @@ export const shiftLyricsByPercentage = current => {
     if (showingLyrics) {
         lyricsContainers.push(document.getElementById("song-info"))
     }
-    const lineheight = parseFloat(getComputedStyle(document.body).lineHeight)
+    const lineheight = Number.parseFloat(
+        getComputedStyle(document.body).lineHeight)
     for (const el of lyricsContainers) {
         if (!el?.scrollHeight) {
             continue
@@ -229,10 +230,9 @@ export const shiftLyricsByPercentage = current => {
 
 /** Stun the automatic shifting of lyrics based on the shifttimer delay. */
 export const stunShiftLyrics = () => {
-    if (!showingLyrics) {
-        if (document.body.getAttribute("focus-el") !== "fullscreen") {
-            return
-        }
+    if (!showingLyrics
+        && document.body.getAttribute("focus-el") !== "fullscreen") {
+        return
     }
     if (shiftLyricsTimeout) {
         clearTimeout(shiftLyricsTimeout)
@@ -243,7 +243,7 @@ export const stunShiftLyrics = () => {
     }
     shiftLyricsToggle.checked = false
     if (getInputNumber("setting-shift-timer") > 0) {
-        shiftLyricsTimeout = window.setTimeout(() => {
+        shiftLyricsTimeout = setTimeout(() => {
             shiftLyricsToggle.checked = true
         }, getInputNumber("setting-shift-timer") * 1000)
     }
@@ -271,11 +271,11 @@ export const selectLyricsFromResults = async() => {
             } else {
                 editor.value = sanitizeLyrics(await cacheEntry.lyrics())
             }
-        } catch(e) {
+        } catch(error) {
             notify(`Failed to fetch lyrics from Genius for: ${
                 cacheEntry.title} ${cacheEntry.artist.name}`)
             editor.value = previousLyrics
-            console.warn(e)
+            console.warn(error)
         }
         editor.scrollTo(0, 0)
     }
@@ -291,24 +291,26 @@ export const searchLyrics = async() => {
     resultsContainer.textContent = "Searching Genius..."
     const apiKey = getInputValue("setting-apikey") || undefined
     const genius = new geniusLyrics.Client(apiKey)
-    const results = await genius.songs.search(searchString).catch(e => {
+    const results = await genius.songs.search(searchString).catch(error => {
         notify(`Failed to fetch lyrics from Genius for: ${searchString}`)
-        console.warn(e)
+        console.warn(error)
     })
     lyricsSearchCache = results || []
     resultsContainer.textContent = ""
-    results?.forEach(result => {
-        const el = document.createElement("div")
-        el.textContent = `${result.title} - ${result.artist.name}`
-        resultsContainer.append(el)
-        el.addEventListener("click", () => {
-            resultsContainer.querySelector(".selected")
-                ?.classList.remove("selected")
-            el.classList.add("selected")
-            switchFocus("lyrics")
-        })
-        el.addEventListener("dblclick", () => selectLyricsFromResults())
-    })
+    if (results) {
+        for (const result of results) {
+            const el = document.createElement("div")
+            el.textContent = `${result.title} - ${result.artist.name}`
+            resultsContainer.append(el)
+            el.addEventListener("click", () => {
+                resultsContainer.querySelector(".selected")
+                    ?.classList.remove("selected")
+                el.classList.add("selected")
+                switchFocus("lyrics")
+            })
+            el.addEventListener("dblclick", () => selectLyricsFromResults())
+        }
+    }
 }
 
 /** Switch back to showing the help text instead of the lyrics. */

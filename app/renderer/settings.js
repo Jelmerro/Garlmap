@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -334,14 +334,14 @@ const cssColors = {
  * @param {string} hex
  */
 const hexToRgb = hex => {
-    const shorthand = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
+    const shorthand = /^#?([\da-f])([\da-f])([\da-f])$/i
     const split = hex.replace(shorthand, (_, r, g, b) => r + r + g + g + b + b)
-    const result = (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i).exec(split)
+    const result = (/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i).exec(split)
     if (result) {
         return {
-            "b": parseInt(result[3], 16),
-            "g": parseInt(result[2], 16),
-            "r": parseInt(result[1], 16)
+            "b": Number.parseInt(result[3], 16),
+            "g": Number.parseInt(result[2], 16),
+            "r": Number.parseInt(result[1], 16)
         }
     }
     return null
@@ -450,10 +450,9 @@ export const init = () => {
             if (isHTMLInputElement(shiftLyricsEl)) {
                 shiftLyricsEl.checked = config.shiftLyrics
                     || Boolean(config.shiftTimer)
-                if (isHTMLLabelElement(shiftLyricsEl.parentNode)) {
-                    if (config.shiftTimer) {
-                        shiftLyricsEl.parentNode.style.display = "none"
-                    }
+                if (isHTMLLabelElement(shiftLyricsEl.parentNode)
+                    && config.shiftTimer) {
+                    shiftLyricsEl.parentNode.style.display = "none"
                 }
             }
             shiftLyricsEl?.parentNode?.addEventListener(

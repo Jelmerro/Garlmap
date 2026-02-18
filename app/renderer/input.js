@@ -1,6 +1,6 @@
 /*
 *  Garlmap - Gapless Almighty Rule-based Logcal Mpv Audio Player
-*  Copyright (C) 2021-2025 Jelmer van Arnhem
+*  Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -684,9 +684,9 @@ const mappings = {
             }
             const index = els.indexOf(focusEl)
             if (index === 0) {
-                els[els.length - 1].focus()
+                els.at(-1)?.focus()
             } else {
-                els[index - 1].focus()
+                els[index - 1]?.focus()
             }
         },
         "<C-Enter>": () => {
@@ -770,30 +770,24 @@ const handleMouse = e => {
     if (queryMatch(e, "#song-info, #fs-lyrics")) {
         stunShiftLyrics()
     }
-    let mode = document.body.getAttribute("focus-el")
+    let mode = document.body.getAttribute("focus-el") ?? ""
     const searchbox = document.getElementById("rule-search")
     if (mode === "search" && document.activeElement === searchbox) {
         mode = "searchbox"
     }
-    if (mode === "infopanel") {
-        if (!queryMatch(e, "#infopanel")) {
-            closeSpecialMode()
-        }
+    if (mode === "infopanel" && !queryMatch(e, "#infopanel")) {
+        closeSpecialMode()
     }
-    if (mode === "settingseditor") {
-        if (!queryMatch(e, "#settings-editor, #edit-settings")) {
-            closeSpecialMode()
-        }
+    if (mode === "settingseditor"
+        && !queryMatch(e, "#settings-editor, #edit-settings")) {
+        closeSpecialMode()
     }
-    if (mode === "events") {
-        if (!queryMatch(e, "#events, #status-notify")) {
-            closeSpecialMode()
-        }
+    if (mode === "events" && !queryMatch(e, "#events, #status-notify")) {
+        closeSpecialMode()
     }
-    if (mode?.startsWith("lyrics")) {
-        if (!queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
-            closeSpecialMode()
-        }
+    if (mode?.startsWith("lyrics")
+        && !queryMatch(e, "#lyrics-editor, #edit-lyrics")) {
+        closeSpecialMode()
     }
     if (queryMatch(e, "#switch-to-playlist")) {
         switchFocus("playlist")
@@ -952,7 +946,7 @@ export const init = () => {
             stunShiftLyrics()
         }
     })
-    for (const vol of [...document.querySelectorAll("input[type='range']")]) {
+    for (const vol of document.querySelectorAll("input[type='range']")) {
         if (!isHTMLInputElement(vol)) {
             return
         }
@@ -982,12 +976,12 @@ export const init = () => {
                 return
             }
             const search = searchbox.value
-                .replace(/\n/g, "\\n")
+                .replace(/\n/g, String.raw`\n`)
             if (search !== searchbox.value) {
                 searchbox.value = search
             }
             searchResults.textContent = ""
-            query(search).slice(0, 100).forEach(song => {
+            for (const song of query(search).slice(0, 100)) {
                 const el = generateSongElement(song)
                 document.getElementById("search-results")?.append(el)
                 el.addEventListener("dblclick", () => {
@@ -1004,7 +998,7 @@ export const init = () => {
                             mouseEv.button === 1)
                     }
                 })
-            })
+            }
         })
     }
     const progressContainers = [
@@ -1050,10 +1044,9 @@ export const init = () => {
         })
     }
     document.getElementById("fullscreen")?.addEventListener("mousedown", e => {
-        if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")) {
-            if (!queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
-                document.exitFullscreen().catch(() => closeSpecialMode())
-            }
+        if (!queryMatch(e, "#fs-player-status, #fs-song-cover, #fs-lyrics")
+            && !queryMatch(e, "#fs-progress-container, #fs-volume-slider")) {
+            document.exitFullscreen().catch(() => closeSpecialMode())
         }
     })
     resetShowingLyrics()
