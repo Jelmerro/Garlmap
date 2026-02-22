@@ -177,6 +177,7 @@ export const saveSettings = () => {
         notify("Failed to save current settings")
     }
 }
+
 /** @type {{[key: string]: string | undefined}} */
 const cssColors = {
     "aliceblue": "#f0f8ff",

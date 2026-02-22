@@ -77,7 +77,6 @@ const mpvsocket = (path, close) => {
         queue = []
         open = true
     })
-
     /**
      * Parsed message send back by the mpv IPC connection.
      * @param {{
@@ -102,7 +101,6 @@ const mpvsocket = (path, close) => {
         requests.delete(m.request_id)
         return m.error === "success"
     }
-
     socket.on("data", data => {
         const messages = data.toString().split(/\r?\n/g).filter(Boolean)
             .map(x => JSON.parse(x.trim()))
