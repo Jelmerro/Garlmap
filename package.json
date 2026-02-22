@@ -1,6 +1,6 @@
 {
     "name": "garlmap",
-    "version": "2.6.0-dev",
+    "version": "2.6.0",
     "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
     "keywords": [
         "Music",
