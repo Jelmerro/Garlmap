@@ -18,7 +18,7 @@
 
 import {formatTime, isElement} from "../util.js"
 import {append, currentAndNext} from "./playlist.js"
-import {getSong} from "./songs.js"
+import {coverArt, getSong} from "./songs.js"
 
 /**
  * @typedef {"playlist"
@@ -272,11 +272,37 @@ export const showSongInfo = position => {
             song = getSong(current.id)
         }
     }
-    const infopanelDetailsEl = document.getElementById("infopanel-details")
-    if (infopanelDetailsEl && song) {
-        infopanelDetailsEl.textContent = JSON.stringify(song, null, 4)
-        switchFocus("infopanel")
+    if (!song) {
+        return
     }
+    const infopanel = document.getElementById("infopanel")
+    infopanel?.scrollTo(0, 0)
+    const titleEl = infopanel?.querySelector("h1")
+    const coverEl = document.getElementById("infopanel-cover")
+    const lyricsEl = document.getElementById("infopanel-lyrics")
+    const detailsEl = document.getElementById("infopanel-details")
+    if (titleEl) {
+        titleEl.textContent = "Info"
+    }
+    if (coverEl instanceof HTMLImageElement) {
+        coverEl.style.display = "none"
+        coverArt(song.path).then(art => {
+            if (art) {
+                coverEl.style.display = ""
+                coverEl.src = art
+            }
+        }).catch(() => null)
+    }
+    if (lyricsEl) {
+        lyricsEl.style.display = "none"
+        lyricsEl.textContent = song.lyrics ?? ""
+    }
+    if (detailsEl) {
+        detailsEl.style.display = ""
+        detailsEl.textContent = JSON.stringify(song, null, 4)
+        detailsEl.setAttribute("lyrics", song.lyrics ?? "")
+    }
+    switchFocus("infopanel")
 }
 
 /** Move to the previous result in the search result list. */

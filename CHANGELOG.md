@@ -10,6 +10,10 @@ The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
 ## Unreleased
 
+### Added
+
+- Lyrics and cover focus views to the song info dialog
+
 ### Fixed
 
 - Rule deletion with the mouse moving the selection nearby as a side effect

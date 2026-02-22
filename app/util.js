@@ -615,6 +615,7 @@ or simply with the Arrow up and down keys to select individual songs.
 While in the list, you can also use PageUp, PageDown, Home and End to navigate.
 You can view the internal song info of the selected song using i,
 or show the song info for the current song with Ctrl-i.
+Inside this view, you can choose to view the lyrics or cover only with l or c.
 Once you have found the right track, you can add this single song with Enter.
 With Shift-Enter you can queue it immediately after the current rule.
 You can also select tracks with the left mouse button,

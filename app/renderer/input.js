@@ -378,32 +378,76 @@ const mappings = {
     },
     "infopanel": {
         "<ArrowDown>": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, 100)
+            document.getElementById("infopanel")?.scrollBy(0, 100)
         },
         "<ArrowUp>": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, -100)
+            document.getElementById("infopanel")?.scrollBy(0, -100)
         },
         "<C-i>": () => closeSpecialMode(),
         "<End>": () => {
-            document.getElementById("infopanel-details")?.scrollTo(
+            document.getElementById("infopanel")?.scrollTo(
                 0, Number.MAX_SAFE_INTEGER)
         },
         "<Escape>": () => closeSpecialMode(),
         "<Home>": () => {
-            document.getElementById("infopanel-details")?.scrollTo(0, 0)
+            document.getElementById("infopanel")?.scrollTo(0, 0)
         },
         "<PageDown>": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, 500)
+            document.getElementById("infopanel")?.scrollBy(0, 500)
         },
         "<PageUp>": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, -500)
+            document.getElementById("infopanel")?.scrollBy(0, -500)
+        },
+        "c": () => {
+            const infopanel = document.getElementById("infopanel")
+            infopanel?.scrollTo(0, 0)
+            const detailsEl = document.getElementById("infopanel-details")
+            const lyricsEl = document.getElementById("infopanel-lyrics")
+            const coverEl = document.getElementById("infopanel-cover")
+            const titleEl = infopanel?.querySelector("h1")
+            if (!detailsEl || !lyricsEl || !coverEl || !titleEl) {
+                return
+            }
+            if (titleEl.textContent.includes("Cover")) {
+                titleEl.textContent = "Info"
+                coverEl.style.display = ""
+                lyricsEl.style.display = "none"
+                detailsEl.style.display = ""
+            } else {
+                titleEl.textContent = "Info / Cover"
+                coverEl.style.display = ""
+                lyricsEl.style.display = "none"
+                detailsEl.style.display = "none"
+            }
         },
         "i": () => closeSpecialMode(),
         "j": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, 100)
+            document.getElementById("infopanel")?.scrollBy(0, 100)
         },
         "k": () => {
-            document.getElementById("infopanel-details")?.scrollBy(0, -100)
+            document.getElementById("infopanel")?.scrollBy(0, -100)
+        },
+        "l": () => {
+            const infopanel = document.getElementById("infopanel")
+            infopanel?.scrollTo(0, 0)
+            const detailsEl = document.getElementById("infopanel-details")
+            const lyricsEl = document.getElementById("infopanel-lyrics")
+            const coverEl = document.getElementById("infopanel-cover")
+            const titleEl = infopanel?.querySelector("h1")
+            if (!detailsEl || !lyricsEl || !coverEl || !titleEl) {
+                return
+            }
+            if (titleEl.textContent.includes("Lyrics")) {
+                titleEl.textContent = "Info"
+                coverEl.style.display = ""
+                lyricsEl.style.display = "none"
+                detailsEl.style.display = ""
+            } else {
+                titleEl.textContent = "Info / Lyrics"
+                coverEl.style.display = "none"
+                lyricsEl.style.display = ""
+                detailsEl.style.display = "none"
+            }
         },
         "q": () => closeSpecialMode()
     },

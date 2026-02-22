@@ -1,6 +1,6 @@
 /*
 * Garlmap - Gapless Almighty Rule-based Logical Mpv Audio Player
-* Copyright (C) 2021-2025 Jelmer van Arnhem
+* Copyright (C) 2021-2026 Jelmer van Arnhem
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -237,9 +237,10 @@ body[two-column="always"] #search-controls {grid-template-columns: repeat(3, 1fr
 
 
 /* info panel */
-#infopanel {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;z-index: 2;}
-#infopanel h1 {line-height: 1em;margin: .5em .2em;}
-#infopanel-details {overflow: auto;user-select: text;white-space: pre-wrap;margin: 0 1em 1em 1em;user-select: text;overflow-wrap: break-word;}
+#infopanel {display: none;position: fixed;top: 10vh;left: 10vw;width: 80vw;height: 80vh;background: var(--bg);flex-direction: column;z-index: 2;overflow: hidden auto;padding: 0 1em 1em;gap: 1em;}
+#infopanel h1 {position: sticky;top: 0;line-height: 1em;background: var(--bg);padding: .5em 0;}
+#infopanel-details, #infopanel-lyrics {user-select: text;white-space: pre-wrap;user-select: text;overflow-wrap: break-word;}
+#infopanel-cover {object-fit: contain;min-height: 24em;min-width: 0;max-height: 100%;max-width: 100%;}
 
 
 /* lyrics editor */
