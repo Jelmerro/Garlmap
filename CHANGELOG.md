@@ -8,6 +8,21 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Changed
+
+- Startup song parsing to be non-blocking every hundred entries as to stay responsive during load
+
+### Fixed
+
+- Song info cover view not clearing old images when the current song has none
+
+### Versions
+
+- Electron 40.6.1 (was 40.6.0)
+- Chromium 144.0.7559.220 (was 144.0.7559.177)
+
 ## [2.6.0](https://github.com/Jelmerro/Garlmap/compare/2.5.0...2.6.0) - 2026-02-22
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/2.5.0...2.6.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.6.0)

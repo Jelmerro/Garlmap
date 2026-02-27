@@ -368,7 +368,13 @@ export const scanner = async(rawFolder, dumpOnly = false) => {
         .filter(f => fileExts.has(f.replace(/.*\./g, "")))
     for (const f of files) {
         const id = f.replace(folder, "").replace(/^[/\\]+/g, "")
-        await processFile(folder, f, id)
+        if (processedFiles < 100 || processedFiles % 100 === 0) {
+            await new Promise(res => {
+                setTimeout(() => res(processFile(folder, f, id)), 0)
+            })
+        } else {
+            await processFile(folder, f, id)
+        }
         processedFiles += 1
         if (statusFilesEl) {
             statusFilesEl.textContent

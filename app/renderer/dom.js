@@ -290,6 +290,8 @@ export const showSongInfo = position => {
             if (art) {
                 coverEl.style.display = ""
                 coverEl.src = art
+            } else {
+                coverEl.removeAttribute("src")
             }
         }).catch(() => null)
     }
