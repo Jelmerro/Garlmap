@@ -93,13 +93,14 @@ const openFolder = () => {
     ipcRenderer.invoke("dialog-open", {
         "properties": ["openDirectory"], "title": "Open a folder"
     }).then(async info => {
-        if (!info.canceled) {
-            await scanner(info.filePaths[0])
-            const toggleAutoplay = document.getElementById("toggle-autoplay")
-            if (isHTMLInputElement(toggleAutoplay) && toggleAutoplay?.checked) {
-                playFromPlaylist(true)
-                pause()
-            }
+        if (info.canceled) {
+            return
+        }
+        await scanner(info.filePaths[0])
+        const toggleAutoplay = document.getElementById("toggle-autoplay")
+        if (isHTMLInputElement(toggleAutoplay) && toggleAutoplay?.checked) {
+            playFromPlaylist(true)
+            pause()
         }
     })
 }
@@ -110,7 +111,7 @@ const openFolder = () => {
  */
 const toIdentifier = e => {
     let keyCode = e.key
-    if (e.key === "\u0000") {
+    if (e.key === "\u{0}") {
         keyCode = "Delete"
     }
     // If the shift status can be detected by casing, don't add the 'S-' prefix
@@ -789,11 +790,12 @@ const handleKeyboard = async e => {
     const action = mappings[mode]?.[id]
     // @ts-expect-error Index checking for this is complex, so safely look it up
     const global = mappings.global?.[id]
-    if (action) {
+    if (action || global) {
         e.preventDefault()
+    }
+    if (action) {
         await action(e)
     } else if (global) {
-        e.preventDefault()
         await global(e)
     }
 }

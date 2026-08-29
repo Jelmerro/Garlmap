@@ -1,6 +1,6 @@
 {
     "name": "garlmap",
-    "version": "2.7.0",
+    "version": "2.7.1-dev",
     "description": "Gapless Almighty Rule-based Logical Mpv Audio Player",
     "keywords": [
         "Music",
@@ -30,11 +30,11 @@
     },
     "dependencies": {
         "genius-lyrics": "4.4.7",
-        "music-metadata": "11.13.0",
+        "music-metadata": "11.14.0",
         "uint8array-extras": "1.5.0"
     },
     "devDependencies": {
-        "electron": "43.1.0",
+        "electron": "43.1.1",
         "electron-builder": "26.15.3",
         "eslint-config": "github:Jelmerro/eslint-config",
         "type-config": "github:Jelmerro/type-config"

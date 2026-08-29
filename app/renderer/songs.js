@@ -282,12 +282,13 @@ const processFile = async(folder, path, id) => {
 const dumpLyrics = folder => {
     const lyricsDir = joinPath(folder, "Lyrics")
     for (const song of songs) {
-        if (song.lyrics) {
-            const txtId = song.id.replace(/\.[^ .]+$/g, ".txt")
-            const lyricsPath = joinPath(lyricsDir, txtId)
-            makeDir(dirName(lyricsPath))
-            writeFile(lyricsPath, song.lyrics)
+        if (!song.lyrics) {
+            continue
         }
+        const txtId = song.id.replace(/\.[^ .]+$/g, ".txt")
+        const lyricsPath = joinPath(lyricsDir, txtId)
+        makeDir(dirName(lyricsPath))
+        writeFile(lyricsPath, song.lyrics)
     }
     ipcRenderer.send("destroy-window")
 }
@@ -418,8 +419,8 @@ export const query = search => {
         return []
     }
     const filters = search.split(queryRegex).map(p => ({
-        "cased": low(p.trim().split(/[:=]/g)[0]) !== p.trim().split(/[:=]/g)[0],
-        "name": p.trim().split(/[:=]/g)[0],
+        "cased": low(p.trim().split(/[:=]/g, 1)[0]) !== p.trim().split(/[:=]/g, 1)[0],
+        "name": p.trim().split(/[:=]/g, 1)[0],
         "part": p.trim(),
         "value": p.trim().split(/([:=])/g).slice(2).join("")
     }))
@@ -441,15 +442,15 @@ export const query = search => {
                 return false
             }
             if (typeof value === "number" && /^\d+-\d+$/g.test(filter.value)) {
-                if (value < Number(filter.value.split("-")[0])
-                || value > Number(filter.value.split("-")[1])) {
+                if (value < Number(filter.value.split("-", 1)[0])
+                || value > Number(filter.value.split("-", 2)[1])) {
                     return false
                 }
             } else if (filter.name.endsWith("date") && /^\d+-\d+$/g.test(filter.value)) {
                 const year = new Date(value
                     ?.toString?.() || "").getFullYear()
-                if (year < Number(filter.value.split("-")[0])
-                    || year > Number(filter.value.split("-")[1])
+                if (year < Number(filter.value.split("-", 1)[0])
+                    || year > Number(filter.value.split("-", 2)[1])
                     || Number.isNaN(year)) {
                     return false
                 }
@@ -509,16 +510,16 @@ export const query = search => {
             for (const word of globalSearch.part.split(/\s/g).filter(Boolean)) {
                 try {
                     const regex = new RegExp(word, flags)
-                    if (!Object.values(s).some(
-                        val => String(val).match(regex))) {
+                    if (Object.values(s).every(
+                        val => !new RegExp(regex).test(String(val)))) {
                         return false
                     }
                 } catch {
-                    if (globalSearch.cased && !Object.values(s).some(
-                        val => String(val).includes(word))) {
+                    if (globalSearch.cased && Object.values(s).every(
+                        val => !String(val).includes(word))) {
                         return false
                     }
-                    if (!Object.values(s).some(val => low(String(val))
+                    if (Object.values(s).every(val => !low(String(val))
                         .includes(low(word)))) {
                         return false
                     }
@@ -537,7 +538,7 @@ export const query = search => {
     /** @type {string|boolean} */
     let asc = filters.find(f => low(f.name) === "asc")?.value ?? ""
     if (["0", "1", "false", "no", "true", "yes"].includes(asc)) {
-        asc = asc === "true" || asc === "1" || asc === "yes"
+        asc = ["1", "true", "yes"].includes(asc)
     } else {
         asc = true
     }

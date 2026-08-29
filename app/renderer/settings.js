@@ -516,14 +516,15 @@ export const init = () => {
             }
             // Scan folder on startup
             setTimeout(async() => {
-                if (config.folder) {
-                    await scanner(config.folder, config.dumpLyrics)
-                    if (config.fallback) {
-                        setFallbackRule(config.fallback)
-                    }
-                    if (config.autoplay) {
-                        pause()
-                    }
+                if (!config.folder) {
+                    return
+                }
+                await scanner(config.folder, config.dumpLyrics)
+                if (config.fallback) {
+                    setFallbackRule(config.fallback)
+                }
+                if (config.autoplay) {
+                    pause()
                 }
             }, 10)
         })

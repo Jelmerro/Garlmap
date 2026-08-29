@@ -101,12 +101,13 @@ export const relativeSeek = async seconds => {
  * @param {number} percent
  */
 export const seek = async percent => {
-    if (isAlive() && !stoppedAfterTrack) {
-        const {current} = currentAndNext()
-        if (current) {
-            const {duration} = current
-            await mpv?.command("seek", percent * duration / 100, "absolute")
-        }
+    if (!isAlive() || stoppedAfterTrack) {
+        return
+    }
+    const {current} = currentAndNext()
+    if (current) {
+        const {duration} = current
+        await mpv?.command("seek", percent * duration / 100, "absolute")
     }
 }
 
@@ -319,8 +320,8 @@ export const init = (path, configDir) => {
             navigator.mediaSession.setPositionState({
                 duration, "playbackRate": 1, position
             })
-            const played = `\u00a0${formatTime(position)}/${
-                formatTime(duration)}\u00a0`
+            const played = `\u{a0}${formatTime(position)}/${
+                formatTime(duration)}\u{a0}`
             const perc = `${position / duration * 100}%`
             const progressPlayedEl = document.getElementById("progress-played")
             const progressStringEl = document.getElementById("progress-string")
@@ -339,7 +340,7 @@ export const init = (path, configDir) => {
                 progressStringFsEl.textContent = played
             }
             if (isInputChecked("toggle-shift-lyrics")) {
-                shiftLyricsByPercentage(Number.parseFloat(perc))
+                shiftLyricsByPercentage(Number(perc))
             }
             return
         }

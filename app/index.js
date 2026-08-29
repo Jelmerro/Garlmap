@@ -375,16 +375,17 @@ const registerMediaKeys = () => {
 const logCustomSettings = config => {
     let hasCustom = false
     for (const [key, val] of Object.entries(config)) {
-        if (val !== null && val !== undefined) {
-            if (!hasCustom) {
-                console.info("Current custom settings:")
-                hasCustom = true
-            }
-            if (key === "customTheme") {
-                console.info(`- ${key}: ${joinPath(configDir, "theme.css")}`)
-            } else {
-                console.info(`- ${key}: ${val}`)
-            }
+        if (val === null || val === undefined) {
+            continue
+        }
+        if (!hasCustom) {
+            console.info("Current custom settings:")
+            hasCustom = true
+        }
+        if (key === "customTheme") {
+            console.info(`- ${key}: ${joinPath(configDir, "theme.css")}`)
+        } else {
+            console.info(`- ${key}: ${val}`)
         }
     }
     if (!hasCustom) {
@@ -439,7 +440,7 @@ const processStartupArgs = () => {
     }
     for (const arg of args) {
         if (arg.startsWith("-")) {
-            const [name] = arg.split("=")
+            const [name] = arg.split("=", 1)
             const value = arg.split("=").slice(1).join("=").toLowerCase()
             if (name === "--help") {
                 outputHelp()

@@ -186,11 +186,12 @@ const generatePlaylistView = () => {
 }
 
 export const playSelectedSong = async() => {
-    if (selectedRuleIdx !== null && selectedPathIdx !== null) {
-        ruleIdx = selectedRuleIdx
-        pathIdx = selectedPathIdx
-        await playFromPlaylist()
+    if (selectedRuleIdx === null || selectedPathIdx === null) {
+        return
     }
+    ruleIdx = selectedRuleIdx
+    pathIdx = selectedPathIdx
+    await playFromPlaylist()
 }
 
 /**
@@ -360,11 +361,12 @@ const updateSelectedPlaylist = () => {
     const playlistEl = document.getElementById("main-playlist")
     playlistEl?.querySelector(".selected")?.classList.remove("selected")
     if (selectedPathIdx === null) {
-        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"]`)
+        playlistEl?.querySelector(`[rule-id="${CSS.escape(selectedRuleIdx)}"]`)
             ?.classList.add("selected")
     } else {
-        playlistEl?.querySelector(`[rule-id="${selectedRuleIdx}"][path-id="${
-            selectedPathIdx}"]`)?.classList.add("selected")
+        playlistEl?.querySelector(`[rule-id="${
+            CSS.escape(selectedRuleIdx)}"][path-id="${
+            CSS.escape(selectedPathIdx)}"]`)?.classList.add("selected")
     }
     playlistEl?.querySelector(".selected")?.scrollIntoView({"block": "nearest"})
 }
@@ -590,8 +592,8 @@ export const deleteSelectedPlaylist = (
  */
 export const setFallbackRule = rule => {
     const filters = rule.split(/(?= \w+[:=])/g).map(p => ({
-        "name": p.trim().split(/[:=]/g)[0].toLowerCase(),
-        "value": p.trim().split(/[:=]/g)[1]?.toLowerCase()
+        "name": p.trim().split(/[:=]/g, 1)[0].toLowerCase(),
+        "value": p.trim().split(/[:=]/g, 2)[1]?.toLowerCase()
     }))
     const playback = filters.find(f => f.name === "playback")
     const fallbackEl = document.getElementById("fallback-rule")
@@ -783,7 +785,6 @@ export const importList = () => {
                     .map(s => getSong(s.id, s.path))?.flatMap(s => s ?? [])
                 append({"rule": rule.rule, songs}, false, false)
             }
-            playFromPlaylist(isInputChecked("toggle-autoplay"))
         } else {
             const list = readFile(info.filePaths[0]) || ""
             await clearPlaylist()
@@ -794,7 +795,7 @@ export const importList = () => {
                     append({"songs": [song]}, false, false)
                 }
             }
-            playFromPlaylist(isInputChecked("toggle-autoplay"))
         }
+        playFromPlaylist(isInputChecked("toggle-autoplay"))
     })
 }
