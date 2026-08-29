@@ -17,7 +17,13 @@
 */
 
 import {
-    app, BrowserWindow, dialog, globalShortcut, ipcMain, systemPreferences
+    app,
+    BrowserWindow,
+    clipboard,
+    dialog,
+    globalShortcut,
+    ipcMain,
+    systemPreferences
 } from "electron"
 import {
     basePath,
@@ -598,6 +604,9 @@ ipcMain.handle("dialog-save", (_, options) => {
         return dialog.showSaveDialog(mainWindow, options)
     }
     return null
+})
+ipcMain.handle("write-clipboard", (_, text) => {
+    clipboard.writeText(text)
 })
 ipcMain.on("destroy-window", (_, error) => {
     if (error && mainWindow) {

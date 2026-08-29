@@ -123,7 +123,8 @@ const mpvsocket = (path, close) => {
         if (open) {
             result = socket.write(request)
         } else {
-            result = queue.push(request)
+            queue.push(request)
+            result = true
         }
         if (result) {
             requests.set(id, {args, rej, res})

@@ -360,13 +360,16 @@ export const incrementSelectedPlaylist = () => {
 const updateSelectedPlaylist = () => {
     const playlistEl = document.getElementById("main-playlist")
     playlistEl?.querySelector(".selected")?.classList.remove("selected")
+    if (!selectedRuleIdx) {
+        return
+    }
     if (selectedPathIdx === null) {
-        playlistEl?.querySelector(`[rule-id="${CSS.escape(selectedRuleIdx)}"]`)
-            ?.classList.add("selected")
+        playlistEl?.querySelector(`[rule-id="${
+            CSS.escape(String(selectedRuleIdx))}"]`)?.classList.add("selected")
     } else {
         playlistEl?.querySelector(`[rule-id="${
-            CSS.escape(selectedRuleIdx)}"][path-id="${
-            CSS.escape(selectedPathIdx)}"]`)?.classList.add("selected")
+            CSS.escape(String(selectedRuleIdx))}"][path-id="${
+            CSS.escape(String(selectedPathIdx))}"]`)?.classList.add("selected")
     }
     playlistEl?.querySelector(".selected")?.scrollIntoView({"block": "nearest"})
 }

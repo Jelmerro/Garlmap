@@ -16,7 +16,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {clipboard, ipcRenderer} from "electron"
+import {ipcRenderer} from "electron"
 import {
     getInputValue,
     isHTMLElement,
@@ -286,7 +286,7 @@ const mappings = {
         "<C-c>": () => {
             const text = window.getSelection()?.toString()
             if (text) {
-                clipboard.writeText(text)
+                ipcRenderer.invoke("write-clipboard", text)
             }
         },
         "<C-E>": () => switchFocus("events"),

@@ -8,6 +8,13 @@ The [releases page](https://github.com/Jelmerro/Garlmap/releases) also contains 
 but the list below contains much more technical details.
 The releases of Garlmap aim to follow [semantic versioning](https://semver.org).
 
+## Unreleased
+
+### Versions
+
+- Electron 44.0.0 (was 43.1.0)
+- Chromium 152.0.7977.54 (was 150.0.7871.47)
+
 ## [2.7.0](https://github.com/Jelmerro/Garlmap/compare/2.6.1...2.7.0) - 2026-07-12
 
 [code diff](https://github.com/Jelmerro/Garlmap/compare/2.6.1...2.7.0) - [releases](https://github.com/Jelmerro/Garlmap/releases/tag/2.7.0)

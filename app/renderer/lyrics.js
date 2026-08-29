@@ -195,7 +195,8 @@ export const shiftLyricsByPercentage = current => {
     if (showingLyrics) {
         lyricsContainers.push(document.getElementById("song-info"))
     }
-    const lineheight = Number(getComputedStyle(document.body).lineHeight)
+    const lineheight = Number(getComputedStyle(
+        document.body).lineHeight.replace(/px$/, ""))
     for (const el of lyricsContainers) {
         if (!el?.scrollHeight) {
             continue

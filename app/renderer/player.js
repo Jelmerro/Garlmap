@@ -42,10 +42,8 @@ import {coverArt} from "./songs.js"
 let mpv = null
 let hasAnySong = false
 let stoppedAfterTrack = false
-const audioEl = document.createElement("audio")
-document.addEventListener("DOMContentLoaded", () => {
-    document.body.append(audioEl)
-})
+/** @type {HTMLAudioElement|null} */
+let audioEl = null
 
 /** Checks if there are songs queued and mpv is defined. */
 export const isAlive = () => hasAnySong && mpv
@@ -62,7 +60,7 @@ const updatePlayButton = async() => {
             pauseFsImg.src = "../img/play.png"
         }
         navigator.mediaSession.playbackState = "paused"
-        audioEl.pause()
+        audioEl?.pause()
     } else {
         if (pauseImg) {
             pauseImg.src = "../img/pause.png"
@@ -71,7 +69,7 @@ const updatePlayButton = async() => {
             pauseFsImg.src = "../img/pause.png"
         }
         navigator.mediaSession.playbackState = "playing"
-        audioEl.play().catch(() => null)
+        audioEl?.play().catch(() => null)
     }
 }
 
@@ -282,10 +280,12 @@ export const displayCurrentSong = async song => {
             ...song, "artwork": []
         })
     }
-    audioEl.src = "./empty.mp3"
-    audioEl.loop = true
-    audioEl.pause()
-    await audioEl.play().catch(() => null)
+    if (audioEl) {
+        audioEl.src = "./empty.mp3"
+        audioEl.loop = true
+        audioEl.pause()
+        await audioEl.play().catch(() => null)
+    }
     updatePlayButton()
 }
 
@@ -322,12 +322,12 @@ export const init = (path, configDir) => {
             })
             const played = `\u{a0}${formatTime(position)}/${
                 formatTime(duration)}\u{a0}`
-            const perc = `${position / duration * 100}%`
+            const perc = position / duration * 100
             const progressPlayedEl = document.getElementById("progress-played")
             const progressStringEl = document.getElementById("progress-string")
             if (progressPlayedEl && progressStringEl) {
                 progressPlayedEl.textContent = played
-                progressPlayedEl.style.width = perc
+                progressPlayedEl.style.width = `${perc}%`
                 progressStringEl.textContent = played
             }
             const progressPlayedFsEl = document.getElementById(
@@ -336,7 +336,7 @@ export const init = (path, configDir) => {
                 "fs-progress-string")
             if (progressPlayedFsEl && progressStringFsEl) {
                 progressPlayedFsEl.textContent = played
-                progressPlayedFsEl.style.width = perc
+                progressPlayedFsEl.style.width = `${perc}%`
                 progressStringFsEl.textContent = played
             }
             if (isInputChecked("toggle-shift-lyrics")) {
@@ -398,4 +398,10 @@ export const init = (path, configDir) => {
         incrementSong()
     })
     navigator.mediaSession.playbackState = "paused"
+    audioEl = document.createElement("audio")
+    document.addEventListener("DOMContentLoaded", () => {
+        if (audioEl) {
+            document.body.append(audioEl)
+        }
+    })
 }
